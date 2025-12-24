@@ -160,14 +160,40 @@ style.textContent = `
 /* ==========================================
    PREMIUM BOX - SMOOTH RAINBOW ANIMATION
    ========================================== */
-/* ==========================================
-   PREMIUM BOX - GRADIENT BORDER RAINBOW
-   ========================================== */
 
-@keyframes gradientShift {
-    0% { background-position: 0% 50%; }
-    50% { background-position: 100% 50%; }
-    100% { background-position: 0% 50%; }
+@keyframes premiumRainbow {
+    0% { 
+        border-color: #ff6b6b; 
+        box-shadow: 0 0 8px #ff6b6b, 0 0 15px #ff6b6b66;
+    }
+    14% { 
+        border-color: #ffa500; 
+        box-shadow: 0 0 8px #ffa500, 0 0 15px #ffa50066;
+    }
+    28% { 
+        border-color: #ffd700; 
+        box-shadow: 0 0 8px #ffd700, 0 0 15px #ffd70066;
+    }
+    42% { 
+        border-color: #4ade80; 
+        box-shadow: 0 0 8px #4ade80, 0 0 15px #4ade8066;
+    }
+    57% { 
+        border-color: #22d3ee; 
+        box-shadow: 0 0 8px #22d3ee, 0 0 15px #22d3ee66;
+    }
+    71% { 
+        border-color: #a78bfa; 
+        box-shadow: 0 0 8px #a78bfa, 0 0 15px #a78bfa66;
+    }
+    85% { 
+        border-color: #f472b6; 
+        box-shadow: 0 0 8px #f472b6, 0 0 15px #f472b666;
+    }
+    100% { 
+        border-color: #ff6b6b; 
+        box-shadow: 0 0 8px #ff6b6b, 0 0 15px #ff6b6b66;
+    }
 }
 
 @keyframes crownFloat {
@@ -195,44 +221,21 @@ style.textContent = `
     85% { filter: drop-shadow(0 0 6px #f472b6) brightness(1.1); }
 }
 
-@keyframes sparkleFloat {
+@keyframes sparkleAnim {
     0%, 100% { opacity: 0; transform: scale(0.5); }
     50% { opacity: 1; transform: scale(1); }
 }
 
-/* Premium box - gradient border effect */
+/* Premium box base */
 [data-premium-box="true"] {
     position: relative !important;
-    border: none !important;
-    background: linear-gradient(45deg, 
-        #ff6b6b, #ffa500, #ffd700, 
-        #4ade80, #22d3ee, #a78bfa, 
-        #f472b6, #ff6b6b
-    ) !important;
-    background-size: 400% 400% !important;
-    animation: gradientShift 4s ease infinite !important;
-    padding: 3px !important;
-    border-radius: 6px !important;
     overflow: visible !important;
+    animation: premiumRainbow 4s ease-in-out infinite !important;
+    border-width: 3px !important;
+    border-style: solid !important;
 }
 
-/* Inner dark background */
-[data-premium-box="true"]::before {
-    content: '' !important;
-    position: absolute !important;
-    inset: 3px !important;
-    background: #1a1a2e !important;
-    border-radius: 4px !important;
-    z-index: 0 !important;
-}
-
-/* Make sure content is above the inner background */
-[data-premium-box="true"] > * {
-    position: relative !important;
-    z-index: 1 !important;
-}
-
-/* Crown styling */
+/* Crown */
 [data-premium-box="true"] .premium-crown {
     position: absolute !important;
     top: -20px !important;
@@ -268,18 +271,19 @@ style.textContent = `
     background-size: contain !important;
     background-repeat: no-repeat !important;
     background-position: center !important;
+    animation: sparkleAnim 2s ease-in-out infinite !important;
 }
 
 [data-premium-box="true"] .sparkle-0 {
     top: -4px !important;
     right: -4px !important;
-    animation: sparkleFloat 2s ease-in-out infinite !important;
+    animation-delay: 0s !important;
 }
 
 [data-premium-box="true"] .sparkle-1 {
     bottom: -4px !important;
     left: -4px !important;
-    animation: sparkleFloat 2s ease-in-out infinite 0.5s !important;
+    animation-delay: 0.5s !important;
 }
 
 [data-premium-box="true"] .sparkle-2 {
@@ -288,7 +292,7 @@ style.textContent = `
     margin-top: -5px !important;
     width: 8px !important;
     height: 8px !important;
-    animation: sparkleFloat 2s ease-in-out infinite 1s !important;
+    animation-delay: 1s !important;
 }
 
 [data-premium-box="true"] .sparkle-3 {
@@ -296,13 +300,13 @@ style.textContent = `
     right: -4px !important;
     width: 8px !important;
     height: 8px !important;
-    animation: sparkleFloat 2s ease-in-out infinite 1.5s !important;
+    animation-delay: 1.5s !important;
 }
 
-/* Hover effect - faster animation */
+/* Hover effect */
 [data-premium-box="true"]:hover {
-    animation: gradientShift 2s ease infinite !important;
-    transform: scale(1.05) !important;
+    animation: premiumRainbow 2s ease-in-out infinite !important;
+    transform: scale(1.05);
     transition: transform 0.2s ease !important;
 }
 
@@ -311,6 +315,7 @@ style.textContent = `
     height: 20px !important;
     top: -24px !important;
 }
+
 .border.purp:hover { box-shadow: 0 0 12px #ff7600, 0 0 20px rgba(255, 118, 0, 0.3) !important; }
 
 .border.white {
