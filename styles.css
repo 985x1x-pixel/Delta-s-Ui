@@ -3523,8 +3523,636 @@ section.post .btn.formatted.secondary.disabled {
 }
 
 /* ==========================================
-   SETTINGS WINDOW - PREMIUM STYLING
+   SETTINGS WINDOW - ULTRA PREMIUM REDESIGN
    ========================================== */
+
+/* Main window - glassmorphism effect */
+.window.panel-black:has(.titleicon[src*="cog"]):has(.divide) {
+    background: linear-gradient(135deg, 
+        rgba(15, 15, 25, 0.95) 0%, 
+        rgba(25, 20, 40, 0.98) 50%,
+        rgba(15, 15, 25, 0.95) 100%) !important;
+    border: 1px solid rgba(168, 85, 247, 0.2) !important;
+    border-radius: 16px !important;
+    box-shadow: 
+        0 0 0 1px rgba(255, 255, 255, 0.05) inset,
+        0 25px 80px rgba(0, 0, 0, 0.6),
+        0 0 60px rgba(168, 85, 247, 0.15),
+        0 0 100px rgba(139, 92, 246, 0.1) !important;
+    overflow: hidden !important;
+    min-width: 580px !important;
+    backdrop-filter: blur(20px) !important;
+}
+
+/* Animated background gradient */
+.window.panel-black:has(.titleicon[src*="cog"]):has(.divide)::before {
+    content: '' !important;
+    position: absolute !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    height: 200px !important;
+    background: radial-gradient(ellipse at top, rgba(168, 85, 247, 0.15) 0%, transparent 70%) !important;
+    pointer-events: none !important;
+    z-index: 0 !important;
+}
+
+/* ==========================================
+   TITLE BAR - PREMIUM HEADER
+   ========================================== */
+
+.window.panel-black:has(.titleicon[src*="cog"]):has(.divide) > .titleframe {
+    background: linear-gradient(180deg, 
+        rgba(168, 85, 247, 0.15) 0%, 
+        rgba(168, 85, 247, 0.05) 50%,
+        transparent 100%) !important;
+    border-bottom: 1px solid rgba(168, 85, 247, 0.15) !important;
+    padding: 16px 20px !important;
+    position: relative !important;
+    z-index: 1 !important;
+}
+
+.window.panel-black:has(.titleicon[src*="cog"]):has(.divide) > .titleframe::after {
+    content: '' !important;
+    position: absolute !important;
+    bottom: 0 !important;
+    left: 10% !important;
+    right: 10% !important;
+    height: 1px !important;
+    background: linear-gradient(90deg, transparent, rgba(168, 85, 247, 0.5), transparent) !important;
+}
+
+/* Animated cog icon */
+@keyframes cogPulse {
+    0%, 100% { 
+        transform: rotate(0deg) scale(1);
+        filter: drop-shadow(0 0 8px rgba(168, 85, 247, 0.6));
+    }
+    25% { 
+        transform: rotate(90deg) scale(1.1);
+        filter: drop-shadow(0 0 15px rgba(168, 85, 247, 0.8));
+    }
+    50% { 
+        transform: rotate(180deg) scale(1);
+        filter: drop-shadow(0 0 8px rgba(168, 85, 247, 0.6));
+    }
+    75% { 
+        transform: rotate(270deg) scale(1.1);
+        filter: drop-shadow(0 0 15px rgba(168, 85, 247, 0.8));
+    }
+}
+
+.window.panel-black:has(.titleicon[src*="cog"]):has(.divide) > .titleframe .titleicon {
+    animation: cogPulse 8s ease-in-out infinite !important;
+    width: 24px !important;
+    height: 24px !important;
+}
+
+.window.panel-black:has(.titleicon[src*="cog"]):has(.divide) > .titleframe .title > div {
+    color: #fff !important;
+    font-size: 18px !important;
+    font-weight: 800 !important;
+    letter-spacing: 0.5px !important;
+    text-shadow: 0 0 20px rgba(168, 85, 247, 0.5) !important;
+    background: linear-gradient(90deg, #fff 0%, #c4b5fd 50%, #fff 100%) !important;
+    -webkit-background-clip: text !important;
+    -webkit-text-fill-color: transparent !important;
+    background-clip: text !important;
+}
+
+/* Close buttons */
+.window.panel-black:has(.titleicon[src*="cog"]):has(.divide) > .titleframe .btn.black {
+    width: 28px !important;
+    height: 28px !important;
+    border-radius: 8px !important;
+    opacity: 0.4 !important;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    background: rgba(255, 255, 255, 0.05) !important;
+}
+
+.window.panel-black:has(.titleicon[src*="cog"]):has(.divide) > .titleframe .btn.black:hover {
+    opacity: 1 !important;
+    background: rgba(168, 85, 247, 0.3) !important;
+    transform: scale(1.15) rotate(90deg) !important;
+    box-shadow: 0 0 20px rgba(168, 85, 247, 0.5) !important;
+}
+
+/* ==========================================
+   SIDEBAR - NAVIGATION TABS
+   ========================================== */
+
+.window.panel-black:has(.titleicon[src*="cog"]):has(.divide) .divide {
+    display: flex !important;
+    gap: 0 !important;
+    position: relative !important;
+    z-index: 1 !important;
+}
+
+.window.panel-black:has(.titleicon[src*="cog"]):has(.divide) .divide > div:first-child {
+    background: linear-gradient(180deg, 
+        rgba(0, 0, 0, 0.4) 0%, 
+        rgba(0, 0, 0, 0.2) 100%) !important;
+    padding: 16px 10px !important;
+    border-right: 1px solid rgba(168, 85, 247, 0.1) !important;
+    min-width: 130px !important;
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 6px !important;
+}
+
+/* Category tabs - pill style */
+.window.panel-black:has(.titleicon[src*="cog"]):has(.divide) .choice {
+    padding: 12px 16px !important;
+    border-radius: 10px !important;
+    font-size: 13px !important;
+    font-weight: 600 !important;
+    color: #8892a6 !important;
+    cursor: pointer !important;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    border: 1px solid transparent !important;
+    position: relative !important;
+    overflow: hidden !important;
+    text-align: center !important;
+}
+
+/* Hover glow effect */
+.window.panel-black:has(.titleicon[src*="cog"]):has(.divide) .choice::before {
+    content: '' !important;
+    position: absolute !important;
+    inset: 0 !important;
+    background: radial-gradient(circle at center, rgba(168, 85, 247, 0.3) 0%, transparent 70%) !important;
+    opacity: 0 !important;
+    transition: opacity 0.3s ease !important;
+}
+
+.window.panel-black:has(.titleicon[src*="cog"]):has(.divide) .choice:hover {
+    color: #c4b5fd !important;
+    background: rgba(168, 85, 247, 0.1) !important;
+    transform: translateX(4px) !important;
+}
+
+.window.panel-black:has(.titleicon[src*="cog"]):has(.divide) .choice:hover::before {
+    opacity: 1 !important;
+}
+
+/* Active tab - glowing */
+.window.panel-black:has(.titleicon[src*="cog"]):has(.divide) .choice.active {
+    color: #fff !important;
+    background: linear-gradient(135deg, 
+        rgba(168, 85, 247, 0.4) 0%, 
+        rgba(139, 92, 246, 0.3) 100%) !important;
+    border: 1px solid rgba(168, 85, 247, 0.5) !important;
+    box-shadow: 
+        0 0 20px rgba(168, 85, 247, 0.4),
+        0 0 40px rgba(168, 85, 247, 0.2),
+        inset 0 1px 0 rgba(255, 255, 255, 0.1) !important;
+    transform: scale(1.02) !important;
+}
+
+/* Active indicator dot */
+.window.panel-black:has(.titleicon[src*="cog"]):has(.divide) .choice.active::after {
+    content: '' !important;
+    position: absolute !important;
+    right: 10px !important;
+    top: 50% !important;
+    transform: translateY(-50%) !important;
+    width: 6px !important;
+    height: 6px !important;
+    background: #a855f7 !important;
+    border-radius: 50% !important;
+    box-shadow: 0 0 10px #a855f7, 0 0 20px #a855f7 !important;
+    animation: activePulse 2s ease-in-out infinite !important;
+}
+
+@keyframes activePulse {
+    0%, 100% { opacity: 1; transform: translateY(-50%) scale(1); }
+    50% { opacity: 0.6; transform: translateY(-50%) scale(1.3); }
+}
+
+/* ==========================================
+   CONTENT AREA - SETTINGS PANEL
+   ========================================== */
+
+.window.panel-black:has(.titleicon[src*="cog"]):has(.divide) .menu.panel-black {
+    background: transparent !important;
+    padding: 20px 24px !important;
+    flex: 1 !important;
+    max-height: 480px !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+}
+
+/* Custom scrollbar */
+.window.panel-black:has(.titleicon[src*="cog"]):has(.divide) .menu.scrollbar::-webkit-scrollbar {
+    width: 8px !important;
+}
+
+.window.panel-black:has(.titleicon[src*="cog"]):has(.divide) .menu.scrollbar::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.3) !important;
+    border-radius: 4px !important;
+}
+
+.window.panel-black:has(.titleicon[src*="cog"]):has(.divide) .menu.scrollbar::-webkit-scrollbar-thumb {
+    background: linear-gradient(180deg, #a855f7 0%, #7c3aed 100%) !important;
+    border-radius: 4px !important;
+    border: 2px solid transparent !important;
+    background-clip: padding-box !important;
+}
+
+.window.panel-black:has(.titleicon[src*="cog"]):has(.divide) .menu.scrollbar::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(180deg, #c084fc 0%, #a855f7 100%) !important;
+}
+
+/* Main section header */
+.window.panel-black:has(.titleicon[src*="cog"]):has(.divide) .menu h3.textprimary {
+    color: #fff !important;
+    font-size: 22px !important;
+    font-weight: 800 !important;
+    margin: 0 0 24px 0 !important;
+    padding-bottom: 16px !important;
+    border-bottom: 2px solid rgba(168, 85, 247, 0.3) !important;
+    text-shadow: 0 0 30px rgba(168, 85, 247, 0.5) !important;
+    position: relative !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 12px !important;
+}
+
+.window.panel-black:has(.titleicon[src*="cog"]):has(.divide) .menu h3.textprimary::before {
+    content: '⚙️' !important;
+    font-size: 24px !important;
+}
+
+.window.panel-black:has(.titleicon[src*="cog"]):has(.divide) .menu h3.textprimary::after {
+    content: '' !important;
+    position: absolute !important;
+    bottom: -2px !important;
+    left: 0 !important;
+    width: 60px !important;
+    height: 2px !important;
+    background: linear-gradient(90deg, #a855f7, #7c3aed) !important;
+    border-radius: 1px !important;
+    box-shadow: 0 0 10px #a855f7 !important;
+}
+
+/* ==========================================
+   SETTINGS GRID - CARD LAYOUT
+   ========================================== */
+
+.window.panel-black:has(.titleicon[src*="cog"]):has(.divide) .settings {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 8px !important;
+}
+
+/* Section headers as cards */
+.window.panel-black:has(.titleicon[src*="cog"]):has(.divide) .settings .textprimary {
+    color: #c4b5fd !important;
+    font-size: 13px !important;
+    font-weight: 700 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 1.5px !important;
+    margin: 24px 0 12px 0 !important;
+    padding: 12px 16px !important;
+    background: linear-gradient(90deg, 
+        rgba(168, 85, 247, 0.15) 0%, 
+        transparent 100%) !important;
+    border-left: 3px solid #a855f7 !important;
+    border-radius: 0 8px 8px 0 !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 10px !important;
+    box-shadow: 0 0 20px rgba(168, 85, 247, 0.1) !important;
+}
+
+.window.panel-black:has(.titleicon[src*="cog"]):has(.divide) .settings .textprimary:first-of-type {
+    margin-top: 0 !important;
+}
+
+/* Individual setting rows */
+.window.panel-black:has(.titleicon[src*="cog"]):has(.divide) .settings > div:not(.btn):not(.textprimary) {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    padding: 14px 18px !important;
+    background: rgba(30, 25, 45, 0.5) !important;
+    border: 1px solid rgba(168, 85, 247, 0.1) !important;
+    border-radius: 12px !important;
+    margin: 4px 0 !important;
+    transition: all 0.3s ease !important;
+    color: #b8c0d0 !important;
+    font-size: 13px !important;
+    font-weight: 500 !important;
+}
+
+.window.panel-black:has(.titleicon[src*="cog"]):has(.divide) .settings > div:not(.btn):not(.textprimary):hover {
+    background: rgba(168, 85, 247, 0.08) !important;
+    border-color: rgba(168, 85, 247, 0.25) !important;
+    transform: translateX(4px) !important;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2) !important;
+}
+
+.window.panel-black:has(.titleicon[src*="cog"]):has(.divide) .settings small.textgrey {
+    color: #6b7280 !important;
+    font-size: 10px !important;
+    font-weight: 400 !important;
+}
+
+/* ==========================================
+   PREMIUM TOGGLE SWITCHES
+   ========================================== */
+
+.window.panel-black:has(.titleicon[src*="cog"]):has(.divide) .btn.checkbox {
+    width: 52px !important;
+    height: 28px !important;
+    border-radius: 14px !important;
+    background: linear-gradient(180deg, 
+        rgba(40, 35, 55, 0.8) 0%, 
+        rgba(30, 25, 45, 0.8) 100%) !important;
+    border: 2px solid rgba(100, 90, 120, 0.4) !important;
+    position: relative !important;
+    cursor: pointer !important;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.3) !important;
+}
+
+.window.panel-black:has(.titleicon[src*="cog"]):has(.divide) .btn.checkbox::before {
+    content: '' !important;
+    position: absolute !important;
+    inset: 2px !important;
+    background: linear-gradient(180deg, 
+        rgba(60, 50, 80, 0.3) 0%, 
+        transparent 100%) !important;
+    border-radius: 12px !important;
+    opacity: 0 !important;
+    transition: opacity 0.3s ease !important;
+}
+
+.window.panel-black:has(.titleicon[src*="cog"]):has(.divide) .btn.checkbox::after {
+    content: '' !important;
+    position: absolute !important;
+    width: 20px !important;
+    height: 20px !important;
+    background: linear-gradient(135deg, #6b7280 0%, #4b5563 100%) !important;
+    border-radius: 50% !important;
+    top: 2px !important;
+    left: 2px !important;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    box-shadow: 
+        0 2px 8px rgba(0, 0, 0, 0.4),
+        inset 0 1px 0 rgba(255, 255, 255, 0.2) !important;
+}
+
+/* Active toggle - glowing */
+.window.panel-black:has(.titleicon[src*="cog"]):has(.divide) .btn.checkbox.active {
+    background: linear-gradient(180deg, 
+        rgba(168, 85, 247, 0.5) 0%, 
+        rgba(139, 92, 246, 0.4) 100%) !important;
+    border-color: rgba(168, 85, 247, 0.7) !important;
+    box-shadow: 
+        0 0 20px rgba(168, 85, 247, 0.4),
+        0 0 40px rgba(168, 85, 247, 0.2),
+        inset 0 2px 4px rgba(0, 0, 0, 0.2) !important;
+}
+
+.window.panel-black:has(.titleicon[src*="cog"]):has(.divide) .btn.checkbox.active::before {
+    opacity: 1 !important;
+}
+
+.window.panel-black:has(.titleicon[src*="cog"]):has(.divide) .btn.checkbox.active::after {
+    left: 26px !important;
+    background: linear-gradient(135deg, #e9d5ff 0%, #c4b5fd 50%, #a855f7 100%) !important;
+    box-shadow: 
+        0 0 15px rgba(168, 85, 247, 0.8),
+        0 2px 8px rgba(0, 0, 0, 0.3),
+        inset 0 1px 0 rgba(255, 255, 255, 0.4) !important;
+}
+
+/* Toggle hover effect */
+.window.panel-black:has(.titleicon[src*="cog"]):has(.divide) .btn.checkbox:hover::after {
+    transform: scale(1.1) !important;
+}
+
+/* ==========================================
+   PREMIUM RANGE SLIDERS
+   ========================================== */
+
+.window.panel-black:has(.titleicon[src*="cog"]):has(.divide) input[type="range"] {
+    -webkit-appearance: none !important;
+    appearance: none !important;
+    width: 100% !important;
+    height: 8px !important;
+    background: linear-gradient(90deg, 
+        rgba(168, 85, 247, 0.3) 0%, 
+        rgba(60, 50, 80, 0.5) 100%) !important;
+    border-radius: 4px !important;
+    cursor: pointer !important;
+    border: 1px solid rgba(168, 85, 247, 0.2) !important;
+    margin: 8px 0 !important;
+    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.3) !important;
+}
+
+.window.panel-black:has(.titleicon[src*="cog"]):has(.divide) input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none !important;
+    appearance: none !important;
+    width: 22px !important;
+    height: 22px !important;
+    background: linear-gradient(135deg, #e9d5ff 0%, #c4b5fd 30%, #a855f7 100%) !important;
+    border-radius: 50% !important;
+    cursor: pointer !important;
+    border: 3px solid rgba(255, 255, 255, 0.3) !important;
+    box-shadow: 
+        0 0 15px rgba(168, 85, 247, 0.6),
+        0 4px 10px rgba(0, 0, 0, 0.4),
+        inset 0 1px 0 rgba(255, 255, 255, 0.4) !important;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+.window.panel-black:has(.titleicon[src*="cog"]):has(.divide) input[type="range"]::-webkit-slider-thumb:hover {
+    transform: scale(1.2) !important;
+    box-shadow: 
+        0 0 25px rgba(168, 85, 247, 0.8),
+        0 0 50px rgba(168, 85, 247, 0.4),
+        0 4px 15px rgba(0, 0, 0, 0.5) !important;
+}
+
+/* ==========================================
+   PREMIUM SELECT DROPDOWN
+   ========================================== */
+
+.window.panel-black:has(.titleicon[src*="cog"]):has(.divide) select {
+    background: linear-gradient(180deg, 
+        rgba(40, 35, 55, 0.9) 0%, 
+        rgba(30, 25, 45, 0.9) 100%) !important;
+    border: 2px solid rgba(168, 85, 247, 0.3) !important;
+    border-radius: 10px !important;
+    padding: 10px 16px !important;
+    color: #e2e8f0 !important;
+    font-size: 13px !important;
+    font-weight: 500 !important;
+    cursor: pointer !important;
+    outline: none !important;
+    transition: all 0.3s ease !important;
+    min-width: 160px !important;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3) !important;
+}
+
+.window.panel-black:has(.titleicon[src*="cog"]):has(.divide) select:hover {
+    border-color: rgba(168, 85, 247, 0.5) !important;
+    box-shadow: 0 0 20px rgba(168, 85, 247, 0.2), 0 4px 12px rgba(0, 0, 0, 0.3) !important;
+}
+
+.window.panel-black:has(.titleicon[src*="cog"]):has(.divide) select:focus {
+    border-color: #a855f7 !important;
+    box-shadow: 0 0 30px rgba(168, 85, 247, 0.4), 0 4px 12px rgba(0, 0, 0, 0.3) !important;
+}
+
+.window.panel-black:has(.titleicon[src*="cog"]):has(.divide) select option {
+    background: #1e1b2e !important;
+    color: #e2e8f0 !important;
+    padding: 10px !important;
+}
+
+/* ==========================================
+   PREMIUM TEXT INPUTS
+   ========================================== */
+
+.window.panel-black:has(.titleicon[src*="cog"]):has(.divide) input[type="text"],
+.window.panel-black:has(.titleicon[src*="cog"]):has(.divide) input[type="number"] {
+    background: linear-gradient(180deg, 
+        rgba(20, 18, 30, 0.9) 0%, 
+        rgba(30, 25, 45, 0.9) 100%) !important;
+    border: 2px solid rgba(168, 85, 247, 0.2) !important;
+    border-radius: 10px !important;
+    padding: 10px 14px !important;
+    color: #e2e8f0 !important;
+    font-size: 13px !important;
+    font-weight: 500 !important;
+    outline: none !important;
+    transition: all 0.3s ease !important;
+    width: 100% !important;
+    max-width: 160px !important;
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.2) !important;
+}
+
+.window.panel-black:has(.titleicon[src*="cog"]):has(.divide) input[type="text"]::placeholder,
+.window.panel-black:has(.titleicon[src*="cog"]):has(.divide) input[type="number"]::placeholder {
+    color: #6b7280 !important;
+}
+
+.window.panel-black:has(.titleicon[src*="cog"]):has(.divide) input[type="text"]:focus,
+.window.panel-black:has(.titleicon[src*="cog"]):has(.divide) input[type="number"]:focus {
+    border-color: #a855f7 !important;
+    box-shadow: 
+        0 0 20px rgba(168, 85, 247, 0.3),
+        inset 0 2px 4px rgba(0, 0, 0, 0.2) !important;
+}
+
+/* ==========================================
+   PREMIUM ACTION BUTTONS
+   ========================================== */
+
+.window.panel-black:has(.titleicon[src*="cog"]):has(.divide) .btn.blue {
+    background: linear-gradient(135deg, 
+        rgba(59, 130, 246, 0.4) 0%, 
+        rgba(37, 99, 235, 0.3) 100%) !important;
+    border: 2px solid rgba(59, 130, 246, 0.5) !important;
+    border-radius: 10px !important;
+    padding: 10px 20px !important;
+    color: #93c5fd !important;
+    font-size: 12px !important;
+    font-weight: 700 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.5px !important;
+    cursor: pointer !important;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    position: relative !important;
+    overflow: hidden !important;
+}
+
+.window.panel-black:has(.titleicon[src*="cog"]):has(.divide) .btn.blue::before {
+    content: '' !important;
+    position: absolute !important;
+    top: 0 !important;
+    left: -100% !important;
+    width: 100% !important;
+    height: 100% !important;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent) !important;
+    transition: left 0.5s ease !important;
+}
+
+.window.panel-black:has(.titleicon[src*="cog"]):has(.divide) .btn.blue:hover {
+    background: linear-gradient(135deg, 
+        rgba(59, 130, 246, 0.6) 0%, 
+        rgba(37, 99, 235, 0.5) 100%) !important;
+    border-color: rgba(59, 130, 246, 0.8) !important;
+    box-shadow: 
+        0 0 25px rgba(59, 130, 246, 0.5),
+        0 8px 25px rgba(0, 0, 0, 0.3) !important;
+    transform: translateY(-2px) !important;
+    color: #fff !important;
+}
+
+.window.panel-black:has(.titleicon[src*="cog"]):has(.divide) .btn.blue:hover::before {
+    left: 100% !important;
+}
+
+.window.panel-black:has(.titleicon[src*="cog"]):has(.divide) .btn.orange {
+    background: linear-gradient(135deg, 
+        rgba(249, 115, 22, 0.4) 0%, 
+        rgba(234, 88, 12, 0.3) 100%) !important;
+    border: 2px solid rgba(249, 115, 22, 0.5) !important;
+    border-radius: 10px !important;
+    padding: 10px 20px !important;
+    color: #fdba74 !important;
+    font-size: 12px !important;
+    font-weight: 700 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.5px !important;
+    cursor: pointer !important;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    position: relative !important;
+    overflow: hidden !important;
+}
+
+.window.panel-black:has(.titleicon[src*="cog"]):has(.divide) .btn.orange::before {
+    content: '' !important;
+    position: absolute !important;
+    top: 0 !important;
+    left: -100% !important;
+    width: 100% !important;
+    height: 100% !important;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent) !important;
+    transition: left 0.5s ease !important;
+}
+
+.window.panel-black:has(.titleicon[src*="cog"]):has(.divide) .btn.orange:hover {
+    background: linear-gradient(135deg, 
+        rgba(249, 115, 22, 0.6) 0%, 
+        rgba(234, 88, 12, 0.5) 100%) !important;
+    border-color: rgba(249, 115, 22, 0.8) !important;
+    box-shadow: 
+        0 0 25px rgba(249, 115, 22, 0.5),
+        0 8px 25px rgba(0, 0, 0, 0.3) !important;
+    transform: translateY(-2px) !important;
+    color: #fff !important;
+}
+
+.window.panel-black:has(.titleicon[src*="cog"]):has(.divide) .btn.orange:hover::before {
+    left: 100% !important;
+}
+
+/* ==========================================
+   SECTION ICONS
+   ========================================== */
+
+.window.panel-black:has(.titleicon[src*="cog"]):has(.divide) .settings .textprimary::before {
+    font-size: 16px !important;
+    margin-right: 4px !important;
+}
+
+/* Match section names */
+.window.panel-black:has(.titleicon[src*="cog"]):has(.divide) .settings .textprimary:first-of-type::before { content: '🎓' !important; }
 
 `;
 document.head.appendChild(style);
