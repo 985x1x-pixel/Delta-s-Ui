@@ -17,6 +17,8 @@
     var chatInput = null;
     var channelSelect = null;
     var controlsCreated = false;
+    var initAttempts = 0;
+    var MAX_INIT_ATTEMPTS = 50;
 
     function getDefault() {
         return {
@@ -255,9 +257,11 @@
         controls.style.left = (saved.x + saved.width - 76) + 'px';
         controls.style.top = (saved.y + 4) + 'px';
 
-        sizeLabel.style.left = (saved.x + saved.width / 2 - 40) + 'px';
-        sizeLabel.style.top = (saved.y + saved.height / 2 - 12) + 'px';
-        sizeLabel.textContent = Math.round(saved.width) + ' × ' + Math.round(saved.height);
+        if (sizeLabel) {
+            sizeLabel.style.left = (saved.x + saved.width / 2 - 40) + 'px';
+            sizeLabel.style.top = (saved.y + saved.height / 2 - 12) + 'px';
+            sizeLabel.textContent = Math.round(saved.width) + ' × ' + Math.round(saved.height);
+        }
     }
 
     function setInteracting(active) {
@@ -290,8 +294,17 @@
         return svg;
     }
 
+    function removeControls() {
+        var oldControls = document.getElementById('chat-controls');
+        var oldLabel = document.getElementById('chat-size-label');
+        if (oldControls) oldControls.remove();
+        if (oldLabel) oldLabel.remove();
+        controlsCreated = false;
+    }
+
     function createControls() {
-        if (controlsCreated) return;
+        // Always remove old controls first
+        removeControls();
 
         var controls = document.createElement('div');
         controls.id = 'chat-controls';
@@ -333,6 +346,7 @@
         document.body.appendChild(sizeLabel);
 
         controlsCreated = true;
+        console.log('[Chat Resizer] Controls created');
     }
 
     function onMoveStart(e) {
@@ -411,25 +425,6 @@
         state = null;
     }
 
-    function cleanupOldStuff() {
-        var oldIds = [
-            'chat-wrapper', 'chat-resize-overlay', 'chat-drag-bar',
-            'chat-reset-corner', 'chat-move-tl', 'chat-move-tr',
-            'chat-move-bl', 'chat-move-br', 'chat-move-handle',
-            'chat-resize-tr', 'chat-resize-bl', 'chat-resize-br',
-            'chat-resize-handle', 'chat-reset-btn', 'chat-edge-n',
-            'chat-edge-s', 'chat-edge-w', 'chat-edge-e',
-            'chat-size-label', 'chat-controls'
-        ];
-
-        for (var i = 0; i < oldIds.length; i++) {
-            var el = document.getElementById(oldIds[i]);
-            if (el) el.remove();
-        }
-
-        controlsCreated = false;
-    }
-
     function findElements() {
         chat = document.getElementById('chat');
         chatInput = document.getElementById('chatinput');
@@ -449,19 +444,50 @@
         }
     }
 
+    function verifyControls() {
+        var controls = document.getElementById('chat-controls');
+        var moveHandle = document.getElementById('chat-move-handle');
+        var resetBtn = document.getElementById('chat-reset-btn');
+        var resizeHandle = document.getElementById('chat-resize-handle');
+
+        // Check if all controls exist and are in DOM
+        if (!controls || !document.body.contains(controls)) return false;
+        if (!moveHandle || !resetBtn || !resizeHandle) return false;
+
+        return true;
+    }
+
     function setup() {
-        if (!findElements()) return;
+        if (!findElements()) {
+            initAttempts++;
+            if (initAttempts < MAX_INIT_ATTEMPTS) {
+                setTimeout(setup, 200);
+            }
+            return;
+        }
 
         ensureClasses();
 
-        if (!controlsCreated) {
-            cleanupOldStuff();
-            findElements();
-            ensureClasses();
+        // Always verify controls exist, recreate if missing
+        if (!verifyControls()) {
             createControls();
         }
 
         updatePositions();
+    }
+
+    function checkLoop() {
+        if (findElements()) {
+            ensureClasses();
+
+            // Recreate controls if they're missing
+            if (!verifyControls()) {
+                console.log('[Chat Resizer] Controls missing, recreating...');
+                createControls();
+            }
+
+            updatePositions();
+        }
     }
 
     function initChatResizer() {
@@ -476,14 +502,13 @@
             updatePositions();
         });
 
-        setInterval(function() {
-            if (findElements()) {
-                ensureClasses();
-                updatePositions();
-            }
-        }, 100);
+        // Main check loop - checks frequently
+        setInterval(checkLoop, 500);
 
-        setTimeout(setup, 1500);
+        // Initial setup with delay
+        setTimeout(setup, 1000);
+        setTimeout(setup, 2000);
+        setTimeout(setup, 3000);
 
         console.log('[Chat Resizer] Initialized');
     }
@@ -497,5 +522,6 @@
 
     // Expose for manual init if needed
     window.initChatResizer = initChatResizer;
+    window.recreateChatControls = createControls;
 
 })();
