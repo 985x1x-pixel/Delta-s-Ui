@@ -871,150 +871,436 @@ style.textContent = `
 }
 
 /* ==========================================
-   DELTA SETTINGS WINDOW
+   DELTA SETTINGS WINDOW - REVAMPED
    ========================================== */
+
 #delta-settings-window {
     position: fixed;
-    z-index: 10000;
-    left: 50%; top: 50%;
+    z-index: 100000;
+    left: 50%;
+    top: 50%;
     transform: translate(-50%, -50%);
-    font-family: inherit;
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
     animation: deltaBounceIn 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
 }
 
 #delta-settings-window .window {
-    background: linear-gradient(180deg, rgba(28, 28, 40, 0.98) 0%, rgba(18, 18, 28, 0.99) 100%);
-    border-radius: 12px;
-    box-shadow: 0 0 0 1px rgba(255,255,255,0.1), 0 4px 24px rgba(0,0,0,0.8), 0 0 40px rgba(100, 100, 255, 0.1);
-    border: 1px solid rgba(255,255,255,0.08);
-    min-width: 420px;
-    max-width: 480px;
-    max-height: 75vh;
+    background: linear-gradient(180deg, rgba(22, 22, 32, 0.98) 0%, rgba(14, 14, 22, 0.99) 100%);
+    border-radius: 16px;
+    box-shadow: 
+        0 0 0 1px rgba(255, 255, 255, 0.1),
+        0 8px 40px rgba(0, 0, 0, 0.8),
+        0 0 80px rgba(99, 102, 241, 0.15);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    min-width: 520px;
+    max-width: 580px;
+    max-height: 85vh;
     display: flex;
     flex-direction: column;
     overflow: hidden;
 }
 
+/* ===== Title Bar ===== */
 #delta-settings-window .titleframe {
     background: linear-gradient(90deg, #ff6b35 0%, #f7c948 17%, #6bcb77 33%, #4d96ff 50%, #9b59b6 67%, #ff6b9d 83%, #ff6b35 100%);
     background-size: 200% 100%;
     animation: rainbowSlide 4s linear infinite;
-    padding: 14px 16px;
+    padding: 16px 20px;
     display: flex;
     align-items: center;
     justify-content: space-between;
     cursor: move;
-    border-radius: 12px 12px 0 0;
+    position: relative;
+}
+
+#delta-settings-window .titleframe::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.5), transparent);
 }
 
 #delta-settings-window .titleframe .title {
     color: #fff;
     font-weight: 800;
-    font-size: 17px;
-    text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+    font-size: 18px;
+    text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.5);
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 12px;
     letter-spacing: 0.5px;
 }
 
 #delta-settings-window .titleframe .title-delta {
-    font-size: 22px;
+    font-size: 26px;
     font-weight: 900;
     animation: deltaFloat 2s ease-in-out infinite;
+    text-shadow: 0 0 20px rgba(255, 255, 255, 0.6);
+}
+
+#delta-settings-window .titleframe .title-version {
+    font-size: 11px;
+    font-weight: 600;
+    background: rgba(0, 0, 0, 0.3);
+    padding: 3px 8px;
+    border-radius: 10px;
+    opacity: 0.8;
 }
 
 #delta-settings-window .titleframe .close-btn {
-    background: rgba(0,0,0,0.25);
-    border: 1px solid rgba(255,255,255,0.2);
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid rgba(255, 255, 255, 0.2);
     color: #fff;
-    font-size: 16px;
+    font-size: 18px;
     cursor: pointer;
-    padding: 4px 10px;
-    border-radius: 6px;
-    transition: background 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    transition: all 0.2s ease;
     font-weight: bold;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(4px);
 }
 
 #delta-settings-window .titleframe .close-btn:hover {
-    background: rgba(220, 38, 38, 0.8);
-    border-color: rgba(220, 38, 38, 1);
-    transform: scale(1.1) rotate(90deg);
+    background: rgba(239, 68, 68, 0.9);
+    border-color: #ef4444;
+    transform: rotate(90deg) scale(1.1);
+    box-shadow: 0 0 20px rgba(239, 68, 68, 0.5);
 }
 
-#delta-settings-window .titleframe .close-btn:active { transform: scale(0.95) rotate(90deg); }
+/* ===== Tab Navigation ===== */
+#delta-settings-window .tab-nav {
+    display: flex;
+    background: rgba(0, 0, 0, 0.3);
+    padding: 8px 12px;
+    gap: 6px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
 
+#delta-settings-window .tab-btn {
+    flex: 1;
+    padding: 10px 12px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 8px;
+    color: #888;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.25s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+#delta-settings-window .tab-btn:hover {
+    background: rgba(255, 255, 255, 0.08);
+    color: #ccc;
+    transform: translateY(-2px);
+}
+
+#delta-settings-window .tab-btn.active {
+    background: linear-gradient(180deg, rgba(245, 194, 71, 0.2) 0%, rgba(245, 194, 71, 0.1) 100%);
+    border-color: rgba(245, 194, 71, 0.4);
+    color: #f5c247;
+    box-shadow: 0 4px 15px rgba(245, 194, 71, 0.15);
+}
+
+#delta-settings-window .tab-btn .tab-icon {
+    font-size: 14px;
+}
+
+/* ===== Content Area ===== */
 #delta-settings-window .content {
-    padding: 16px 18px;
+    padding: 0;
     overflow-y: auto;
-    max-height: calc(75vh - 60px);
+    max-height: calc(85vh - 130px);
     scrollbar-width: thin;
-    scrollbar-color: rgba(255,255,255,0.2) transparent;
+    scrollbar-color: rgba(245, 194, 71, 0.3) transparent;
 }
 
-#delta-settings-window .content::-webkit-scrollbar { width: 8px; }
-#delta-settings-window .content::-webkit-scrollbar-track { background: rgba(0,0,0,0.2); border-radius: 4px; }
+#delta-settings-window .content::-webkit-scrollbar {
+    width: 8px;
+}
+
+#delta-settings-window .content::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.2);
+}
+
 #delta-settings-window .content::-webkit-scrollbar-thumb {
-    background: linear-gradient(180deg, #ff6b35, #9b59b6);
+    background: linear-gradient(180deg, #f5c247, #9b59b6);
     border-radius: 4px;
-    border: 1px solid rgba(0,0,0,0.3);
 }
-#delta-settings-window .content::-webkit-scrollbar-thumb:hover { background: linear-gradient(180deg, #ff8c5a, #b370d4); }
 
+/* ===== Tab Panels ===== */
+#delta-settings-window .tab-panel {
+    display: none;
+    padding: 20px;
+    animation: deltaFadeIn 0.3s ease;
+}
+
+#delta-settings-window .tab-panel.active {
+    display: block;
+}
+
+/* ===== Section Titles ===== */
 #delta-settings-window .section-title {
     color: #f5c247;
-    font-size: 13px;
+    font-size: 11px;
     font-weight: 700;
-    margin: 18px 0 12px 0;
-    padding: 8px 12px;
-    background: linear-gradient(90deg, rgba(245, 194, 71, 0.15) 0%, transparent 100%);
+    margin: 20px 0 14px 0;
+    padding: 10px 14px;
+    background: linear-gradient(90deg, rgba(245, 194, 71, 0.12) 0%, transparent 60%);
     border-left: 3px solid #f5c247;
-    border-radius: 0 6px 6px 0;
+    border-radius: 0 8px 8px 0;
     text-transform: uppercase;
-    letter-spacing: 1px;
-    animation: deltaSlideInLeft 0.3s ease backwards;
+    letter-spacing: 1.5px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
 }
 
-#delta-settings-window .section-title:first-child { margin-top: 0; }
+#delta-settings-window .section-title:first-child {
+    margin-top: 0;
+}
 
-#delta-settings-window .color-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+#delta-settings-window .section-title .section-icon {
+    font-size: 14px;
+}
+
+/* ===== Toggle Rows ===== */
+#delta-settings-window .toggle-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+#delta-settings-window .toggle-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 16px;
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 10px;
+    transition: all 0.25s ease;
+    position: relative;
+}
+
+#delta-settings-window .toggle-row:hover {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(255, 255, 255, 0.1);
+    transform: translateX(4px);
+}
+
+#delta-settings-window .toggle-row::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 3px;
+    background: linear-gradient(180deg, #f5c247, #6366f1);
+    border-radius: 3px 0 0 3px;
+    opacity: 0;
+    transition: opacity 0.25s ease;
+}
+
+#delta-settings-window .toggle-row:hover::before {
+    opacity: 1;
+}
+
+#delta-settings-window .toggle-info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex: 1;
+}
+
+#delta-settings-window .toggle-icon {
+    width: 36px;
+    height: 36px;
+    background: linear-gradient(135deg, rgba(245, 194, 71, 0.15), rgba(99, 102, 241, 0.15));
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    flex-shrink: 0;
+}
+
+#delta-settings-window .toggle-text {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+#delta-settings-window .toggle-label {
+    color: #e4e4e7;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+#delta-settings-window .toggle-desc {
+    color: #71717a;
+    font-size: 11px;
+    font-weight: 400;
+}
+
+/* ===== Toggle Switch ===== */
+#delta-settings-window .toggle-switch {
+    position: relative;
+    width: 48px;
+    height: 26px;
+    flex-shrink: 0;
+}
+
+#delta-settings-window .toggle-switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+#delta-settings-window .toggle-slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 26px;
+    transition: all 0.3s ease;
+}
+
+#delta-settings-window .toggle-slider::before {
+    position: absolute;
+    content: '';
+    height: 20px;
+    width: 20px;
+    left: 2px;
+    bottom: 2px;
+    background: #71717a;
+    border-radius: 50%;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+}
+
+#delta-settings-window .toggle-switch input:checked + .toggle-slider {
+    background: linear-gradient(135deg, #f5c247, #22c55e);
+    border-color: rgba(245, 194, 71, 0.5);
+    box-shadow: 0 0 15px rgba(245, 194, 71, 0.3);
+}
+
+#delta-settings-window .toggle-switch input:checked + .toggle-slider::before {
+    transform: translateX(22px);
+    background: #fff;
+}
+
+/* ===== Info Tooltip ===== */
+#delta-settings-window .info-btn {
+    width: 20px;
+    height: 20px;
+    background: rgba(99, 102, 241, 0.2);
+    border: 1px solid rgba(99, 102, 241, 0.3);
+    border-radius: 50%;
+    color: #818cf8;
+    font-size: 11px;
+    font-weight: 700;
+    cursor: help;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-left: 8px;
+    transition: all 0.2s ease;
+    position: relative;
+}
+
+#delta-settings-window .info-btn:hover {
+    background: rgba(99, 102, 241, 0.4);
+    transform: scale(1.1);
+}
+
+#delta-settings-window .info-btn .tooltip {
+    position: absolute;
+    bottom: calc(100% + 8px);
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(20, 20, 30, 0.98);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 8px;
+    padding: 10px 14px;
+    color: #e4e4e7;
+    font-size: 11px;
+    font-weight: 400;
+    white-space: nowrap;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.2s ease;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+    z-index: 1000;
+    max-width: 250px;
+    white-space: normal;
+    text-align: center;
+    line-height: 1.4;
+}
+
+#delta-settings-window .info-btn .tooltip::after {
+    content: '';
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    border: 6px solid transparent;
+    border-top-color: rgba(255, 255, 255, 0.15);
+}
+
+#delta-settings-window .info-btn:hover .tooltip {
+    opacity: 1;
+    visibility: visible;
+    transform: translateX(-50%) translateY(-4px);
+}
+
+/* ===== Color Grid ===== */
+#delta-settings-window .color-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+}
 
 #delta-settings-window .color-row {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 10px 12px;
-    background: rgba(255,255,255,0.03);
-    border: 1px solid rgba(255,255,255,0.05);
-    border-radius: 8px;
-    transition: background 0.25s ease, border-color 0.25s ease, transform 0.25s ease;
-    animation: deltaFadeIn 0.3s ease backwards;
-    position: relative;
-    overflow: hidden;
+    padding: 12px 14px;
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 10px;
+    transition: all 0.25s ease;
 }
-
-#delta-settings-window .color-row::before {
-    content: '';
-    position: absolute;
-    left: 0; top: 0;
-    height: 100%; width: 3px;
-    background: linear-gradient(180deg, #ff6b35, #9b59b6);
-    transform: scaleY(0);
-    transition: transform 0.2s ease;
-}
-
-#delta-settings-window .color-row:hover::before { transform: scaleY(1); }
 
 #delta-settings-window .color-row:hover {
-    background: rgba(255,255,255,0.07);
-    border-color: rgba(255,255,255,0.1);
-    transform: translateX(5px);
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(255, 255, 255, 0.1);
+    transform: translateY(-2px);
 }
 
-#delta-settings-window .color-row.full-width { grid-column: 1 / -1; }
+#delta-settings-window .color-row.full-width {
+    grid-column: 1 / -1;
+}
 
 #delta-settings-window .color-row .label {
-    color: #ddd;
+    color: #e4e4e7;
     font-size: 12px;
     display: flex;
     align-items: center;
@@ -1025,92 +1311,199 @@ style.textContent = `
 #delta-settings-window .color-row .keybind {
     background: linear-gradient(180deg, #3a3a4a 0%, #2a2a3a 100%);
     color: #fff;
-    padding: 3px 8px;
-    border-radius: 4px;
+    padding: 4px 10px;
+    border-radius: 6px;
     font-size: 11px;
     font-weight: 700;
-    min-width: 20px;
+    min-width: 22px;
     text-align: center;
-    border: 1px solid rgba(255,255,255,0.1);
-    box-shadow: 0 2px 4px rgba(0,0,0,0.3);
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    text-transform: uppercase;
 }
-
-#delta-settings-window .color-row:hover .keybind { transform: scale(1.1); box-shadow: 0 3px 8px rgba(0,0,0,0.4); }
 
 #delta-settings-window .color-row .color-preview {
-    width: 20px; height: 20px;
-    border-radius: 4px;
-    border: 2px solid rgba(255,255,255,0.2);
-    box-shadow: 0 2px 6px rgba(0,0,0,0.4), inset 0 0 0 1px rgba(0,0,0,0.2);
+    width: 24px;
+    height: 24px;
+    border-radius: 6px;
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
     flex-shrink: 0;
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    transition: all 0.2s ease;
 }
 
-#delta-settings-window .color-row:hover .color-preview { transform: scale(1.15); box-shadow: 0 4px 12px rgba(0,0,0,0.5), 0 0 15px currentColor; }
+#delta-settings-window .color-row:hover .color-preview {
+    transform: scale(1.1);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5), 0 0 15px currentColor;
+}
 
 #delta-settings-window .color-row input[type="color"] {
-    width: 36px; height: 28px;
+    width: 40px;
+    height: 32px;
     border: none;
     border-radius: 6px;
     cursor: pointer;
     background: transparent;
     padding: 0;
-    transition: transform 0.2s ease;
 }
 
-#delta-settings-window .color-row input[type="color"]:hover { transform: scale(1.1); }
-#delta-settings-window .color-row input[type="color"]::-webkit-color-swatch-wrapper { padding: 2px; }
+#delta-settings-window .color-row input[type="color"]::-webkit-color-swatch-wrapper {
+    padding: 2px;
+}
+
 #delta-settings-window .color-row input[type="color"]::-webkit-color-swatch {
-    border-radius: 4px;
-    border: 1px solid rgba(255,255,255,0.2);
-    box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+    border-radius: 6px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
-#delta-settings-window .credits {
-    color: #555;
-    font-size: 11px;
+/* ===== Empty State ===== */
+#delta-settings-window .empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 20px;
     text-align: center;
-    padding: 16px 0 8px 0;
-    border-top: 1px solid rgba(255,255,255,0.05);
-    margin-top: 20px;
-    font-style: italic;
 }
 
-#delta-settings-window .credits span { color: #888; font-weight: 600; font-style: normal; transition: color 0.3s ease; }
-#delta-settings-window .credits:hover span { color: #f5c247; }
+#delta-settings-window .empty-state .empty-icon {
+    font-size: 48px;
+    margin-bottom: 16px;
+    opacity: 0.5;
+}
 
-#delta-settings-window .btn-row { display: flex; gap: 10px; justify-content: center; margin-top: 16px; }
+#delta-settings-window .empty-state .empty-title {
+    color: #a1a1aa;
+    font-size: 16px;
+    font-weight: 600;
+    margin-bottom: 8px;
+}
 
-#delta-settings-window .reset-btn {
-    background: linear-gradient(180deg, #dc2626 0%, #991b1b 100%);
-    color: #fff;
-    border: 1px solid rgba(255,255,255,0.1);
-    padding: 10px 20px;
-    border-radius: 8px;
-    cursor: pointer;
+#delta-settings-window .empty-state .empty-desc {
+    color: #71717a;
+    font-size: 13px;
+}
+
+/* ===== Button Row ===== */
+#delta-settings-window .btn-row {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+    margin-top: 24px;
+    padding-top: 20px;
+    border-top: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+#delta-settings-window .btn {
+    padding: 12px 24px;
+    border-radius: 10px;
     font-size: 12px;
     font-weight: 700;
-    transition: background 0.25s ease, transform 0.25s ease, box-shadow 0.25s ease;
+    cursor: pointer;
+    transition: all 0.25s ease;
     text-transform: uppercase;
     letter-spacing: 0.5px;
-    box-shadow: 0 4px 12px rgba(220, 38, 38, 0.3);
+    border: 1px solid transparent;
     position: relative;
     overflow: hidden;
 }
 
-#delta-settings-window .reset-btn::before {
+#delta-settings-window .btn::before {
     content: '';
     position: absolute;
-    top: 0; left: -100%;
-    width: 100%; height: 100%;
-    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
     transition: left 0.5s ease;
 }
 
-#delta-settings-window .reset-btn:hover::before { left: 100%; }
-#delta-settings-window .reset-btn:hover { background: linear-gradient(180deg, #ef4444 0%, #b91c1c 100%); transform: translateY(-3px); box-shadow: 0 8px 20px rgba(220, 38, 38, 0.5); }
-#delta-settings-window .reset-btn:active { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(220, 38, 38, 0.4); }
+#delta-settings-window .btn:hover::before {
+    left: 100%;
+}
+
+#delta-settings-window .btn-danger {
+    background: linear-gradient(180deg, #dc2626 0%, #991b1b 100%);
+    color: #fff;
+    box-shadow: 0 4px 15px rgba(220, 38, 38, 0.3);
+}
+
+#delta-settings-window .btn-danger:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(220, 38, 38, 0.4);
+}
+
+#delta-settings-window .btn-secondary {
+    background: rgba(255, 255, 255, 0.05);
+    color: #a1a1aa;
+    border-color: rgba(255, 255, 255, 0.1);
+}
+
+#delta-settings-window .btn-secondary:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: #e4e4e7;
+    transform: translateY(-2px);
+}
+
+/* ===== Credits ===== */
+#delta-settings-window .credits {
+    color: #52525b;
+    font-size: 11px;
+    text-align: center;
+    padding: 16px 20px;
+    background: rgba(0, 0, 0, 0.2);
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+}
+
+#delta-settings-window .credits span {
+    color: #71717a;
+    font-weight: 600;
+    transition: color 0.3s ease;
+}
+
+#delta-settings-window .credits:hover span {
+    color: #f5c247;
+}
+
+#delta-settings-window .credits .heart {
+    color: #ef4444;
+    animation: deltaPulse 1.5s ease-in-out infinite;
+}
+
+/* ===== Status Indicator ===== */
+#delta-settings-window .status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 10px;
+    background: rgba(34, 197, 94, 0.15);
+    border: 1px solid rgba(34, 197, 94, 0.3);
+    border-radius: 20px;
+    font-size: 10px;
+    font-weight: 600;
+    color: #22c55e;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+#delta-settings-window .status-badge.disabled {
+    background: rgba(239, 68, 68, 0.15);
+    border-color: rgba(239, 68, 68, 0.3);
+    color: #ef4444;
+}
+
+#delta-settings-window .status-dot {
+    width: 6px;
+    height: 6px;
+    background: currentColor;
+    border-radius: 50%;
+    animation: deltaPulse 2s ease-in-out infinite;
+}
 
 /* ==========================================
    GENERIC UI POLISH
