@@ -884,27 +884,26 @@ style.textContent = `
     --delta-green: #34CB49;
     --delta-red: #F42929;
     --delta-text: #DAE8EA;
-    --delta-text-dim: #5b858e;
+    --delta-text-dim: #71717a;
+    --delta-border: rgba(166, 220, 213, 0.15);
 }
 
 #delta-settings-window {
     position: fixed;
     z-index: 100000;
-    left: 50%;
-    top: 50%;
-    transform: translate(-50%, -50%);
     font-family: 'hordes', 'Segoe UI', system-ui, sans-serif;
     font-size: 14px;
     color: var(--delta-secondary);
+    user-select: none;
 }
 
 #delta-settings-window .window {
     background: var(--delta-panel);
-    border: 1px solid rgba(166, 220, 213, 0.15);
+    border: 1px solid var(--delta-border);
     border-radius: 4px;
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
-    min-width: 580px;
-    max-width: 650px;
+    min-width: 600px;
+    max-width: 700px;
     max-height: 80vh;
     display: flex;
     flex-direction: column;
@@ -913,54 +912,55 @@ style.textContent = `
 
 /* ===== Title Bar ===== */
 #delta-settings-window .titleframe {
-    background: linear-gradient(180deg, rgba(255, 255, 255, 0.08) 0%, transparent 100%);
-    border-bottom: 1px solid rgba(166, 220, 213, 0.1);
-    padding: 10px 12px;
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.05) 0%, transparent 100%);
+    border-bottom: 1px solid var(--delta-border);
+    padding: 8px 12px;
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 8px;
     cursor: move;
 }
 
 #delta-settings-window .titleframe .titleicon {
-    width: 20px;
-    height: 20px;
+    width: 18px;
+    height: 18px;
     opacity: 0.8;
-    filter: brightness(0) invert(1);
+    filter: invert(1);
 }
 
 #delta-settings-window .titleframe .title {
     flex: 1;
     color: var(--delta-text);
-    font-size: 15px;
-    font-weight: normal;
+    font-size: 14px;
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 6px;
 }
 
 #delta-settings-window .titleframe .title-delta {
     color: var(--delta-primary);
     font-weight: bold;
+    font-size: 16px;
 }
 
 #delta-settings-window .titleframe .title-version {
     color: var(--delta-grey);
     font-size: 11px;
+    margin-left: 4px;
 }
 
 #delta-settings-window .titleframe .btn {
-    width: 24px;
-    height: 24px;
+    width: 22px;
+    height: 22px;
     background: rgba(0, 0, 0, 0.4);
-    border: 1px solid rgba(166, 220, 213, 0.15);
+    border: 1px solid var(--delta-border);
     border-radius: 3px;
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
     transition: all 0.15s ease;
-    padding: 5px;
+    padding: 4px;
 }
 
 #delta-settings-window .titleframe .btn:hover {
@@ -968,39 +968,46 @@ style.textContent = `
     border-color: rgba(166, 220, 213, 0.3);
 }
 
-#delta-settings-window .titleframe .btn img {
-    width: 12px;
-    height: 12px;
-    filter: brightness(0) invert(0.7);
+#delta-settings-window .titleframe .btn.close-btn {
+    color: var(--delta-secondary);
+    font-size: 12px;
+    font-weight: bold;
 }
 
-#delta-settings-window .titleframe .btn:hover img {
-    filter: brightness(0) invert(1);
+#delta-settings-window .titleframe .btn.close-btn:hover {
+    background: rgba(244, 41, 41, 0.3);
+    border-color: var(--delta-red);
+    color: var(--delta-red);
 }
 
-/* ===== Main Layout ===== */
+/* ===== Main Layout (Side Navigation) ===== */
 #delta-settings-window .divide {
     display: flex;
     flex: 1;
     overflow: hidden;
+    min-height: 400px;
 }
 
 /* ===== Side Navigation ===== */
 #delta-settings-window .nav-sidebar {
     display: flex;
     flex-direction: column;
-    background: rgba(0, 0, 0, 0.3);
-    border-right: 1px solid rgba(166, 220, 213, 0.1);
-    min-width: 120px;
+    background: rgba(0, 0, 0, 0.25);
+    border-right: 1px solid var(--delta-border);
+    min-width: 110px;
+    padding: 8px 0;
 }
 
 #delta-settings-window .choice {
-    padding: 12px 16px;
+    padding: 10px 14px;
     color: var(--delta-grey);
     font-size: 13px;
     cursor: pointer;
     transition: all 0.15s ease;
     border-left: 2px solid transparent;
+    display: flex;
+    align-items: center;
+    gap: 8px;
 }
 
 #delta-settings-window .choice:hover {
@@ -1014,12 +1021,18 @@ style.textContent = `
     border-left-color: var(--delta-primary);
 }
 
+#delta-settings-window .choice .tab-icon {
+    font-size: 14px;
+    width: 18px;
+    text-align: center;
+}
+
 /* ===== Content Area ===== */
 #delta-settings-window .menu {
     flex: 1;
-    padding: 16px 20px;
+    padding: 12px 16px;
     overflow-y: auto;
-    max-height: calc(80vh - 50px);
+    max-height: calc(80vh - 45px);
 }
 
 #delta-settings-window .menu::-webkit-scrollbar {
@@ -1031,12 +1044,12 @@ style.textContent = `
 }
 
 #delta-settings-window .menu::-webkit-scrollbar-thumb {
-    background: rgba(166, 220, 213, 0.3);
+    background: rgba(166, 220, 213, 0.25);
     border-radius: 3px;
 }
 
 #delta-settings-window .menu::-webkit-scrollbar-thumb:hover {
-    background: rgba(166, 220, 213, 0.5);
+    background: rgba(166, 220, 213, 0.4);
 }
 
 /* ===== Tab Panels ===== */
@@ -1049,32 +1062,33 @@ style.textContent = `
 }
 
 /* ===== Section Headers ===== */
-#delta-settings-window h3,
-#delta-settings-window .textprimary {
+#delta-settings-window .textprimary,
+#delta-settings-window h3 {
     color: var(--delta-text);
-    font-size: 14px;
+    font-size: 13px;
     font-weight: normal;
-    margin: 0 0 12px 0;
+    margin: 16px 0 10px 0;
     padding-bottom: 6px;
-    border-bottom: 1px solid rgba(166, 220, 213, 0.1);
+    border-bottom: 1px solid var(--delta-border);
 }
 
-#delta-settings-window h3:not(:first-child),
-#delta-settings-window .textprimary:not(:first-child) {
-    margin-top: 20px;
+#delta-settings-window .textprimary:first-child,
+#delta-settings-window h3:first-child {
+    margin-top: 0;
 }
 
-/* ===== Settings Grid ===== */
+/* ===== Settings Grid (Game Style) ===== */
 #delta-settings-window .settings {
     display: grid;
     grid-template-columns: 1fr auto;
-    gap: 8px 16px;
+    gap: 6px 12px;
     align-items: center;
 }
 
-#delta-settings-window .settings > div:nth-child(odd) {
+#delta-settings-window .settings > div {
     color: var(--delta-secondary);
     font-size: 13px;
+    padding: 4px 0;
 }
 
 #delta-settings-window .settings small,
@@ -1082,40 +1096,40 @@ style.textContent = `
     color: var(--delta-grey);
     font-size: 11px;
     display: block;
-    margin-top: 2px;
+    margin-top: 1px;
 }
 
-/* ===== Checkbox Button ===== */
+/* ===== Checkbox Button (Game Style) ===== */
 #delta-settings-window .btn.checkbox {
-    width: 40px;
+    width: 38px;
     height: 22px;
     background: rgba(0, 0, 0, 0.4);
-    border: 1px solid rgba(166, 220, 213, 0.2);
+    border: 1px solid var(--delta-border);
     border-radius: 3px;
     cursor: pointer;
     position: relative;
     transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 #delta-settings-window .btn.checkbox::after {
     content: '✕';
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
     color: var(--delta-red);
-    font-size: 12px;
+    font-size: 11px;
     font-weight: bold;
+    opacity: 0.8;
 }
 
 #delta-settings-window .btn.checkbox:hover {
-    border-color: rgba(166, 220, 213, 0.4);
-    background: rgba(166, 220, 213, 0.1);
+    border-color: rgba(166, 220, 213, 0.35);
+    background: rgba(166, 220, 213, 0.08);
 }
 
 #delta-settings-window .btn.checkbox.active {
-    background: rgba(52, 203, 73, 0.2);
-    border-color: rgba(52, 203, 73, 0.5);
+    background: rgba(52, 203, 73, 0.15);
+    border-color: rgba(52, 203, 73, 0.4);
 }
 
 #delta-settings-window .btn.checkbox.active::after {
@@ -1123,111 +1137,67 @@ style.textContent = `
     color: var(--delta-green);
 }
 
-/* ===== Toggle Row (Alternative Style) ===== */
-#delta-settings-window .toggle-row {
-    display: contents;
+/* ===== Color Grid ===== */
+#delta-settings-window .color-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 6px;
 }
 
-#delta-settings-window .toggle-row .toggle-info {
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
-}
-
-#delta-settings-window .toggle-row .toggle-label {
-    color: var(--delta-secondary);
-    font-size: 13px;
-}
-
-#delta-settings-window .toggle-row .toggle-desc {
-    color: var(--delta-grey);
-    font-size: 11px;
-}
-
-/* ===== Input Styles ===== */
-#delta-settings-window input[type="range"] {
-    width: 100%;
-    height: 6px;
-    background: rgba(0, 0, 0, 0.4);
-    border: 1px solid rgba(166, 220, 213, 0.2);
-    border-radius: 3px;
-    outline: none;
-    cursor: pointer;
-    -webkit-appearance: none;
-}
-
-#delta-settings-window input[type="range"]::-webkit-slider-thumb {
-    -webkit-appearance: none;
-    width: 14px;
-    height: 14px;
-    background: var(--delta-primary);
-    border-radius: 2px;
-    cursor: pointer;
-    border: none;
-}
-
-#delta-settings-window input[type="range"]::-webkit-slider-thumb:hover {
-    background: #ffd666;
-}
-
-#delta-settings-window input[type="text"],
-#delta-settings-window input[type="number"],
-#delta-settings-window select {
-    background: rgba(0, 0, 0, 0.4);
-    border: 1px solid rgba(166, 220, 213, 0.2);
-    border-radius: 3px;
-    color: var(--delta-text);
-    padding: 6px 10px;
-    font-size: 12px;
-    font-family: inherit;
-    outline: none;
-    transition: border-color 0.15s ease;
-}
-
-#delta-settings-window input[type="text"]:focus,
-#delta-settings-window input[type="number"]:focus,
-#delta-settings-window select:focus {
-    border-color: var(--delta-primary);
-}
-
-#delta-settings-window select {
-    cursor: pointer;
-}
-
-#delta-settings-window select option {
-    background: var(--delta-black);
-    color: var(--delta-text);
-}
-
-/* ===== Color Picker ===== */
 #delta-settings-window .color-row {
-    display: contents;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 10px;
+    background: rgba(0, 0, 0, 0.2);
+    border: 1px solid var(--delta-border);
+    border-radius: 3px;
+    transition: all 0.15s ease;
+}
+
+#delta-settings-window .color-row:hover {
+    background: rgba(166, 220, 213, 0.05);
+    border-color: rgba(166, 220, 213, 0.25);
+}
+
+#delta-settings-window .color-row.full-width {
+    grid-column: 1 / -1;
 }
 
 #delta-settings-window .color-row .label {
-    color: var(--delta-secondary);
-    font-size: 13px;
     display: flex;
     align-items: center;
     gap: 8px;
+    color: var(--delta-secondary);
+    font-size: 12px;
 }
 
-#delta-settings-window .color-row .label .keybind {
+#delta-settings-window .color-row .color-preview {
+    width: 16px;
+    height: 16px;
+    border-radius: 3px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    flex-shrink: 0;
+}
+
+#delta-settings-window .color-row .keybind {
     background: rgba(0, 0, 0, 0.5);
-    border: 1px solid rgba(166, 220, 213, 0.2);
+    border: 1px solid var(--delta-border);
     color: var(--delta-text);
-    padding: 2px 8px;
+    padding: 2px 6px;
     border-radius: 3px;
     font-size: 10px;
     font-weight: bold;
     text-transform: uppercase;
+    min-width: 16px;
+    text-align: center;
 }
 
 #delta-settings-window input[type="color"] {
-    width: 36px;
-    height: 24px;
+    width: 32px;
+    height: 22px;
     padding: 0;
-    border: 1px solid rgba(166, 220, 213, 0.2);
+    border: 1px solid var(--delta-border);
     border-radius: 3px;
     cursor: pointer;
     background: transparent;
@@ -1243,13 +1213,22 @@ style.textContent = `
 }
 
 /* ===== Buttons ===== */
+#delta-settings-window .btn-row {
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+    margin-top: 16px;
+    padding-top: 12px;
+    border-top: 1px solid var(--delta-border);
+}
+
 #delta-settings-window .btn {
-    padding: 8px 16px;
+    padding: 7px 14px;
     background: rgba(0, 0, 0, 0.4);
-    border: 1px solid rgba(166, 220, 213, 0.2);
+    border: 1px solid var(--delta-border);
     border-radius: 3px;
     color: var(--delta-secondary);
-    font-size: 12px;
+    font-size: 11px;
     font-family: inherit;
     cursor: pointer;
     transition: all 0.15s ease;
@@ -1257,78 +1236,41 @@ style.textContent = `
 
 #delta-settings-window .btn:hover {
     background: rgba(166, 220, 213, 0.1);
-    border-color: rgba(166, 220, 213, 0.4);
+    border-color: rgba(166, 220, 213, 0.35);
 }
 
 #delta-settings-window .btn.blue {
-    background: rgba(6, 129, 234, 0.2);
-    border-color: rgba(6, 129, 234, 0.4);
+    background: rgba(6, 129, 234, 0.15);
+    border-color: rgba(6, 129, 234, 0.35);
     color: var(--delta-blue);
 }
 
 #delta-settings-window .btn.blue:hover {
-    background: rgba(6, 129, 234, 0.3);
+    background: rgba(6, 129, 234, 0.25);
 }
 
-#delta-settings-window .btn.orange {
+#delta-settings-window .btn.orange,
+#delta-settings-window .btn-secondary {
+    background: rgba(245, 194, 71, 0.1);
+    border-color: rgba(245, 194, 71, 0.3);
+    color: var(--delta-primary);
+}
+
+#delta-settings-window .btn.orange:hover,
+#delta-settings-window .btn-secondary:hover {
     background: rgba(245, 194, 71, 0.2);
-    border-color: rgba(245, 194, 71, 0.4);
-    color: var(--delta-primary);
 }
 
-#delta-settings-window .btn.orange:hover {
-    background: rgba(245, 194, 71, 0.3);
-}
-
-#delta-settings-window .btn.red {
-    background: rgba(244, 41, 41, 0.2);
-    border-color: rgba(244, 41, 41, 0.4);
-    color: var(--delta-red);
-}
-
-#delta-settings-window .btn.red:hover {
-    background: rgba(244, 41, 41, 0.3);
-}
-
-/* ===== Footer ===== */
-#delta-settings-window .credits {
-    padding: 10px 16px;
-    background: rgba(0, 0, 0, 0.2);
-    border-top: 1px solid rgba(166, 220, 213, 0.1);
-    color: var(--delta-grey);
-    font-size: 11px;
-    text-align: center;
-}
-
-#delta-settings-window .credits span {
-    color: var(--delta-primary);
-}
-
-/* ===== Status Badge ===== */
-#delta-settings-window .status-badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 5px;
-    padding: 3px 8px;
-    background: rgba(52, 203, 73, 0.15);
-    border: 1px solid rgba(52, 203, 73, 0.3);
-    border-radius: 3px;
-    font-size: 10px;
-    color: var(--delta-green);
-    text-transform: uppercase;
-}
-
-#delta-settings-window .status-badge.disabled {
+#delta-settings-window .btn.red,
+#delta-settings-window .btn-danger {
     background: rgba(244, 41, 41, 0.15);
-    border-color: rgba(244, 41, 41, 0.3);
+    border-color: rgba(244, 41, 41, 0.35);
     color: var(--delta-red);
 }
 
-#delta-settings-window .status-dot {
-    width: 5px;
-    height: 5px;
-    background: currentColor;
-    border-radius: 50%;
+#delta-settings-window .btn.red:hover,
+#delta-settings-window .btn-danger:hover {
+    background: rgba(244, 41, 41, 0.25);
 }
 
 /* ===== Empty State ===== */
@@ -1339,8 +1281,8 @@ style.textContent = `
 }
 
 #delta-settings-window .empty-state .empty-icon {
-    font-size: 36px;
-    opacity: 0.5;
+    font-size: 32px;
+    opacity: 0.4;
     margin-bottom: 12px;
 }
 
@@ -1348,6 +1290,28 @@ style.textContent = `
     color: var(--delta-secondary);
     font-size: 14px;
     margin-bottom: 6px;
+}
+
+#delta-settings-window .empty-state .empty-desc {
+    font-size: 12px;
+}
+
+/* ===== Footer ===== */
+#delta-settings-window .credits {
+    padding: 8px 12px;
+    background: rgba(0, 0, 0, 0.2);
+    border-top: 1px solid var(--delta-border);
+    color: var(--delta-grey);
+    font-size: 11px;
+    text-align: center;
+}
+
+#delta-settings-window .credits span {
+    color: var(--delta-primary);
+}
+
+#delta-settings-window .credits .heart {
+    color: var(--delta-red);
 }
 
 /* ==========================================
