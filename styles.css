@@ -554,9 +554,7 @@ style.textContent = `
 /* ==========================================
    DPS/HEALING BARS
    ========================================== */
-/* ==========================================
-   DPS/HEALING BARS - FIXED
-   ========================================== */
+
 .window.panel-black.svelte-1f1v3u3 .wrapper .bar {
     background: #1c1c28 !important;
     border-radius: 4px !important;
@@ -640,6 +638,7 @@ style.textContent = `
 /* ==========================================
    TABLES
    ========================================== */
+
 .window.panel-black.svelte-1f1v3u3 table.dense.panel-black {
     background: #22232a;
     border-collapse: separate;
@@ -828,6 +827,7 @@ style.textContent = `
 /* ==========================================
    DELTA UI BUTTON
    ========================================== */
+
 #sysdelta {
     animation: deltaRainbow 3s linear infinite;
     position: relative;
@@ -3200,139 +3200,6 @@ section.post .btn.formatted.secondary.disabled {
 .scrollbar::-webkit-scrollbar-thumb:hover {
     background: var(--secondary);
 }
-
-/* ==========================================
-   SOCIAL WINDOW - FRIENDS LIST
-   ========================================== */
-
-/* Target Social window specifically */
-.window.panel-black:has(.titleicon[src*="social"]) {
-    background: linear-gradient(180deg, 
-        rgba(22, 28, 38, 0.98) 0%, 
-        rgba(16, 20, 28, 0.99) 100%) !important;
-    border: 1px solid rgba(45, 212, 191, 0.15) !important;
-    border-radius: 12px !important;
-    box-shadow: 
-        0 0 30px rgba(45, 212, 191, 0.08),
-        0 10px 40px rgba(0, 0, 0, 0.5) !important;
-    overflow: hidden !important;
-}
-
-/* Title bar */
-.window.panel-black:has(.titleicon[src*="social"]) > .titleframe {
-    background: linear-gradient(90deg, 
-        rgba(45, 212, 191, 0.12) 0%, 
-        rgba(45, 212, 191, 0.05) 50%,
-        rgba(45, 212, 191, 0.12) 100%) !important;
-    border-bottom: 1px solid rgba(45, 212, 191, 0.2) !important;
-    padding: 10px 14px !important;
-}
-
-.window.panel-black:has(.titleicon[src*="social"]) > .titleframe .titleicon {
-    filter: drop-shadow(0 0 6px rgba(45, 212, 191, 0.6)) !important;
-}
-
-.window.panel-black:has(.titleicon[src*="social"]) > .titleframe .title > div {
-    color: #2dd4bf !important;
-    font-weight: 700 !important;
-    text-shadow: 0 0 10px rgba(45, 212, 191, 0.4) !important;
-}
-
-/* Tab bar */
-.window.panel-black:has(.titleicon[src*="social"]) .tab-bar {
-    background: rgba(0, 0, 0, 0.3) !important;
-    padding: 6px !important;
-    gap: 4px !important;
-    border-radius: 8px !important;
-    margin: 8px !important;
-}
-
-.window.panel-black:has(.titleicon[src*="social"]) .tab-bar .tab {
-    padding: 8px 16px !important;
-    border-radius: 6px !important;
-    font-size: 12px !important;
-    font-weight: 600 !important;
-    color: #8899aa !important;
-    background: transparent !important;
-    border: 1px solid transparent !important;
-    transition: all 0.2s ease !important;
-    cursor: pointer !important;
-}
-
-.window.panel-black:has(.titleicon[src*="social"]) .tab-bar .tab:hover {
-    color: #aabbcc !important;
-    background: rgba(45, 212, 191, 0.08) !important;
-}
-
-.window.panel-black:has(.titleicon[src*="social"]) .tab-bar .tab.active {
-    color: #2dd4bf !important;
-    background: linear-gradient(180deg, 
-        rgba(45, 212, 191, 0.2) 0%, 
-        rgba(45, 212, 191, 0.1) 100%) !important;
-    border: 1px solid rgba(45, 212, 191, 0.3) !important;
-    box-shadow: 0 0 10px rgba(45, 212, 191, 0.15) !important;
-}
-
-/* Container */
-.window.panel-black:has(.titleicon[src*="social"]) .container.panel-bright {
-    background: rgba(0, 0, 0, 0.2) !important;
-    margin: 0 8px 8px 8px !important;
-    border-radius: 8px !important;
-    border: 1px solid rgba(255, 255, 255, 0.05) !important;
-}
-
-/* User list scrollbar */
-.window.panel-black:has(.titleicon[src*="social"]) .userlist.scrollbar {
-    padding: 8px !important;
-    max-height: 350px !important;
-}
-
-.window.panel-black:has(.titleicon[src*="social"]) .userlist::-webkit-scrollbar {
-    width: 6px !important;
-}
-
-.window.panel-black:has(.titleicon[src*="social"]) .userlist::-webkit-scrollbar-track {
-    background: rgba(0, 0, 0, 0.2) !important;
-    border-radius: 3px !important;
-}
-
-.window.panel-black:has(.titleicon[src*="social"]) .userlist::-webkit-scrollbar-thumb {
-    background: linear-gradient(180deg, #2dd4bf 0%, #14b8a6 100%) !important;
-    border-radius: 3px !important;
-}
-
-/* Section headers */
-.window.panel-black:has(.titleicon[src*="social"]) .userlist small.textgrey {
-    display: block !important;
-    color: #667788 !important;
-    font-size: 10px !important;
-    text-transform: uppercase !important;
-    letter-spacing: 1px !important;
-    padding: 8px 4px 6px 4px !important;
-    margin-top: 8px !important;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.05) !important;
-}
-
-.window.panel-black:has(.titleicon[src*="social"]) .userlist small.textgrey:first-child {
-    margin-top: 0 !important;
-}
-
-/* Friend rows */
-.window.panel-black:has(.titleicon[src*="social"]) .user-row.panel-friend {
-    background: rgba(30, 40, 55, 0.4) !important;
-    border: 1px solid transparent !important;
-    border-radius: 8px !important;
-    margin: 4px 0 !important;
-    padding: 6px 10px !important;
-    transition: all 0.2s ease !important;
-}
-
-.window.panel-black:has(.titleicon[src*="social"]) .user-row.panel-friend:hover {
-    background: rgba(45, 212, 191, 0.08) !important;
-    border-color: rgba(45, 212, 191, 0.2) !important;
-    transform: translateX(4px) !important;
-}
-
 /* Friend request row - flashing */
 @keyframes requestPulse {
     0%, 100% { 
@@ -3351,175 +3218,6 @@ section.post .btn.formatted.secondary.disabled {
         rgba(251, 191, 36, 0.05) 100%) !important;
     border: 1px solid rgba(251, 191, 36, 0.4) !important;
     animation: requestPulse 2s ease-in-out infinite !important;
-}
-
-/* Accept/Decline buttons */
-.window.panel-black:has(.titleicon[src*="social"]) .user-row.request .btn.green {
-    background: linear-gradient(180deg, 
-        rgba(34, 197, 94, 0.3) 0%, 
-        rgba(22, 163, 74, 0.2) 100%) !important;
-    border: 1px solid rgba(34, 197, 94, 0.5) !important;
-    border-radius: 6px !important;
-    padding: 4px 10px !important;
-    font-size: 14px !important;
-    transition: all 0.2s ease !important;
-}
-
-.window.panel-black:has(.titleicon[src*="social"]) .user-row.request .btn.green:hover {
-    background: linear-gradient(180deg, 
-        rgba(34, 197, 94, 0.5) 0%, 
-        rgba(22, 163, 74, 0.4) 100%) !important;
-    box-shadow: 0 0 15px rgba(34, 197, 94, 0.4) !important;
-    transform: scale(1.1) !important;
-}
-
-.window.panel-black:has(.titleicon[src*="social"]) .user-row.request .btn.grey:has(❌),
-.window.panel-black:has(.titleicon[src*="social"]) .user-row.request .btn.grey:last-child {
-    background: linear-gradient(180deg, 
-        rgba(239, 68, 68, 0.2) 0%, 
-        rgba(185, 28, 28, 0.15) 100%) !important;
-    border: 1px solid rgba(239, 68, 68, 0.3) !important;
-    border-radius: 6px !important;
-    padding: 4px 10px !important;
-    font-size: 14px !important;
-    transition: all 0.2s ease !important;
-}
-
-.window.panel-black:has(.titleicon[src*="social"]) .user-row.request .btn.grey:last-child:hover {
-    background: linear-gradient(180deg, 
-        rgba(239, 68, 68, 0.4) 0%, 
-        rgba(185, 28, 28, 0.3) 100%) !important;
-    box-shadow: 0 0 15px rgba(239, 68, 68, 0.3) !important;
-    transform: scale(1.1) !important;
-}
-
-/* Online status indicator */
-.window.panel-black:has(.titleicon[src*="social"]) .user-row small.textgreen {
-    color: #4ade80 !important;
-    text-shadow: 0 0 8px rgba(74, 222, 128, 0.6) !important;
-    font-size: 10px !important;
-    animation: onlinePulse 2s ease-in-out infinite !important;
-}
-
-@keyframes onlinePulse {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0.6; }
-}
-
-/* Offline status */
-.window.panel-black:has(.titleicon[src*="social"]) .user-row small.textgrey:not(:first-child) {
-    color: #555 !important;
-    font-size: 10px !important;
-}
-
-/* Class icon in friend row */
-.window.panel-black:has(.titleicon[src*="social"]) .user-row .icon {
-    width: 18px !important;
-    height: 18px !important;
-    border-radius: 4px !important;
-    margin-right: 6px !important;
-    vertical-align: middle !important;
-    box-shadow: 0 0 6px rgba(0, 0, 0, 0.4) !important;
-}
-
-/* Level text */
-.window.panel-black:has(.titleicon[src*="social"]) .user-row .textwhite {
-    color: #aabbcc !important;
-    font-size: 12px !important;
-    font-weight: 600 !important;
-}
-
-/* Player name - online */
-.window.panel-black:has(.titleicon[src*="social"]) .user-row .name.textf0 {
-    color: var(--f0) !important;
-    font-weight: 700 !important;
-    text-shadow: 0 0 8px rgba(69, 139, 217, 0.3) !important;
-}
-
-.window.panel-black:has(.titleicon[src*="social"]) .user-row .name.textf1 {
-    color: var(--f1) !important;
-    font-weight: 700 !important;
-    text-shadow: 0 0 8px rgba(195, 41, 41, 0.3) !important;
-}
-
-/* Character name (alt name) */
-.window.panel-black:has(.titleicon[src*="social"]) .user-row .textprimary {
-    color: #f5c247 !important;
-    font-size: 10px !important;
-    opacity: 0.7 !important;
-    margin-left: 6px !important;
-}
-
-/* Offline friend styling */
-.window.panel-black:has(.titleicon[src*="social"]) .user-row .textgrey.textnooverflow {
-    color: #556677 !important;
-    font-weight: 500 !important;
-}
-
-/* Bottom search bar */
-.window.panel-black:has(.titleicon[src*="social"]) .bar-top {
-    display: flex !important;
-    gap: 8px !important;
-    padding: 10px !important;
-    background: rgba(0, 0, 0, 0.3) !important;
-    border-top: 1px solid rgba(255, 255, 255, 0.05) !important;
-}
-
-.window.panel-black:has(.titleicon[src*="social"]) .bar-top .finder {
-    flex: 1 !important;
-}
-
-.window.panel-black:has(.titleicon[src*="social"]) .bar-top .finder input {
-    width: 100% !important;
-    background: rgba(0, 0, 0, 0.4) !important;
-    border: 1px solid rgba(45, 212, 191, 0.2) !important;
-    border-radius: 6px !important;
-    padding: 8px 12px !important;
-    color: #ddd !important;
-    font-size: 12px !important;
-    outline: none !important;
-    transition: all 0.2s ease !important;
-}
-
-.window.panel-black:has(.titleicon[src*="social"]) .bar-top .finder input::placeholder {
-    color: #556677 !important;
-}
-
-.window.panel-black:has(.titleicon[src*="social"]) .bar-top .finder input:focus {
-    border-color: rgba(45, 212, 191, 0.5) !important;
-    box-shadow: 0 0 12px rgba(45, 212, 191, 0.15) !important;
-}
-
-/* Add button */
-.window.panel-black:has(.titleicon[src*="social"]) .bar-top .btn.navbtn {
-    padding: 8px 16px !important;
-    border-radius: 6px !important;
-    font-size: 12px !important;
-    font-weight: 600 !important;
-    transition: all 0.2s ease !important;
-}
-
-.window.panel-black:has(.titleicon[src*="social"]) .bar-top .btn.navbtn:not(.disabled) {
-    background: linear-gradient(180deg, 
-        rgba(45, 212, 191, 0.3) 0%, 
-        rgba(20, 184, 166, 0.2) 100%) !important;
-    border: 1px solid rgba(45, 212, 191, 0.5) !important;
-    color: #2dd4bf !important;
-    cursor: pointer !important;
-}
-
-.window.panel-black:has(.titleicon[src*="social"]) .bar-top .btn.navbtn:not(.disabled):hover {
-    background: linear-gradient(180deg, 
-        rgba(45, 212, 191, 0.5) 0%, 
-        rgba(20, 184, 166, 0.4) 100%) !important;
-    box-shadow: 0 0 15px rgba(45, 212, 191, 0.3) !important;
-}
-
-.window.panel-black:has(.titleicon[src*="social"]) .bar-top .btn.navbtn.disabled {
-    background: rgba(50, 60, 75, 0.3) !important;
-    border: 1px solid rgba(80, 90, 110, 0.2) !important;
-    color: #556677 !important;
-    cursor: not-allowed !important;
 }
 
 `;
