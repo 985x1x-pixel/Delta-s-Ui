@@ -103,6 +103,8 @@ window.DELTA_CONFIG = {
 
         petColor: "#0aa2af",
 
+        fullscreenKey: "o",
+        
         toggles: {
             ccIndicator: true,
             hideBuffs: false,
@@ -167,6 +169,7 @@ window.DELTA_CONFIG = {
         SKILLBAR_COLORS: "deltaUI_skillbarColors",
         CHARM_COLORS: "deltaUI_charmColors",
         PET_COLOR: "deltaUI_petColor",
+        FULLSCREEN_KEY: "deltaUI_fullscreenKey",
     },
 
     skillColors: {
