@@ -107,14 +107,17 @@
 
         function createDeltaSettingsWindow() {
             if (deltaSettingsWindow) deltaSettingsWindow.remove();
-
+        
             deltaSettingsWindow = document.createElement("div");
             deltaSettingsWindow.className = "window-pos";
             deltaSettingsWindow.id = "delta-settings-window";
             deltaSettingsWindow.style.cssText = "z-index: 100; position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);";
-
+        
             const skillbarSlots = scanSkillbar();
-
+            
+            // Get current fullscreen key
+            const currentFullscreenKey = localStorage.getItem("deltaUI_fullscreenKey") || "o";
+        
             deltaSettingsWindow.innerHTML = `
                 <div class="window panel-black svelte-1f1v3u3">
                     <div class="titleframe svelte-1f1v3u3" style="cursor: pointer;">
@@ -128,6 +131,7 @@
                         <div class="divide svelte-13nnce4">
                             <div class="delta-nav">
                                 <div class="choice active" data-tab="features">Features</div>
+                                <div class="choice" data-tab="controls">Controls</div>
                                 <div class="choice" data-tab="colors">Colors</div>
                                 <div class="choice" data-tab="about">About</div>
                             </div>
@@ -146,13 +150,13 @@
                                         <div>FPS Mode<br><small class="textgrey">Hide UI for performance</small></div>
                                         <div class="btn checkbox ${getToggle("fpsMode", false) ? "active" : ""}" data-toggle="fpsMode"></div>
                                     </div>
-
+        
                                     <h3 class="textprimary">Chat</h3>
                                     <div class="settings svelte-13nnce4">
                                         <div>Chat Tweaks<br><small class="textgrey">Resizable chat & controls</small></div>
                                         <div class="btn checkbox ${getToggle("chatTweaks", true) ? "active" : ""}" data-toggle="chatTweaks"></div>
                                     </div>
-
+        
                                     <h3 class="textprimary">Visual</h3>
                                     <div class="settings svelte-13nnce4">
                                         <div>Item Recolor<br><small class="textgrey">Quality-based item borders</small></div>
@@ -161,7 +165,7 @@
                                         <div>Charm Colors<br><small class="textgrey">Custom charm border colors</small></div>
                                         <div class="btn checkbox ${getToggle("charmColors", true) ? "active" : ""}" data-toggle="charmColors"></div>
                                     </div>
-
+        
                                     <h3 class="textprimary">Stats Display</h3>
                                     <div class="settings svelte-13nnce4">
                                         <div>Playtime Labels<br><small class="textgrey">Session & total time</small></div>
@@ -171,19 +175,41 @@
                                         <div class="btn checkbox ${getToggle("fameLabels", true) ? "active" : ""}" data-toggle="fameLabels"></div>
                                     </div>
                                 </div>
-
+        
+                                <!-- Controls Tab (NEW) -->
+                                <div class="tab-panel" data-panel="controls">
+                                    <h3 class="textprimary">Keybinds</h3>
+                                    <div class="settings svelte-13nnce4">
+                                        <div>Fullscreen Toggle<br><small class="textgrey">Press key to toggle fullscreen</small></div>
+                                        <div class="keybind-input-wrapper">
+                                            <input type="text" 
+                                                   id="fullscreen-key-input" 
+                                                   class="keybind-input" 
+                                                   value="${currentFullscreenKey.toUpperCase()}" 
+                                                   maxlength="1" 
+                                                   readonly
+                                                   placeholder="Press a key">
+                                            <div class="btn small" id="clear-fullscreen-key">✕</div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="keybind-hint">
+                                        <small class="textgrey">Click the input box and press any key to set a new keybind.</small>
+                                    </div>
+                                </div>
+        
                                 <!-- Colors Tab -->
                                 <div class="tab-panel" data-panel="colors">
                                     <h3 class="textprimary">Skillbar Colors</h3>
                                     <div class="settings svelte-13nnce4">
                                         ${generateSkillbarColorRows(skillbarSlots)}
                                     </div>
-
+        
                                     <h3 class="textprimary">Charm Colors</h3>
                                     <div class="settings svelte-13nnce4">
                                         ${generateCharmColorRows()}
                                     </div>
-
+        
                                     <h3 class="textprimary">Pet Color</h3>
                                     <div class="settings svelte-13nnce4">
                                         <div>Pet Border Glow</div>
@@ -192,7 +218,7 @@
                                             <input type="color" id="pet-color-input" value="${CONFIG.petColor}">
                                         </div>
                                     </div>
-
+        
                                     <h3 class="textprimary">Actions</h3>
                                     <div class="settings svelte-13nnce4">
                                         <div>Export Colors</div>
@@ -205,7 +231,7 @@
                                         <div class="btn orange" id="reset-all-colors">Reset</div>
                                     </div>
                                 </div>
-
+        
                                 <!-- About Tab -->
                                 <div class="tab-panel" data-panel="about">
                                     <h3 class="textprimary">Delta UI</h3>
@@ -224,7 +250,7 @@
                     </div>
                 </div>
             `;
-
+        
             document.body.appendChild(deltaSettingsWindow);
             setupEventListeners();
         }
