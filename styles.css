@@ -1241,6 +1241,45 @@ style.textContent = `
 }
 
 /* ==========================================
+   FORCE SMALL CHECKBOXES - HIGHEST PRIORITY
+   ========================================== */
+
+/* Target ALL checkboxes in customization sections by data attribute */
+#delta-settings-window .btn.checkbox[data-buff-id],
+#delta-settings-window .btn.checkbox[data-fps-id] {
+    width: 16px !important;
+    height: 16px !important;
+    min-width: 16px !important;
+    max-width: 16px !important;
+    min-height: 16px !important;
+    max-height: 16px !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    border-radius: 3px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    font-size: 0 !important;
+    line-height: 1 !important;
+    box-sizing: border-box !important;
+}
+
+/* Active state with checkmark */
+#delta-settings-window .btn.checkbox[data-buff-id].active::after,
+#delta-settings-window .btn.checkbox[data-fps-id].active::after {
+    content: "✓" !important;
+    font-size: 11px !important;
+    color: white !important;
+    display: block !important;
+}
+
+/* Remove any text content from the button */
+#delta-settings-window .btn.checkbox[data-buff-id] *,
+#delta-settings-window .btn.checkbox[data-fps-id] * {
+    display: none !important;
+}
+
+/* ==========================================
    GENERIC UI POLISH
    ========================================== */
 .btn { transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease, filter 0.2s ease; }
