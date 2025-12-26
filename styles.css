@@ -904,19 +904,11 @@ style.textContent = `
 #delta-settings-window .window.panel-black {
     min-width: 500px;
     max-width: 600px;
-    height: auto !important;
-}
-
-#delta-settings-window .slot.svelte-1f1v3u3 {
-    height: auto !important;
-    min-height: unset !important;
-    padding: 0 !important;
 }
 
 #delta-settings-window .divide {
     display: flex;
-    height: auto !important;
-    min-height: unset !important;
+    min-height: 450px;
     max-height: 70vh;
 }
 
@@ -924,10 +916,8 @@ style.textContent = `
     display: flex;
     flex-direction: column;
     min-width: 100px;
-    background: rgba(0, 0, 0, 0.3);
-    border-right: 1px solid rgba(166, 220, 213, 0.15);
-    height: auto !important;
-    align-self: stretch;
+    background: rgba(0, 0, 0, 0.2);
+    border-right: 1px solid rgba(166, 220, 213, 0.1);
 }
 
 #delta-settings-window .delta-nav .choice {
@@ -950,25 +940,14 @@ style.textContent = `
     border-left-color: #F5C247;
 }
 
-/* Main content area - KEEP the panel background */
 #delta-settings-window .menu {
     flex: 1;
     padding: 12px 16px;
     overflow-y: auto;
-    max-height: 450px;
-    height: auto !important;
-    min-height: unset !important;
-}
-
-#delta-settings-window .menu.panel-black {
-    background: rgba(16, 19, 29, 0.95) !important;
-    border: 1px solid rgba(166, 220, 213, 0.15) !important;
-    border-left: none !important;
 }
 
 #delta-settings-window .tab-panel {
     display: none;
-    height: auto !important;
 }
 
 #delta-settings-window .tab-panel.active {
@@ -987,85 +966,23 @@ style.textContent = `
     margin-top: 0;
 }
 
-/* Settings rows - full width background */
 #delta-settings-window .settings {
     display: grid;
     grid-template-columns: 1fr auto;
-    gap: 0;
-    align-items: stretch;
-    margin-bottom: 0;
-    background: rgba(0, 0, 0, 0.2);
-    border-radius: 4px;
-    overflow: hidden;
-}
-
-/* Each row styling */
-#delta-settings-window .settings > div {
-    padding: 10px 12px;
-    display: flex;
+    gap: 8px 16px;
     align-items: center;
-    border-bottom: 1px solid rgba(166, 220, 213, 0.05);
-}
-
-/* Label column */
-#delta-settings-window .settings > div:nth-child(odd) {
-    font-size: 13px;
-    background: rgba(0, 0, 0, 0.1);
-}
-
-/* Control column (checkboxes, inputs, buttons) */
-#delta-settings-window .settings > div:nth-child(even),
-#delta-settings-window .settings > .btn,
-#delta-settings-window .settings > .color-input-wrapper,
-#delta-settings-window .settings > .keybind-input-wrapper {
-    justify-content: flex-end;
     background: rgba(0, 0, 0, 0.15);
     padding: 8px 12px;
-    border-bottom: 1px solid rgba(166, 220, 213, 0.05);
+    border-radius: 4px;
 }
 
-/* Remove border from last row */
-#delta-settings-window .settings > div:nth-last-child(-n+2) {
-    border-bottom: none;
+#delta-settings-window .settings > div:first-child {
+    font-size: 13px;
 }
 
 #delta-settings-window .settings small.textgrey {
     color: #5b858e;
     font-size: 11px;
-}
-
-/* Checkbox styling */
-#delta-settings-window .btn.checkbox {
-    width: 40px;
-    height: 22px;
-    border-radius: 11px;
-    background: rgba(91, 133, 142, 0.3);
-    border: 1px solid rgba(91, 133, 142, 0.5);
-    position: relative;
-    cursor: pointer;
-    transition: all 0.2s ease;
-}
-
-#delta-settings-window .btn.checkbox::after {
-    content: '';
-    position: absolute;
-    width: 16px;
-    height: 16px;
-    border-radius: 50%;
-    background: #5b858e;
-    top: 2px;
-    left: 2px;
-    transition: all 0.2s ease;
-}
-
-#delta-settings-window .btn.checkbox.active {
-    background: rgba(245, 194, 71, 0.3);
-    border-color: #F5C247;
-}
-
-#delta-settings-window .btn.checkbox.active::after {
-    background: #F5C247;
-    left: 20px;
 }
 
 /* Color input wrapper */
@@ -1138,53 +1055,9 @@ style.textContent = `
 
 #delta-settings-window .keybind-hint {
     margin-top: 12px;
-    padding: 8px 12px;
+    padding: 8px;
     background: rgba(0, 0, 0, 0.2);
     border-radius: 4px;
-    border: 1px solid rgba(166, 220, 213, 0.1);
-}
-
-/* Button styles */
-#delta-settings-window .btn.blue {
-    background: rgba(6, 129, 234, 0.3);
-    border: 1px solid #0681ea;
-    color: #a6dcd5;
-    padding: 4px 12px;
-    border-radius: 3px;
-    cursor: pointer;
-    font-size: 12px;
-}
-
-#delta-settings-window .btn.blue:hover {
-    background: rgba(6, 129, 234, 0.5);
-}
-
-#delta-settings-window .btn.orange {
-    background: rgba(238, 150, 11, 0.3);
-    border: 1px solid #ee960b;
-    color: #a6dcd5;
-    padding: 4px 12px;
-    border-radius: 3px;
-    cursor: pointer;
-    font-size: 12px;
-}
-
-#delta-settings-window .btn.orange:hover {
-    background: rgba(238, 150, 11, 0.5);
-}
-
-#delta-settings-window .btn.small {
-    padding: 2px 8px;
-    font-size: 11px;
-    background: rgba(91, 133, 142, 0.3);
-    border: 1px solid rgba(91, 133, 142, 0.5);
-    border-radius: 3px;
-    cursor: pointer;
-    color: #a6dcd5;
-}
-
-#delta-settings-window .btn.small:hover {
-    background: rgba(91, 133, 142, 0.5);
 }
 
 /* About tab */
