@@ -1,12 +1,10 @@
-// Delta UI Configuration v3.6
-// https://github.com/985x1x-pixel/Delta-s-Ui
+// ==========================================
+// DELTA UI CONFIGURATION v3.6
+// ==========================================
 
 window.DELTA_CONFIG = {
     version: "3.6",
-    
-    // ==========================================
-    // TIMING
-    // ==========================================
+
     timing: {
         INIT_DELAY: 300,
         SETTINGS_LOAD: 2000,
@@ -14,9 +12,6 @@ window.DELTA_CONFIG = {
         ELEMENT_WAIT: 250,
     },
 
-    // ==========================================
-    // ITEM REPLACEMENTS (Legendary Skins)
-    // ==========================================
     replacements: {
         "items/staff/staff7_q3.avif": "https://raw.githubusercontent.com/Shturmovicc/hordes-legendary-items/refs/heads/main/items/staff/staff7_q4.webp",
         "items/armlet/armlet5_q3.avif": "https://github.com/Shturmovicc/hordes-legendary-items/blob/main/items/armlet/armlet5_q4.avif?raw=true",
@@ -35,9 +30,6 @@ window.DELTA_CONFIG = {
         "items/shield/shield4_q3.avif": "https://raw.githubusercontent.com/Shturmovicc/hordes-legendary-items/refs/heads/main/items/shield/shield4_q4.avif",
     },
 
-    // ==========================================
-    // DEFAULT COLORS
-    // ==========================================
     defaults: {
         skillbarColors: {
             "skp": "#9d00ff",
@@ -78,9 +70,6 @@ window.DELTA_CONFIG = {
         petColor: "#0aa2af",
     },
 
-    // ==========================================
-    // CHARM NAMES
-    // ==========================================
     charmNames: {
         "charm0": "Bell",
         "charm1": "Egg",
@@ -99,9 +88,6 @@ window.DELTA_CONFIG = {
         "charm14": "Gamble",
     },
 
-    // ==========================================
-    // ICONS
-    // ==========================================
     classIcons: {
         "bgc0": "/data/ui/classes/0.avif?v=8822612",
         "bgc1": "/data/ui/classes/1.avif?v=8822612",
@@ -119,9 +105,6 @@ window.DELTA_CONFIG = {
         bl: "https://hordes.io/data/ui/factions/1.avif?v=8829640",
     },
 
-    // ==========================================
-    // QUALITY COLORS
-    // ==========================================
     qualityColors: {
         RED: "#ff0000",
         ORANGE: "#ff7600",
@@ -132,9 +115,6 @@ window.DELTA_CONFIG = {
         UPGRADE: "#eab379",
     },
 
-    // ==========================================
-    // STORAGE KEYS
-    // ==========================================
     storageKeys: {
         FAME_GAINED: "totalFameGained",
         FAME_LOST: "totalFameLost",
@@ -144,70 +124,24 @@ window.DELTA_CONFIG = {
         PET_COLOR: "deltaUI_petColor",
     },
 
-    // ==========================================
-    // SKILL COLORS (for Skills Window)
-    // ==========================================
     skillColors: {
-        // Shared
-        "8": "#8b0000",
-        "39": "#8b4513",
-        "40": "#9966ff",
-        // Warrior
-        "0": "#c9a66b",
-        "1": "#e85a5a",
-        "2": "#5a9de8",
-        "3": "#e8a85a",
-        "17": "#ff4444",
-        "18": "#cc3333",
-        "19": "#6b1a6b",
-        "20": "#f0c040",
-        "21": "#708090",
-        "33": "#44aaff",
-        "34": "#ff8800",
-        "41": "#cd853f",
-        "46": "#ff6666",
-        "50": "#ffcc00",
-        // Archer
-        "5": "#98d4a0",
-        "9": "#4dd0e1",
-        "10": "#7cb342",
-        "11": "#66bb6a",
-        "25": "#80deea",
-        "26": "#ef5350",
-        "27": "#a5d6a7",
-        "29": "#9c27b0",
-        "31": "#ffca28",
-        "38": "#42a5f5",
-        "45": "#ff7043",
-        "48": "#b71c1c",
-        "49": "#fff176",
-        "54": "#e0e0e0",
-        // Mage
-        "4": "#00bfff",
-        "6": "#81d4fa",
-        "7": "#4fc3f7",
-        "12": "#7e57c2",
-        "13": "#4dd0e1",
-        "14": "#00acc1",
-        "22": "#29b6f6",
-        "23": "#80deea",
-        "24": "#ce93d8",
-        "28": "#ffb74d",
-        "30": "#4dd0e1",
-        // Shaman
-        "15": "#8bc34a",
-        "16": "#689f38",
-        "32": "#f48fb1",
-        "35": "#9575cd",
-        "36": "#4fc3f7",
-        "37": "#7cb342",
-        "42": "#ec407a",
-        "43": "#8d6e63",
-        "44": "#ffb300",
-        "47": "#4db6ac",
-        "51": "#7e57c2",
-        "52": "#66bb6a",
+
+        "8": "#8b0000", "39": "#8b4513", "40": "#9966ff",
+        "0": "#c9a66b", "1": "#e85a5a", "2": "#5a9de8", "3": "#e8a85a",
+        "17": "#ff4444", "18": "#cc3333", "19": "#6b1a6b", "20": "#f0c040",
+        "21": "#708090", "33": "#44aaff", "34": "#ff8800", "41": "#cd853f",
+        "46": "#ff6666", "50": "#ffcc00",
+        "5": "#98d4a0", "9": "#4dd0e1", "10": "#7cb342", "11": "#66bb6a",
+        "25": "#80deea", "26": "#ef5350", "27": "#a5d6a7", "29": "#9c27b0",
+        "31": "#ffca28", "38": "#42a5f5", "45": "#ff7043", "48": "#b71c1c",
+        "49": "#fff176", "54": "#e0e0e0",
+        "4": "#00bfff", "6": "#81d4fa", "7": "#4fc3f7", "12": "#7e57c2",
+        "13": "#4dd0e1", "14": "#00acc1", "22": "#29b6f6", "23": "#80deea",
+        "24": "#ce93d8", "28": "#ffb74d", "30": "#4dd0e1",
+        "15": "#8bc34a", "16": "#689f38", "32": "#f48fb1", "35": "#9575cd",
+        "36": "#4fc3f7", "37": "#7cb342", "42": "#ec407a", "43": "#8d6e63",
+        "44": "#ffb300", "47": "#4db6ac", "51": "#7e57c2", "52": "#66bb6a",
     },
 };
 
-console.log("✅ Delta UI Config loaded");
+console.log("Delta UI Config v" + window.DELTA_CONFIG.version + " loaded");
