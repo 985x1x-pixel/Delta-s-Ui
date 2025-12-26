@@ -1,7 +1,11 @@
+// ==========================================
+// DELTA UI SETTINGS WINDOW v3.7
+// Game-Native Style
+// ==========================================
+
 (function() {
     "use strict";
 
-    // Wait for CONFIG to be available
     function waitForConfig(callback) {
         if (window.DELTA_CONFIG && window.DeltaUI) {
             callback();
@@ -16,17 +20,9 @@
         const CONFIG = window.DELTA_CONFIG;
         const DeltaUI = window.DeltaUI;
 
-        // ==========================================
-        // SETTINGS WINDOW STATE
-        // ==========================================
-
         let deltaSettingsWindow = null;
         let isDragging = false;
         let dragOffset = { x: 0, y: 0 };
-
-        // ==========================================
-        // HELPER FUNCTIONS
-        // ==========================================
 
         const $ = (sel, root = document) => root.querySelector(sel);
         const $$ = (sel, root = document) => Array.from(root.querySelectorAll(sel));
@@ -35,17 +31,6 @@
             const saved = localStorage.getItem("deltaUI_" + key);
             return saved !== null ? saved === "true" : defaultVal;
         }
-
-        function createSettingRow(label, description, toggleId, isEnabled) {
-            return `
-                <div>${label}<br><small class="textgrey">${description}</small></div>
-                <div class="btn checkbox ${isEnabled ? "active" : ""}" data-toggle="${toggleId}"></div>
-            `;
-        }
-
-        // ==========================================
-        // SKILLBAR SCANNER
-        // ==========================================
 
         function scanSkillbar() {
             const skillbar = $("#skillbar");
@@ -68,21 +53,14 @@
             return slots;
         }
 
-        // ==========================================
-        // COLOR ROW GENERATORS
-        // ==========================================
-
         function generateSkillbarColorRows(slots) {
             if (slots.length === 0) {
                 return Object.entries(CONFIG.skillbarColors).map(([id, color]) => {
                     const key = id.replace("sk", "").toUpperCase();
                     return `
-                        <div class="color-row" data-skill-id="${id}">
-                            <div class="label">
-                                <div class="color-preview" style="background: ${color};"></div>
-                                <span class="keybind">${key}</span>
-                                Skill Slot
-                            </div>
+                        <div>Slot ${key}</div>
+                        <div class="color-input-wrapper">
+                            <div class="color-preview" style="background: ${color};"></div>
                             <input type="color" class="skill-color-input" data-skill-id="${id}" value="${color}">
                         </div>
                     `;
@@ -90,12 +68,9 @@
             }
 
             return slots.map(slot => `
-                <div class="color-row" data-skill-id="${slot.id}">
-                    <div class="label">
-                        <div class="color-preview" style="background: ${slot.color};"></div>
-                        <span class="keybind">${slot.keybind}</span>
-                        Skill Slot
-                    </div>
+                <div>Slot <span class="keybind-badge">${slot.keybind}</span></div>
+                <div class="color-input-wrapper">
+                    <div class="color-preview" style="background: ${slot.color};"></div>
                     <input type="color" class="skill-color-input" data-skill-id="${slot.id}" value="${slot.color}">
                 </div>
             `).join("");
@@ -105,20 +80,14 @@
             return Object.entries(CONFIG.charmColors).map(([charm, color]) => {
                 const name = CONFIG.charmNames[charm] || charm;
                 return `
-                    <div class="color-row" data-charm-id="${charm}">
-                        <div class="label">
-                            <div class="color-preview" style="background: ${color};"></div>
-                            ${name}
-                        </div>
+                    <div>${name}</div>
+                    <div class="color-input-wrapper">
+                        <div class="color-preview" style="background: ${color};"></div>
                         <input type="color" class="charm-color-input" data-charm-id="${charm}" value="${color}">
                     </div>
                 `;
             }).join("");
         }
-
-        // ==========================================
-        // WINDOW MANAGEMENT
-        // ==========================================
 
         function closeDeltaSettingsWindow() {
             if (deltaSettingsWindow) {
@@ -136,144 +105,139 @@
             }
         }
 
-        // ==========================================
-        // CREATE SETTINGS WINDOW
-        // ==========================================
-
         function createDeltaSettingsWindow() {
             if (deltaSettingsWindow) deltaSettingsWindow.remove();
 
             deltaSettingsWindow = document.createElement("div");
+            deltaSettingsWindow.className = "window-pos";
             deltaSettingsWindow.id = "delta-settings-window";
+            deltaSettingsWindow.style.cssText = "z-index: 100; position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);";
 
             const skillbarSlots = scanSkillbar();
 
             deltaSettingsWindow.innerHTML = `
-                <div class="window">
-                    <div class="titleframe">
-                        <img src="/data/ui/icons/cog.svg" class="titleicon" alt="">
-                        <div class="title">
-                            <span class="title-delta">Δ</span> Delta UI
-                            <span class="title-version">v${CONFIG.version}</span>
+                <div class="window panel-black svelte-1f1v3u3">
+                    <div class="titleframe svelte-1f1v3u3" style="cursor: pointer;">
+                        <img src="/data/ui/icons/cog.svg" class="titleicon svgicon svelte-1f1v3u3">
+                        <div class="textprimary title svelte-1f1v3u3">
+                            <div><span style="color: #F5C247; font-weight: bold;">Δ</span> Delta UI <small style="color: #5b858e;">v${CONFIG.version}</small></div>
                         </div>
-                        <div class="btn close-btn">✕</div>
+                        <img src="/data/ui/icons/cross.svg" class="btn black svgicon close-btn">
                     </div>
-
-                    <div class="divide">
-                        <div class="nav-sidebar">
-                            <div class="choice active" data-tab="features">
-                                <span class="tab-icon">⚡</span> Features
+                    <div class="slot svelte-1f1v3u3">
+                        <div class="divide svelte-13nnce4">
+                            <div class="delta-nav">
+                                <div class="choice active" data-tab="features">Features</div>
+                                <div class="choice" data-tab="colors">Colors</div>
+                                <div class="choice" data-tab="about">About</div>
                             </div>
-                            <div class="choice" data-tab="colors">
-                                <span class="tab-icon">🎨</span> Colors
-                            </div>
-                            <div class="choice" data-tab="mounts">
-                                <span class="tab-icon">🐎</span> Mounts
-                            </div>
-                        </div>
+                            <div class="menu panel-black scrollbar svelte-13nnce4">
+                                
+                                <!-- Features Tab -->
+                                <div class="tab-panel active" data-panel="features">
+                                    <h3 class="textprimary">Gameplay</h3>
+                                    <div class="settings svelte-13nnce4">
+                                        <div>CC Indicator<br><small class="textgrey">Colored borders on CC'd party members</small></div>
+                                        <div class="btn checkbox ${getToggle("ccIndicator", true) ? "active" : ""}" data-toggle="ccIndicator"></div>
+                                        
+                                        <div>Hide Buffs<br><small class="textgrey">Hide selected buff icons</small></div>
+                                        <div class="btn checkbox ${getToggle("hideBuffs", false) ? "active" : ""}" data-toggle="hideBuffs"></div>
+                                        
+                                        <div>FPS Mode<br><small class="textgrey">Hide UI for performance</small></div>
+                                        <div class="btn checkbox ${getToggle("fpsMode", false) ? "active" : ""}" data-toggle="fpsMode"></div>
+                                    </div>
 
-                        <div class="menu">
-                            <!-- Features Tab -->
-                            <div class="tab-panel active" data-panel="features">
-                                <div class="textprimary">Gameplay</div>
-                                <div class="settings">
-                                    ${createSettingRow("CC Indicator", "Shows colored borders on CC'd party members", "ccIndicator", getToggle("ccIndicator", true))}
-                                    ${createSettingRow("Hide Buffs", "Hides selected buff icons from party frames", "hideBuffs", getToggle("hideBuffs", false))}
-                                    ${createSettingRow("FPS Mode", "Hides UI elements for better performance", "fpsMode", getToggle("fpsMode", false))}
-                                </div>
+                                    <h3 class="textprimary">Chat</h3>
+                                    <div class="settings svelte-13nnce4">
+                                        <div>Chat Tweaks<br><small class="textgrey">Resizable chat & controls</small></div>
+                                        <div class="btn checkbox ${getToggle("chatTweaks", true) ? "active" : ""}" data-toggle="chatTweaks"></div>
+                                    </div>
 
-                                <div class="textprimary">Chat</div>
-                                <div class="settings">
-                                    ${createSettingRow("Chat Tweaks", "Resizable chat window & controls", "chatTweaks", getToggle("chatTweaks", true))}
-                                </div>
+                                    <h3 class="textprimary">Visual</h3>
+                                    <div class="settings svelte-13nnce4">
+                                        <div>Item Recolor<br><small class="textgrey">Quality-based item borders</small></div>
+                                        <div class="btn checkbox ${getToggle("itemRecolor", true) ? "active" : ""}" data-toggle="itemRecolor"></div>
+                                        
+                                        <div>Charm Colors<br><small class="textgrey">Custom charm border colors</small></div>
+                                        <div class="btn checkbox ${getToggle("charmColors", true) ? "active" : ""}" data-toggle="charmColors"></div>
+                                    </div>
 
-                                <div class="textprimary">Visual</div>
-                                <div class="settings">
-                                    ${createSettingRow("Item Recolor", "Colors item borders by quality %", "itemRecolor", getToggle("itemRecolor", true))}
-                                    ${createSettingRow("Charm Colors", "Custom colors for charm items", "charmColors", getToggle("charmColors", true))}
-                                </div>
-
-                                <div class="textprimary">Stats Display</div>
-                                <div class="settings">
-                                    ${createSettingRow("Playtime Labels", "Show session & total playtime", "playtimeLabels", getToggle("playtimeLabels", true))}
-                                    ${createSettingRow("Fame Labels", "Show fame gained/lost counters", "fameLabels", getToggle("fameLabels", true))}
-                                </div>
-                            </div>
-
-                            <!-- Colors Tab -->
-                            <div class="tab-panel" data-panel="colors">
-                                <div class="textprimary">Skillbar Colours</div>
-                                <div class="color-grid" id="skillbar-colors-container">
-                                    ${generateSkillbarColorRows(skillbarSlots)}
-                                </div>
-
-                                <div class="textprimary">Charm Colours</div>
-                                <div class="color-grid" id="charm-colors-container">
-                                    ${generateCharmColorRows()}
-                                </div>
-
-                                <div class="textprimary">Pet Colour</div>
-                                <div class="color-grid" id="pet-color-container">
-                                    <div class="color-row full-width">
-                                        <div class="label">
-                                            <div class="color-preview" style="background: ${CONFIG.petColor};"></div>
-                                            Pet Border Glow
-                                        </div>
-                                        <input type="color" id="pet-color-input" value="${CONFIG.petColor}">
+                                    <h3 class="textprimary">Stats Display</h3>
+                                    <div class="settings svelte-13nnce4">
+                                        <div>Playtime Labels<br><small class="textgrey">Session & total time</small></div>
+                                        <div class="btn checkbox ${getToggle("playtimeLabels", true) ? "active" : ""}" data-toggle="playtimeLabels"></div>
+                                        
+                                        <div>Fame Labels<br><small class="textgrey">Fame gained/lost counters</small></div>
+                                        <div class="btn checkbox ${getToggle("fameLabels", true) ? "active" : ""}" data-toggle="fameLabels"></div>
                                     </div>
                                 </div>
 
-                                <div class="btn-row">
-                                    <button class="btn btn-secondary" id="export-colors">📤 Export</button>
-                                    <button class="btn btn-secondary" id="import-colors">📥 Import</button>
-                                    <button class="btn btn-danger" id="reset-all-colors">↺ Reset</button>
-                                </div>
-                            </div>
+                                <!-- Colors Tab -->
+                                <div class="tab-panel" data-panel="colors">
+                                    <h3 class="textprimary">Skillbar Colors</h3>
+                                    <div class="settings svelte-13nnce4">
+                                        ${generateSkillbarColorRows(skillbarSlots)}
+                                    </div>
 
-                            <!-- Mounts Tab -->
-                            <div class="tab-panel" data-panel="mounts">
-                                <div class="empty-state">
-                                    <div class="empty-icon">🐎</div>
-                                    <div class="empty-title">Coming Soon</div>
-                                    <div class="empty-desc">Mount customization will be added in a future update.</div>
+                                    <h3 class="textprimary">Charm Colors</h3>
+                                    <div class="settings svelte-13nnce4">
+                                        ${generateCharmColorRows()}
+                                    </div>
+
+                                    <h3 class="textprimary">Pet Color</h3>
+                                    <div class="settings svelte-13nnce4">
+                                        <div>Pet Border Glow</div>
+                                        <div class="color-input-wrapper">
+                                            <div class="color-preview" id="pet-preview" style="background: ${CONFIG.petColor};"></div>
+                                            <input type="color" id="pet-color-input" value="${CONFIG.petColor}">
+                                        </div>
+                                    </div>
+
+                                    <h3 class="textprimary">Actions</h3>
+                                    <div class="settings svelte-13nnce4">
+                                        <div>Export Colors</div>
+                                        <div class="btn blue" id="export-colors">Export</div>
+                                        
+                                        <div>Import Colors</div>
+                                        <div class="btn blue" id="import-colors">Import</div>
+                                        
+                                        <div>Reset to Defaults</div>
+                                        <div class="btn orange" id="reset-all-colors">Reset</div>
+                                    </div>
+                                </div>
+
+                                <!-- About Tab -->
+                                <div class="tab-panel" data-panel="about">
+                                    <h3 class="textprimary">Delta UI</h3>
+                                    <div class="about-content">
+                                        <div class="about-logo">Δ</div>
+                                        <div class="about-version">Version ${CONFIG.version}</div>
+                                        <div class="about-author">Made with ♥ by <span class="textprimary">lordwar222</span></div>
+                                        <div class="about-desc">
+                                            A private UI enhancement mod for Hordes.io featuring customizable skillbar colors, 
+                                            charm colors, CC indicators, and more.
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
-                    </div>
-
-                    <div class="credits">
-                        made with <span class="heart">♥</span> by <span>lordwar222</span>
                     </div>
                 </div>
             `;
 
             document.body.appendChild(deltaSettingsWindow);
-
-            // Force center positioning
-            deltaSettingsWindow.style.position = "fixed";
-            deltaSettingsWindow.style.top = "50%";
-            deltaSettingsWindow.style.left = "50%";
-            deltaSettingsWindow.style.transform = "translate(-50%, -50%)";
-            deltaSettingsWindow.style.zIndex = "99999";
-
             setupEventListeners();
         }
-
-        // ==========================================
-        // EVENT LISTENERS
-        // ==========================================
 
         function setupEventListeners() {
             if (!deltaSettingsWindow) return;
 
-            // Close button
             $(".close-btn", deltaSettingsWindow).addEventListener("click", closeDeltaSettingsWindow);
 
-            // Tab navigation
-            $$(".choice", deltaSettingsWindow).forEach(choice => {
+            $$(".delta-nav .choice", deltaSettingsWindow).forEach(choice => {
                 choice.addEventListener("click", () => {
                     const targetTab = choice.dataset.tab;
-                    $$(".choice", deltaSettingsWindow).forEach(c => c.classList.remove("active"));
+                    $$(".delta-nav .choice", deltaSettingsWindow).forEach(c => c.classList.remove("active"));
                     choice.classList.add("active");
                     $$(".tab-panel", deltaSettingsWindow).forEach(panel => {
                         panel.classList.toggle("active", panel.dataset.panel === targetTab);
@@ -281,7 +245,6 @@
                 });
             });
 
-            // Checkbox toggles
             $$(".btn.checkbox[data-toggle]", deltaSettingsWindow).forEach(checkbox => {
                 checkbox.addEventListener("click", () => {
                     const toggleId = checkbox.dataset.toggle;
@@ -289,19 +252,15 @@
                     checkbox.classList.toggle("active");
                     localStorage.setItem("deltaUI_" + toggleId, isNowActive.toString());
 
-                    // Apply the setting
                     if (DeltaUI.applyToggle) {
                         DeltaUI.applyToggle(toggleId, isNowActive);
                     }
-
-                    console.log("[Delta UI] " + toggleId + ": " + (isNowActive ? "Enabled" : "Disabled"));
                 });
             });
 
-            // Dragging
             const titleframe = $(".titleframe", deltaSettingsWindow);
             titleframe.addEventListener("mousedown", (e) => {
-                if (e.target.closest(".close-btn")) return;
+                if (e.target.closest(".close-btn") || e.target.closest(".btn")) return;
                 isDragging = true;
                 const rect = deltaSettingsWindow.getBoundingClientRect();
                 dragOffset.x = e.clientX - rect.left;
@@ -317,76 +276,61 @@
                 deltaSettingsWindow.style.top = (e.clientY - dragOffset.y) + "px";
             });
 
-            document.addEventListener("mouseup", () => {
-                isDragging = false;
-            });
+            document.addEventListener("mouseup", () => { isDragging = false; });
 
-            // Skill color inputs
             $$(".skill-color-input", deltaSettingsWindow).forEach(input => {
                 input.addEventListener("input", (e) => {
                     const skillId = e.target.dataset.skillId;
                     CONFIG.skillbarColors[skillId] = e.target.value;
                     if (DeltaUI.saveSkillbarColors) DeltaUI.saveSkillbarColors();
                     if (DeltaUI.updateDynamicStyles) DeltaUI.updateDynamicStyles();
-
-                    const preview = $(".color-preview", e.target.closest(".color-row"));
+                    const preview = e.target.previousElementSibling;
                     if (preview) preview.style.background = e.target.value;
                 });
             });
 
-            // Charm color inputs
             $$(".charm-color-input", deltaSettingsWindow).forEach(input => {
                 input.addEventListener("input", (e) => {
                     const charmId = e.target.dataset.charmId;
                     CONFIG.charmColors[charmId] = e.target.value;
                     if (DeltaUI.saveCharmColors) DeltaUI.saveCharmColors();
                     if (DeltaUI.updateDynamicStyles) DeltaUI.updateDynamicStyles();
-
-                    const preview = $(".color-preview", e.target.closest(".color-row"));
+                    const preview = e.target.previousElementSibling;
                     if (preview) preview.style.background = e.target.value;
                 });
             });
 
-            // Pet color input
             const petInput = $("#pet-color-input", deltaSettingsWindow);
             if (petInput) {
                 petInput.addEventListener("input", (e) => {
                     CONFIG.petColor = e.target.value;
                     if (DeltaUI.savePetColor) DeltaUI.savePetColor();
                     if (DeltaUI.updateDynamicStyles) DeltaUI.updateDynamicStyles();
-
-                    const preview = $(".color-preview", e.target.closest(".color-row"));
+                    const preview = $("#pet-preview", deltaSettingsWindow);
                     if (preview) preview.style.background = e.target.value;
                 });
             }
 
-            // Reset button
             const resetBtn = $("#reset-all-colors", deltaSettingsWindow);
             if (resetBtn) {
                 resetBtn.addEventListener("click", () => {
                     if (DeltaUI.resetToDefaults) DeltaUI.resetToDefaults();
                     if (DeltaUI.updateDynamicStyles) DeltaUI.updateDynamicStyles();
-                    createDeltaSettingsWindow(); // Refresh window
+                    createDeltaSettingsWindow();
                 });
             }
 
-            // Export button
             const exportBtn = $("#export-colors", deltaSettingsWindow);
             if (exportBtn) {
                 exportBtn.addEventListener("click", () => {
-                    const data = {
-                        skillbarColors: CONFIG.skillbarColors,
-                        charmColors: CONFIG.charmColors,
-                        petColor: CONFIG.petColor
-                    };
-                    const json = JSON.stringify(data, null, 2);
-                    navigator.clipboard.writeText(json).then(() => {
-                        alert("Colors exported to clipboard!");
+                    const data = { skillbarColors: CONFIG.skillbarColors, charmColors: CONFIG.charmColors, petColor: CONFIG.petColor };
+                    navigator.clipboard.writeText(JSON.stringify(data, null, 2)).then(() => {
+                        exportBtn.textContent = "Copied!";
+                        setTimeout(() => exportBtn.textContent = "Export", 1500);
                     });
                 });
             }
 
-            // Import button
             const importBtn = $("#import-colors", deltaSettingsWindow);
             if (importBtn) {
                 importBtn.addEventListener("click", () => {
@@ -397,24 +341,17 @@
                         if (data.skillbarColors) Object.assign(CONFIG.skillbarColors, data.skillbarColors);
                         if (data.charmColors) Object.assign(CONFIG.charmColors, data.charmColors);
                         if (data.petColor) CONFIG.petColor = data.petColor;
-
                         if (DeltaUI.saveSkillbarColors) DeltaUI.saveSkillbarColors();
                         if (DeltaUI.saveCharmColors) DeltaUI.saveCharmColors();
                         if (DeltaUI.savePetColor) DeltaUI.savePetColor();
                         if (DeltaUI.updateDynamicStyles) DeltaUI.updateDynamicStyles();
-
-                        createDeltaSettingsWindow(); // Refresh
-                        alert("Colors imported successfully!");
+                        createDeltaSettingsWindow();
                     } catch (e) {
                         alert("Invalid JSON format!");
                     }
                 });
             }
         }
-
-        // ==========================================
-        // EXPOSE TO GLOBAL
-        // ==========================================
 
         window.DeltaSettings = {
             toggle: toggleDeltaSettings,
@@ -424,5 +361,4 @@
 
         console.log("✅ Delta Settings module loaded");
     }
-
 })();
