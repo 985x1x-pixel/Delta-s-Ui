@@ -3166,5 +3166,65 @@ section.post .btn.formatted.secondary.disabled {
     animation: requestPulse 2s ease-in-out infinite !important;
 }
 
+#delta-settings-window .keybind-input-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+#delta-settings-window .keybind-input {
+    width: 50px;
+    height: 28px;
+    background: rgba(0, 0, 0, 0.4);
+    border: 1px solid rgba(166, 220, 213, 0.3);
+    border-radius: 3px;
+    color: #F5C247;
+    font-size: 14px;
+    font-weight: bold;
+    text-align: center;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    font-family: inherit;
+}
+
+#delta-settings-window .keybind-input:focus {
+    outline: none;
+    border-color: #F5C247;
+    box-shadow: 0 0 8px rgba(245, 194, 71, 0.4);
+    background: rgba(245, 194, 71, 0.1);
+}
+
+#delta-settings-window .keybind-input::placeholder {
+    color: #5b858e;
+    font-size: 10px;
+    font-weight: normal;
+}
+
+#delta-settings-window .btn.small {
+    width: 24px;
+    height: 24px;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    background: rgba(244, 41, 41, 0.15);
+    border-color: rgba(244, 41, 41, 0.3);
+    color: #F42929;
+}
+
+#delta-settings-window .btn.small:hover {
+    background: rgba(244, 41, 41, 0.25);
+}
+
+#delta-settings-window .keybind-hint {
+    margin-top: 12px;
+    padding: 8px 12px;
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 3px;
+    border-left: 2px solid #5b858e;
+}
+
 `;
 document.head.appendChild(style);
