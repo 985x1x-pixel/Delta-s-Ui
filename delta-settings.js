@@ -379,6 +379,68 @@
             }
         }
 
+        // Fullscreen keybind input
+        const fullscreenKeyInput = $("#fullscreen-key-input", deltaSettingsWindow);
+        if (fullscreenKeyInput) {
+            // Click to focus
+            fullscreenKeyInput.addEventListener("click", () => {
+                fullscreenKeyInput.value = "";
+                fullscreenKeyInput.placeholder = "Press a key...";
+            });
+            
+            // Capture keypress
+            fullscreenKeyInput.addEventListener("keydown", (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                
+                const key = e.key.toLowerCase();
+                
+                // Ignore modifier keys alone
+                if (["shift", "control", "alt", "meta"].includes(key)) {
+                    return;
+                }
+                
+                // Set the new key
+                fullscreenKeyInput.value = key.toUpperCase();
+                localStorage.setItem("deltaUI_fullscreenKey", key);
+                
+                // Update the main script
+                if (DeltaUI.setFullscreenKey) {
+                    DeltaUI.setFullscreenKey(key);
+                }
+                
+                // Blur the input
+                fullscreenKeyInput.blur();
+                
+                console.log("[Delta UI] Fullscreen key set to: " + key.toUpperCase());
+            });
+            
+            // Handle blur
+            fullscreenKeyInput.addEventListener("blur", () => {
+                const currentKey = localStorage.getItem("deltaUI_fullscreenKey") || "o";
+                if (!fullscreenKeyInput.value) {
+                    fullscreenKeyInput.value = currentKey.toUpperCase();
+                }
+                fullscreenKeyInput.placeholder = "Press a key";
+            });
+        }
+        
+        // Clear fullscreen key button
+        const clearFullscreenKey = $("#clear-fullscreen-key", deltaSettingsWindow);
+        if (clearFullscreenKey) {
+            clearFullscreenKey.addEventListener("click", () => {
+                const defaultKey = "o";
+                fullscreenKeyInput.value = defaultKey.toUpperCase();
+                localStorage.setItem("deltaUI_fullscreenKey", defaultKey);
+                
+                if (DeltaUI.setFullscreenKey) {
+                    DeltaUI.setFullscreenKey(defaultKey);
+                }
+                
+                console.log("[Delta UI] Fullscreen key reset to: O");
+            });
+        }
+        
         window.DeltaSettings = {
             toggle: toggleDeltaSettings,
             close: closeDeltaSettingsWindow,
