@@ -57,6 +57,40 @@
             return saved !== null ? saved === "true" : defaultVal;
         }
 
+        // Load hidden buffs settings
+        function getHiddenBuffs() {
+            try {
+                const saved = localStorage.getItem(CONFIG.storageKeys.HIDDEN_BUFFS);
+                return saved ? JSON.parse(saved) : { ...CONFIG.defaults.hiddenBuffs };
+            } catch (e) {
+                return { ...CONFIG.defaults.hiddenBuffs };
+            }
+        }
+
+        function saveHiddenBuffs(hiddenBuffs) {
+            localStorage.setItem(CONFIG.storageKeys.HIDDEN_BUFFS, JSON.stringify(hiddenBuffs));
+            if (DeltaUI.updateHiddenBuffsConfig) {
+                DeltaUI.updateHiddenBuffsConfig(hiddenBuffs);
+            }
+        }
+
+        // Load CC settings
+        function getCCSettings() {
+            try {
+                const saved = localStorage.getItem(CONFIG.storageKeys.CC_SETTINGS);
+                return saved ? JSON.parse(saved) : { ...CONFIG.defaults.ccSettings };
+            } catch (e) {
+                return { ...CONFIG.defaults.ccSettings };
+            }
+        }
+
+        function saveCCSettings(ccSettings) {
+            localStorage.setItem(CONFIG.storageKeys.CC_SETTINGS, JSON.stringify(ccSettings));
+            if (DeltaUI.updateCCConfig) {
+                DeltaUI.updateCCConfig(ccSettings);
+            }
+        }
+
         function scanSkillbar() {
             const skillbar = document.querySelector("#skillbar");
             const slots = [];
@@ -118,6 +152,63 @@
             }).join("");
         }
 
+        function generateBuffToggleRows() {
+            const hiddenBuffs = getHiddenBuffs();
+            const classes = ["warrior", "archer", "mage", "shaman"];
+            let html = '';
+
+            classes.forEach(className => {
+                const buffs = CONFIG.buffIcons[className] || [];
+                if (buffs.length === 0) return;
+
+                html += `<h4 class="textprimary class-header">${className.charAt(0).toUpperCase() + className.slice(1)}</h4>`;
+                html += '<div class="settings buff-settings">';
+
+                buffs.forEach(buff => {
+                    const isHidden = hiddenBuffs[buff.id] === true;
+                    html += `
+                        <div class="buff-row">
+                            <img src="${buff.src}" class="buff-icon" alt="${buff.name}">
+                            <span class="buff-name">${buff.name}</span>
+                        </div>
+                        <div class="btn checkbox ${isHidden ? "active" : ""}" data-buff-id="${buff.id}"></div>
+                    `;
+                });
+
+                html += '</div>';
+            });
+
+            // Utility section placeholder
+            html += `<h4 class="textprimary class-header">Utility</h4>`;
+            html += '<div class="settings buff-settings"><div class="coming-soon">Coming soon...</div></div>';
+
+            return html;
+        }
+
+        function generateCCRows() {
+            const ccSettings = getCCSettings();
+            let html = '';
+
+            CONFIG.ccEffects.forEach(cc => {
+                const settings = ccSettings[cc.id] || { color: cc.color, priority: cc.priority };
+                html += `
+                    <div class="cc-row">
+                        <img src="${cc.src}" class="cc-icon" alt="${cc.name}">
+                        <span class="cc-name">${cc.name}</span>
+                    </div>
+                    <div class="cc-controls">
+                        <div class="color-input-wrapper">
+                            <div class="color-preview cc-color-preview" style="background: ${settings.color};"></div>
+                            <input type="color" class="cc-color-input" data-cc-id="${cc.id}" value="${settings.color}">
+                        </div>
+                        <input type="number" class="cc-priority-input" data-cc-id="${cc.id}" value="${settings.priority}" min="0" max="10" title="Priority (0 = disabled)">
+                    </div>
+                `;
+            });
+
+            return html;
+        }
+
         function closeDeltaSettingsWindow() {
             if (deltaSettingsWindow) {
                 deltaSettingsWindow.remove();
@@ -134,25 +225,18 @@
             }
         }
 
-        function centerWindow() {
-            if (!deltaSettingsWindow) return;
-            deltaSettingsWindow.style.left = "50%";
-            deltaSettingsWindow.style.top = "50%";
-            deltaSettingsWindow.style.transform = "translate(-50%, -50%)";
-        }
-
         function createDeltaSettingsWindow() {
             if (deltaSettingsWindow) deltaSettingsWindow.remove();
 
             deltaSettingsWindow = document.createElement("div");
             deltaSettingsWindow.className = "window-pos";
             deltaSettingsWindow.id = "delta-settings-window";
-            
-            // Always start centered
             deltaSettingsWindow.style.cssText = "z-index: 100; position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);";
 
             const skillbarSlots = scanSkillbar();
             const currentFullscreenKey = localStorage.getItem("deltaUI_fullscreenKey") || "o";
+            const hideBuffsEnabled = getToggle("hideBuffs", false);
+            const ccIndicatorEnabled = getToggle("ccIndicator", true);
 
             deltaSettingsWindow.innerHTML = `
                 <div class="window panel-black svelte-1f1v3u3">
@@ -169,6 +253,7 @@
                                 <div class="choice active" data-tab="features">Features</div>
                                 <div class="choice" data-tab="controls">Controls</div>
                                 <div class="choice" data-tab="colors">Colors</div>
+                                <div class="choice" data-tab="customization">Customization</div>
                                 <div class="choice" data-tab="about">About</div>
                             </div>
                             <div class="menu panel-black scrollbar svelte-13nnce4">
@@ -268,6 +353,30 @@
                                     </div>
                                 </div>
 
+                                <!-- Customization Tab -->
+                                <div class="tab-panel" data-panel="customization">
+                                    <h3 class="textprimary">Remove Buffs Customization</h3>
+                                    <div class="customization-notice ${hideBuffsEnabled ? 'hidden' : ''}">
+                                        <small class="textgrey">⚠️ Enable "Hide Buffs" in Features tab to use this section.</small>
+                                    </div>
+                                    <div class="customization-section ${hideBuffsEnabled ? '' : 'disabled'}">
+                                        ${generateBuffToggleRows()}
+                                    </div>
+
+                                    <h3 class="textprimary">CC Indicator Customization</h3>
+                                    <div class="customization-notice ${ccIndicatorEnabled ? 'hidden' : ''}">
+                                        <small class="textgrey">⚠️ Enable "CC Indicator" in Features tab to use this section.</small>
+                                    </div>
+                                    <div class="customization-section ${ccIndicatorEnabled ? '' : 'disabled'}">
+                                        <div class="cc-header">
+                                            <small class="textgrey">Priority 0 = disabled. Higher priority shows first.</small>
+                                        </div>
+                                        <div class="settings cc-settings">
+                                            ${generateCCRows()}
+                                        </div>
+                                    </div>
+                                </div>
+
                                 <!-- About Tab -->
                                 <div class="tab-panel" data-panel="about">
                                     <h3 class="textprimary">Delta UI</h3>
@@ -289,64 +398,14 @@
 
             document.body.appendChild(deltaSettingsWindow);
             setupEventListeners();
-            setupDragging();
         }
-
-        function setupDragging() {
-            if (!deltaSettingsWindow) return;
-
-            const titleframe = $(".titleframe", deltaSettingsWindow);
-            if (!titleframe) return;
-
-            titleframe.addEventListener("mousedown", (e) => {
-                // Don't drag if clicking close button
-                if (e.target.closest(".close-btn") || e.target.closest(".btn")) return;
-                
-                isDragging = true;
-                
-                // Get current position
-                const rect = deltaSettingsWindow.getBoundingClientRect();
-                
-                // Calculate offset from mouse to top-left of window
-                dragOffset.x = e.clientX - rect.left;
-                dragOffset.y = e.clientY - rect.top;
-                
-                // Switch from centered transform to absolute positioning
-                deltaSettingsWindow.style.transform = "none";
-                deltaSettingsWindow.style.left = rect.left + "px";
-                deltaSettingsWindow.style.top = rect.top + "px";
-                
-                // Prevent text selection while dragging
-                e.preventDefault();
-            });
-        }
-
-        // Global mouse move handler
-        document.addEventListener("mousemove", (e) => {
-            if (!isDragging || !deltaSettingsWindow) return;
-            
-            const newX = e.clientX - dragOffset.x;
-            const newY = e.clientY - dragOffset.y;
-            
-            // Keep window within viewport bounds
-            const rect = deltaSettingsWindow.getBoundingClientRect();
-            const maxX = window.innerWidth - rect.width;
-            const maxY = window.innerHeight - rect.height;
-            
-            deltaSettingsWindow.style.left = Math.max(0, Math.min(newX, maxX)) + "px";
-            deltaSettingsWindow.style.top = Math.max(0, Math.min(newY, maxY)) + "px";
-        });
-
-        // Global mouse up handler
-        document.addEventListener("mouseup", () => {
-            isDragging = false;
-        });
 
         function setupEventListeners() {
             if (!deltaSettingsWindow) return;
 
             $(".close-btn", deltaSettingsWindow)?.addEventListener("click", closeDeltaSettingsWindow);
 
+            // Tab navigation
             $$(".delta-nav .choice", deltaSettingsWindow).forEach(choice => {
                 choice.addEventListener("click", () => {
                     const targetTab = choice.dataset.tab;
@@ -358,6 +417,7 @@
                 });
             });
 
+            // Feature toggles
             $$(".btn.checkbox[data-toggle]", deltaSettingsWindow).forEach(checkbox => {
                 checkbox.addEventListener("click", () => {
                     const toggleId = checkbox.dataset.toggle;
@@ -368,9 +428,83 @@
                     if (DeltaUI.applyToggle) {
                         DeltaUI.applyToggle(toggleId, isNowActive);
                     }
+
+                    // Update customization section visibility
+                    if (toggleId === "hideBuffs" || toggleId === "ccIndicator") {
+                        updateCustomizationVisibility();
+                    }
                 });
             });
 
+            // Buff toggle handlers
+            $$(".btn.checkbox[data-buff-id]", deltaSettingsWindow).forEach(checkbox => {
+                checkbox.addEventListener("click", () => {
+                    const buffId = checkbox.dataset.buffId;
+                    const isNowActive = !checkbox.classList.contains("active");
+                    checkbox.classList.toggle("active");
+
+                    const hiddenBuffs = getHiddenBuffs();
+                    hiddenBuffs[buffId] = isNowActive;
+                    saveHiddenBuffs(hiddenBuffs);
+                });
+            });
+
+            // CC color input handlers
+            $$(".cc-color-input", deltaSettingsWindow).forEach(input => {
+                input.addEventListener("input", (e) => {
+                    const ccId = e.target.dataset.ccId;
+                    const ccSettings = getCCSettings();
+                    if (!ccSettings[ccId]) {
+                        ccSettings[ccId] = { color: e.target.value, priority: 1 };
+                    } else {
+                        ccSettings[ccId].color = e.target.value;
+                    }
+                    saveCCSettings(ccSettings);
+
+                    const preview = e.target.previousElementSibling;
+                    if (preview) preview.style.background = e.target.value;
+                });
+            });
+
+            // CC priority input handlers
+            $$(".cc-priority-input", deltaSettingsWindow).forEach(input => {
+                input.addEventListener("input", (e) => {
+                    const ccId = e.target.dataset.ccId;
+                    const priority = parseInt(e.target.value, 10) || 0;
+                    const ccSettings = getCCSettings();
+                    if (!ccSettings[ccId]) {
+                        ccSettings[ccId] = { color: "#ffffff", priority: priority };
+                    } else {
+                        ccSettings[ccId].priority = priority;
+                    }
+                    saveCCSettings(ccSettings);
+                });
+            });
+
+            // Dragging
+            const titleframe = $(".titleframe", deltaSettingsWindow);
+            if (titleframe) {
+                titleframe.addEventListener("mousedown", (e) => {
+                    if (e.target.closest(".close-btn") || e.target.closest(".btn")) return;
+                    isDragging = true;
+                    const rect = deltaSettingsWindow.getBoundingClientRect();
+                    dragOffset.x = e.clientX - rect.left;
+                    dragOffset.y = e.clientY - rect.top;
+                    deltaSettingsWindow.style.transform = "none";
+                    deltaSettingsWindow.style.left = rect.left + "px";
+                    deltaSettingsWindow.style.top = rect.top + "px";
+                });
+            }
+
+            document.addEventListener("mousemove", (e) => {
+                if (!isDragging || !deltaSettingsWindow) return;
+                deltaSettingsWindow.style.left = (e.clientX - dragOffset.x) + "px";
+                deltaSettingsWindow.style.top = (e.clientY - dragOffset.y) + "px";
+            });
+
+            document.addEventListener("mouseup", () => { isDragging = false; });
+
+            // Skill color inputs
             $$(".skill-color-input", deltaSettingsWindow).forEach(input => {
                 input.addEventListener("input", (e) => {
                     const skillId = e.target.dataset.skillId;
@@ -382,6 +516,7 @@
                 });
             });
 
+            // Charm color inputs
             $$(".charm-color-input", deltaSettingsWindow).forEach(input => {
                 input.addEventListener("input", (e) => {
                     const charmId = e.target.dataset.charmId;
@@ -393,6 +528,7 @@
                 });
             });
 
+            // Pet color input
             const petInput = $("#pet-color-input", deltaSettingsWindow);
             if (petInput) {
                 petInput.addEventListener("input", (e) => {
@@ -404,6 +540,7 @@
                 });
             }
 
+            // Reset button
             const resetBtn = $("#reset-all-colors", deltaSettingsWindow);
             if (resetBtn) {
                 resetBtn.addEventListener("click", () => {
@@ -413,10 +550,17 @@
                 });
             }
 
+            // Export button
             const exportBtn = $("#export-colors", deltaSettingsWindow);
             if (exportBtn) {
                 exportBtn.addEventListener("click", () => {
-                    const data = { skillbarColors: CONFIG.skillbarColors, charmColors: CONFIG.charmColors, petColor: CONFIG.petColor };
+                    const data = { 
+                        skillbarColors: CONFIG.skillbarColors, 
+                        charmColors: CONFIG.charmColors, 
+                        petColor: CONFIG.petColor,
+                        hiddenBuffs: getHiddenBuffs(),
+                        ccSettings: getCCSettings()
+                    };
                     navigator.clipboard.writeText(JSON.stringify(data, null, 2)).then(() => {
                         exportBtn.textContent = "Copied!";
                         setTimeout(() => exportBtn.textContent = "Export", 1500);
@@ -424,6 +568,7 @@
                 });
             }
 
+            // Import button
             const importBtn = $("#import-colors", deltaSettingsWindow);
             if (importBtn) {
                 importBtn.addEventListener("click", () => {
@@ -434,6 +579,8 @@
                         if (data.skillbarColors) Object.assign(CONFIG.skillbarColors, data.skillbarColors);
                         if (data.charmColors) Object.assign(CONFIG.charmColors, data.charmColors);
                         if (data.petColor) CONFIG.petColor = data.petColor;
+                        if (data.hiddenBuffs) saveHiddenBuffs(data.hiddenBuffs);
+                        if (data.ccSettings) saveCCSettings(data.ccSettings);
                         if (DeltaUI.saveSkillbarColors) DeltaUI.saveSkillbarColors();
                         if (DeltaUI.saveCharmColors) DeltaUI.saveCharmColors();
                         if (DeltaUI.savePetColor) DeltaUI.savePetColor();
@@ -500,11 +647,29 @@
             }
         }
 
+        function updateCustomizationVisibility() {
+            if (!deltaSettingsWindow) return;
+
+            const hideBuffsEnabled = getToggle("hideBuffs", false);
+            const ccIndicatorEnabled = getToggle("ccIndicator", true);
+
+            const buffNotice = $(".tab-panel[data-panel='customization'] .customization-notice:first-of-type", deltaSettingsWindow);
+            const buffSection = $(".tab-panel[data-panel='customization'] .customization-section:first-of-type", deltaSettingsWindow);
+            
+            if (buffNotice) buffNotice.classList.toggle("hidden", hideBuffsEnabled);
+            if (buffSection) buffSection.classList.toggle("disabled", !hideBuffsEnabled);
+
+            const ccNotice = $$(".tab-panel[data-panel='customization'] .customization-notice", deltaSettingsWindow)[1];
+            const ccSection = $$(".tab-panel[data-panel='customization'] .customization-section", deltaSettingsWindow)[1];
+            
+            if (ccNotice) ccNotice.classList.toggle("hidden", ccIndicatorEnabled);
+            if (ccSection) ccSection.classList.toggle("disabled", !ccIndicatorEnabled);
+        }
+
         window.DeltaSettings = {
             toggle: toggleDeltaSettings,
             close: closeDeltaSettingsWindow,
-            open: createDeltaSettingsWindow,
-            center: centerWindow
+            open: createDeltaSettingsWindow
         };
 
         console.log("✅ Delta Settings module loaded");
