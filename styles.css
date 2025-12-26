@@ -1105,6 +1105,142 @@ style.textContent = `
 }
 
 /* ==========================================
+   CUSTOMIZATION TAB STYLES
+   ========================================== */
+
+/* Class headers */
+#delta-settings-window .class-header {
+    margin: 12px 0 6px 0 !important;
+    font-size: 12px !important;
+    color: #F5C247 !important;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+#delta-settings-window .class-header:first-child {
+    margin-top: 0 !important;
+}
+
+/* Buff settings grid */
+#delta-settings-window .buff-settings {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 6px 12px;
+    align-items: center;
+}
+
+/* Buff row with icon and name */
+#delta-settings-window .buff-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+#delta-settings-window .buff-icon {
+    width: 24px;
+    height: 24px;
+    border-radius: 4px;
+    border: 1px solid rgba(166, 220, 213, 0.2);
+}
+
+#delta-settings-window .buff-name {
+    font-size: 12px;
+    color: #a6dcd5;
+}
+
+/* CC settings grid */
+#delta-settings-window .cc-settings {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 8px 12px;
+    align-items: center;
+}
+
+/* CC row with icon and name */
+#delta-settings-window .cc-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+#delta-settings-window .cc-icon {
+    width: 24px;
+    height: 24px;
+    border-radius: 4px;
+    border: 1px solid rgba(166, 220, 213, 0.2);
+}
+
+#delta-settings-window .cc-name {
+    font-size: 12px;
+    color: #a6dcd5;
+}
+
+/* CC controls container */
+#delta-settings-window .cc-controls {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+/* Priority input */
+#delta-settings-window .cc-priority-input {
+    width: 40px;
+    height: 24px;
+    text-align: center;
+    background: rgba(0, 0, 0, 0.4);
+    border: 1px solid rgba(166, 220, 213, 0.3);
+    border-radius: 3px;
+    color: #a6dcd5;
+    font-size: 12px;
+}
+
+#delta-settings-window .cc-priority-input:focus {
+    outline: none;
+    border-color: #F5C247;
+}
+
+/* CC header hint */
+#delta-settings-window .cc-header {
+    margin-bottom: 8px;
+    padding: 6px 8px;
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 4px;
+}
+
+/* Customization notices */
+#delta-settings-window .customization-notice {
+    padding: 8px 12px;
+    background: rgba(245, 194, 71, 0.1);
+    border: 1px solid rgba(245, 194, 71, 0.3);
+    border-radius: 4px;
+    margin-bottom: 8px;
+}
+
+#delta-settings-window .customization-notice.hidden {
+    display: none;
+}
+
+/* Disabled section styling */
+#delta-settings-window .customization-section.disabled {
+    opacity: 0.4;
+    pointer-events: none;
+}
+
+/* Coming soon placeholder */
+#delta-settings-window .coming-soon {
+    color: #5b858e;
+    font-style: italic;
+    font-size: 12px;
+    padding: 8px 0;
+}
+
+/* Checkbox toggle box styling (game native) */
+#delta-settings-window .btn.checkbox[data-buff-id] {
+    min-width: 20px;
+    min-height: 20px;
+}
+
+/* ==========================================
    GENERIC UI POLISH
    ========================================== */
 .btn { transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease, filter 0.2s ease; }
