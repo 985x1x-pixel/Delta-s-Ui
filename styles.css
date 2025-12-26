@@ -946,6 +946,12 @@ style.textContent = `
     overflow-y: auto;
 }
 
+/* Remove the panel-black border from menu since parent window already has it */
+#delta-settings-window .menu.panel-black {
+    border: none !important;
+    background: transparent !important;
+}
+
 #delta-settings-window .tab-panel {
     display: none;
 }
@@ -971,9 +977,6 @@ style.textContent = `
     grid-template-columns: 1fr auto;
     gap: 8px 16px;
     align-items: center;
-    background: rgba(0, 0, 0, 0.15);
-    padding: 8px 12px;
-    border-radius: 4px;
 }
 
 #delta-settings-window .settings > div:first-child {
