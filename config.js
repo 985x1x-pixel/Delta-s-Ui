@@ -1,9 +1,9 @@
 // ==========================================
-// DELTA UI CONFIGURATION v3.6
+// DELTA UI CONFIGURATION v3.7
 // ==========================================
 
 window.DELTA_CONFIG = {
-    version: "3.6",
+    version: "3.7",
 
     timing: {
         INIT_DELAY: 300,
@@ -46,22 +46,56 @@ window.DELTA_CONFIG = {
         "items/shield/shield4_grey.avif": "https://raw.githubusercontent.com/Shturmovicc/hordes-legendary-items/refs/heads/main/items/shield/shield4_q4.avif",
     },
 
+    // All buff icons organized by class
+    buffIcons: {
+        warrior: [
+            { id: "buff_2", src: "/data/ui/skills/2.avif", name: "Skill 2" },
+            { id: "buff_17", src: "/data/ui/skills/17.avif", name: "Skill 17" },
+            { id: "buff_18", src: "/data/ui/skills/18.avif", name: "Skill 18" },
+            { id: "buff_46", src: "/data/ui/skills/46.avif", name: "Skill 46" },
+            { id: "buff_19", src: "/data/ui/skills/19.avif", name: "Skill 19" },
+            { id: "buff_20", src: "/data/ui/skills/20.avif", name: "Skill 20" },
+            { id: "buff_34", src: "/data/ui/skills/34.avif", name: "Skill 34" },
+            { id: "buff_50", src: "/data/ui/skills/50.avif", name: "Skill 50" },
+        ],
+        archer: [
+            { id: "buff_11", src: "/data/ui/skills/11.avif", name: "Skill 11" },
+            { id: "buff_29", src: "/data/ui/skills/29.avif", name: "Skill 29" },
+            { id: "buff_49", src: "/data/ui/skills/49.avif", name: "Skill 49" },
+            { id: "buff_45", src: "/data/ui/skills/45.avif", name: "Skill 45" },
+            { id: "buff_25", src: "/data/ui/skills/25.avif", name: "Skill 25" },
+            { id: "buff_27", src: "/data/ui/skills/27.avif", name: "Skill 27" },
+            { id: "buff_38", src: "/data/ui/skills/38.avif", name: "Skill 38" },
+        ],
+        mage: [
+            { id: "buff_22", src: "/data/ui/skills/22.avif", name: "Skill 22" },
+            { id: "buff_24", src: "/data/ui/skills/24.avif", name: "Skill 24" },
+            { id: "buff_14", src: "/data/ui/skills/14.avif", name: "Skill 14" },
+            { id: "buff_53", src: "/data/ui/skills/53.avif", name: "Skill 53" },
+            { id: "buff_23", src: "/data/ui/skills/23.avif", name: "Skill 23" },
+            { id: "buff_52", src: "/data/ui/skills/52.avif", name: "Skill 52" },
+            { id: "buff_16", src: "/data/ui/skills/16.avif", name: "Skill 16" },
+            { id: "buff_frozenBuff", src: "/data/ui/skills/frozenBuff.avif", name: "Frozen Buff" },
+            { id: "buff_deepFrozen", src: "/data/ui/skills/deepFrozen.avif", name: "Deep Frozen" },
+        ],
+        shaman: [
+            { id: "buff_28", src: "/data/ui/skills/28.avif", name: "Skill 28" },
+            { id: "buff_13", src: "/data/ui/skills/13.avif", name: "Skill 13" },
+            { id: "buff_7", src: "/data/ui/skills/7.avif", name: "Skill 7" },
+            { id: "buff_37", src: "/data/ui/skills/37.avif", name: "Skill 37" },
+            { id: "buff_12", src: "/data/ui/skills/12.avif", name: "Skill 12" },
+            { id: "buff_43", src: "/data/ui/skills/43.avif", name: "Skill 43" },
+        ],
+    },
+
+    // CC Effects with customizable color and priority
     ccEffects: [
-        { src: "/data/ui/skills/deepFrozen.avif", color: "blue", priority: 1 },
-        { src: "/data/ui/skills/14.avif", color: "blue", priority: 6 },
-        { src: "/data/ui/skills/37.avif", color: "red", priority: 10 },
-        { src: "/data/ui/skills/stunBuff.avif", color: "red", priority: 10 },
-        { src: "/data/ui/skills/49.avif", color: "yellow", priority: 5 },
-        { src: "/data/ui/skills/50.avif", color: "yellow", priority: 5 },
-    ],
-    
-    hiddenBuffs: [
-        "/data/ui/skills/25.avif",
-        "/data/ui/skills/24.avif",
-        "/data/ui/skills/22.avif",
-        "/data/ui/skills/20.avif",
-        "/data/ui/skills/19.avif",
-        "/data/ui/skills/18.avif",
+        { id: "cc_deepFrozen", src: "/data/ui/skills/deepFrozen.avif", name: "Deep Frozen", color: "#0088ff", priority: 1 },
+        { id: "cc_14", src: "/data/ui/skills/14.avif", name: "Skill 14", color: "#0088ff", priority: 6 },
+        { id: "cc_37", src: "/data/ui/skills/37.avif", name: "Skill 37", color: "#ff0000", priority: 10 },
+        { id: "cc_stunBuff", src: "/data/ui/skills/stunBuff.avif", name: "Stun", color: "#ff0000", priority: 10 },
+        { id: "cc_49", src: "/data/ui/skills/49.avif", name: "Skill 49", color: "#ffff00", priority: 5 },
+        { id: "cc_50", src: "/data/ui/skills/50.avif", name: "Skill 50", color: "#ffff00", priority: 5 },
     ],
     
     defaults: {
@@ -114,6 +148,19 @@ window.DELTA_CONFIG = {
             charmColors: true,
             playtimeLabels: true,
             fameLabels: true,
+        },
+
+        // Default hidden buffs (all false = visible)
+        hiddenBuffs: {},
+
+        // Default CC settings
+        ccSettings: {
+            "cc_deepFrozen": { color: "#0088ff", priority: 1 },
+            "cc_14": { color: "#0088ff", priority: 6 },
+            "cc_37": { color: "#ff0000", priority: 10 },
+            "cc_stunBuff": { color: "#ff0000", priority: 10 },
+            "cc_49": { color: "#ffff00", priority: 5 },
+            "cc_50": { color: "#ffff00", priority: 5 },
         },
     },
 
@@ -170,10 +217,11 @@ window.DELTA_CONFIG = {
         CHARM_COLORS: "deltaUI_charmColors",
         PET_COLOR: "deltaUI_petColor",
         FULLSCREEN_KEY: "deltaUI_fullscreenKey",
+        HIDDEN_BUFFS: "deltaUI_hiddenBuffs",
+        CC_SETTINGS: "deltaUI_ccSettings",
     },
 
     skillColors: {
-
         "8": "#8b0000", "39": "#8b4513", "40": "#9966ff",
         "0": "#c9a66b", "1": "#e85a5a", "2": "#5a9de8", "3": "#e8a85a",
         "17": "#ff4444", "18": "#cc3333", "19": "#6b1a6b", "20": "#f0c040",
