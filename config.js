@@ -2,10 +2,9 @@
 // DELTA UI CONFIGURATION v3.7
 // ==========================================
 
-const ASSET_VERSION = "8829640";
-
 window.DELTA_CONFIG = {
     version: "3.7",
+    assetVersion: "8829640",
 
     timing: {
         INIT_DELAY: 300,
@@ -14,90 +13,117 @@ window.DELTA_CONFIG = {
         ELEMENT_WAIT: 250,
     },
 
-    replacements: {
-        "items/staff/staff7_q3.avif": "https://raw.githubusercontent.com/985x1x-pixel/Delta-s-Ui/refs/heads/main/work%20in%20progress/staff7_q4.webp",
-        "items/armlet/armlet5_q3.avif": "https://raw.githubusercontent.com/985x1x-pixel/Delta-s-Ui/refs/heads/main/work%20in%20progress/armlet5_q4.avif",
-        "items/armor/armor4_q3.avif": "https://raw.githubusercontent.com/985x1x-pixel/Delta-s-Ui/refs/heads/main/work%20in%20progress/armor4_q4.avif",
-        "items/bag/bag2_q3.avif": "https://raw.githubusercontent.com/985x1x-pixel/Delta-s-Ui/refs/heads/main/work%20in%20progress/bag2_q4.avif",
-        "items/boot/boot5_q3.avif": "https://raw.githubusercontent.com/985x1x-pixel/Delta-s-Ui/refs/heads/main/work%20in%20progress/boot5_q4.avif",
-        "items/glove/glove5_q3.avif": "https://raw.githubusercontent.com/985x1x-pixel/Delta-s-Ui/refs/heads/main/work%20in%20progress/glove5_q4.avif",
-        "items/ring/ring4_q3.avif": "https://raw.githubusercontent.com/985x1x-pixel/Delta-s-Ui/refs/heads/main/work%20in%20progress/ring4_q4.avif",
-        "items/amulet/amulet4_q3.avif": "https://raw.githubusercontent.com/985x1x-pixel/Delta-s-Ui/refs/heads/main/work%20in%20progress/amulet4_q4.avif",
-        "items/orb/orb4_q3.avif": "https://raw.githubusercontent.com/985x1x-pixel/Delta-s-Ui/refs/heads/main/work%20in%20progress/orb4_q4.avif",
-        "items/bow/bow7_q3.avif": "https://raw.githubusercontent.com/985x1x-pixel/Delta-s-Ui/refs/heads/main/work%20in%20progress/bow7_q4.webp",
-        "items/hammer/hammer7_q3.avif": "https://raw.githubusercontent.com/985x1x-pixel/Delta-s-Ui/refs/heads/main/work%20in%20progress/hammer7_q4.webp",
-        "items/sword/sword7_q3.avif": "https://raw.githubusercontent.com/985x1x-pixel/Delta-s-Ui/refs/heads/main/work%20in%20progress/sword7_q4.webp",
-        "items/totem/totem4_q3.avif": "https://raw.githubusercontent.com/985x1x-pixel/Delta-s-Ui/refs/heads/main/work%20in%20progress/totem4_q4.avif",
-        "items/quiver/quiver4_q3.avif": "https://raw.githubusercontent.com/985x1x-pixel/Delta-s-Ui/refs/heads/main/work%20in%20progress/quiver4_q4.avif",
-        "items/shield/shield4_q3.avif": "https://raw.githubusercontent.com/985x1x-pixel/Delta-s-Ui/refs/heads/main/work%20in%20progress/shield4_q4.avif",
-    
-        "items/staff/staff7_grey.avif": "https://raw.githubusercontent.com/985x1x-pixel/Delta-s-Ui/refs/heads/main/work%20in%20progress/staff7_q4.webp",
-        "items/armlet/armlet5_grey.avif": "https://raw.githubusercontent.com/985x1x-pixel/Delta-s-Ui/refs/heads/main/work%20in%20progress/armlet5_q4.avif",
-        "items/armor/armor4_grey.avif": "https://raw.githubusercontent.com/985x1x-pixel/Delta-s-Ui/refs/heads/main/work%20in%20progress/armor4_q4.avif",
-        "items/bag/bag2_grey.avif": "https://raw.githubusercontent.com/985x1x-pixel/Delta-s-Ui/refs/heads/main/work%20in%20progress/bag2_q4.avif",
-        "items/boot/boot5_grey.avif": "https://raw.githubusercontent.com/985x1x-pixel/Delta-s-Ui/refs/heads/main/work%20in%20progress/boot5_q4.avif",
-        "items/glove/glove5_grey.avif": "https://raw.githubusercontent.com/985x1x-pixel/Delta-s-Ui/refs/heads/main/work%20in%20progress/glove5_q4.avif",
-        "items/ring/ring4_grey.avif": "https://raw.githubusercontent.com/985x1x-pixel/Delta-s-Ui/refs/heads/main/work%20in%20progress/ring4_q4.avif",
-        "items/amulet/amulet4_grey.avif": "https://raw.githubusercontent.com/985x1x-pixel/Delta-s-Ui/refs/heads/main/work%20in%20progress/amulet4_q4.avif",
-        "items/orb/orb4_grey.avif": "https://raw.githubusercontent.com/985x1x-pixel/Delta-s-Ui/refs/heads/main/work%20in%20progress/orb4_q4.avif",
-        "items/bow/bow7_grey.avif": "https://raw.githubusercontent.com/985x1x-pixel/Delta-s-Ui/refs/heads/main/work%20in%20progress/bow7_q4.webp",
-        "items/hammer/hammer7_grey.avif": "https://raw.githubusercontent.com/985x1x-pixel/Delta-s-Ui/refs/heads/main/work%20in%20progress/hammer7_q4.webp",
-        "items/sword/sword7_grey.avif": "https://raw.githubusercontent.com/985x1x-pixel/Delta-s-Ui/refs/heads/main/work%20in%20progress/sword7_q4.webp",
-        "items/totem/totem4_grey.avif": "https://raw.githubusercontent.com/985x1x-pixel/Delta-s-Ui/refs/heads/main/work%20in%20progress/totem4_q4.avif",
-        "items/quiver/quiver4_grey.avif": "https://raw.githubusercontent.com/985x1x-pixel/Delta-s-Ui/refs/heads/main/work%20in%20progress/quiver4_q4.avif",
-        "items/shield/shield4_grey.avif": "https://raw.githubusercontent.com/985x1x-pixel/Delta-s-Ui/refs/heads/main/work%20in%20progress/shield4_q4.avif",
-    },
+    replacements: (function() {
+        const BASE_URL = "https://raw.githubusercontent.com/985x1x-pixel/Delta-s-Ui/refs/heads/main/work%20in%20progress/";
+        
+        const items = {
+            "staff/staff7": "staff7_q4.webp",
+            "armlet/armlet5": "armlet5_q4.avif",
+            "armor/armor4": "armor4_q4.avif",
+            "bag/bag2": "bag2_q4.avif",
+            "boot/boot5": "boot5_q4.avif",
+            "glove/glove5": "glove5_q4.avif",
+            "ring/ring4": "ring4_q4.avif",
+            "amulet/amulet4": "amulet4_q4.avif",
+            "orb/orb4": "orb4_q4.avif",
+            "bow/bow7": "bow7_q4.webp",
+            "hammer/hammer7": "hammer7_q4.webp",
+            "sword/sword7": "sword7_q4.webp",
+            "totem/totem4": "totem4_q4.avif",
+            "quiver/quiver4": "quiver4_q4.avif",
+            "shield/shield4": "shield4_q4.avif",
+        };
+        
+        const result = {};
+        for (const [path, replacement] of Object.entries(items)) {
+            result[`items/${path}_q3.avif`] = BASE_URL + replacement;
+            result[`items/${path}_grey.avif`] = BASE_URL + replacement;
+        }
+        return result;
+    })(),
 
-    // All buff icons organized by class
     buffIcons: {
         warrior: [
-            { id: "buff_2", src: "/data/ui/skills/2.avif", name: "Skill 2" },
-            { id: "buff_17", src: "/data/ui/skills/17.avif", name: "Skill 17" },
-            { id: "buff_18", src: "/data/ui/skills/18.avif", name: "Skill 18" },
-            { id: "buff_46", src: "/data/ui/skills/46.avif", name: "Skill 46" },
-            { id: "buff_19", src: "/data/ui/skills/19.avif", name: "Skill 19" },
-            { id: "buff_20", src: "/data/ui/skills/20.avif", name: "Skill 20" },
-            { id: "buff_34", src: "/data/ui/skills/34.avif", name: "Skill 34" },
-            { id: "buff_50", src: "/data/ui/skills/50.avif", name: "Skill 50" },
+            { id: "buff_2", src: "/data/ui/skills/2.avif", name: "Bulwark" },
+            { id: "buff_17", src: "/data/ui/skills/17.avif", name: "Enrage" },
+            { id: "buff_18", src: "/data/ui/skills/18.avif", name: "Centrifugal Laceration" },
+            { id: "buff_46", src: "/data/ui/skills/46.avif", name: "Whirlwind" },
+            { id: "buff_19", src: "/data/ui/skills/19.avif", name: "Warcry" },
+            { id: "buff_20", src: "/data/ui/skills/20.avif", name: "Crusader" },
+            { id: "buff_34", src: "/data/ui/skills/34.avif", name: "Taunt" },
+            { id: "buff_50", src: "/data/ui/skills/50.avif", name: "Relentless Cry" },
         ],
         archer: [
-            { id: "buff_11", src: "/data/ui/skills/11.avif", name: "Skill 11" },
-            { id: "buff_29", src: "/data/ui/skills/29.avif", name: "Skill 29" },
-            { id: "buff_49", src: "/data/ui/skills/49.avif", name: "Skill 49" },
-            { id: "buff_45", src: "/data/ui/skills/45.avif", name: "Skill 45" },
-            { id: "buff_25", src: "/data/ui/skills/25.avif", name: "Skill 25" },
-            { id: "buff_27", src: "/data/ui/skills/27.avif", name: "Skill 27" },
-            { id: "buff_38", src: "/data/ui/skills/38.avif", name: "Skill 38" },
+            { id: "buff_11", src: "/data/ui/skills/11.avif", name: "Invigorate" },
+            { id: "buff_29", src: "/data/ui/skills/29.avif", name: "Poison Arrows" },
+            { id: "buff_49", src: "/data/ui/skills/49.avif", name: "Blind Shot" },
+            { id: "buff_45", src: "/data/ui/skills/45.avif", name: "Volley" },
+            { id: "buff_25", src: "/data/ui/skills/25.avif", name: "Temporal Dilation" },
+            { id: "buff_27", src: "/data/ui/skills/27.avif", name: "Pathfinding" },
+            { id: "buff_38", src: "/data/ui/skills/38.avif", name: "Dash" },
         ],
         mage: [
-            { id: "buff_22", src: "/data/ui/skills/22.avif", name: "Skill 22" },
-            { id: "buff_24", src: "/data/ui/skills/24.avif", name: "Skill 24" },
-            { id: "buff_14", src: "/data/ui/skills/14.avif", name: "Skill 14" },
-            { id: "buff_53", src: "/data/ui/skills/53.avif", name: "Skill 53" },
-            { id: "buff_23", src: "/data/ui/skills/23.avif", name: "Skill 23" },
-            { id: "buff_52", src: "/data/ui/skills/52.avif", name: "Skill 52" },
-            { id: "buff_16", src: "/data/ui/skills/16.avif", name: "Skill 16" },
+            { id: "buff_22", src: "/data/ui/skills/22.avif", name: "Aura of Focus" },
+            { id: "buff_24", src: "/data/ui/skills/24.avif", name: "Enchantment" },
+            { id: "buff_14", src: "/data/ui/skills/14.avif", name: "Radiance" },
+            { id: "buff_53", src: "/data/ui/skills/53.avif", name: "Ice Block" },
+            { id: "buff_23", src: "/data/ui/skills/23.avif", name: "Ice Shield" },
+            { id: "buff_52", src: "/data/ui/skills/52.avif", name: "Frostcall" },
+            { id: "buff_16", src: "/data/ui/skills/16.avif", name: "Hypothermia" },
             { id: "buff_frozenBuff", src: "/data/ui/skills/frozenBuff.avif", name: "Frozen Buff" },
             { id: "buff_deepFrozen", src: "/data/ui/skills/deepFrozen.avif", name: "Deep Frozen" },
         ],
         shaman: [
-            { id: "buff_28", src: "/data/ui/skills/28.avif", name: "Skill 28" },
-            { id: "buff_13", src: "/data/ui/skills/13.avif", name: "Skill 13" },
-            { id: "buff_7", src: "/data/ui/skills/7.avif", name: "Skill 7" },
-            { id: "buff_37", src: "/data/ui/skills/37.avif", name: "Skill 37" },
-            { id: "buff_12", src: "/data/ui/skills/12.avif", name: "Skill 12" },
-            { id: "buff_43", src: "/data/ui/skills/43.avif", name: "Skill 43" },
+            { id: "buff_28", src: "/data/ui/skills/28.avif", name: "Canine Howl" },
+            { id: "buff_13", src: "/data/ui/skills/13.avif", name: "Mimir's Well" },
+            { id: "buff_7", src: "/data/ui/skills/7.avif", name: "Revitalize" },
+            { id: "buff_37", src: "/data/ui/skills/37.avif", name: "Agonize" },
+            { id: "buff_12", src: "/data/ui/skills/12.avif", name: "Decay" },
+            { id: "buff_43", src: "/data/ui/skills/43.avif", name: "Plague" },
         ],
     },
 
-    // CC Effects with customizable color and priority
+    utilityBuffs: [
+        { id: "charm_skull", src: "/data/items/charm/charm2_q3.avif", name: "Skull" },
+        { id: "charm_candle", src: "/data/items/charm/charm11_q3.avif", name: "Ghost Candles" },
+        { id: "charm_talon", src: "/data/items/charm/charm6_q3.avif", name: "Talon" },
+        { id: "charm_crimson", src: "/data/items/charm/charm5_q3.avif", name: "Crimson Blade" },
+        { id: "charm_marble", src: "/data/items/charm/charm4_q3.avif", name: "Marble" },
+        { id: "charm_pennant", src: "/data/items/charm/charm3_q3.avif", name: "Ship Pennant" },
+        { id: "charm_egg", src: "/data/items/charm/charm1_q3.avif", name: "Egg" },
+        { id: "charm_orc", src: "/data/items/charm/charm13_q3.avif", name: "Orc Skull" },
+        { id: "charm_aegis", src: "/data/items/charm/charm12_q3.avif", name: "Spiked Aegis" },
+        { id: "charm_shroom", src: "/data/items/charm/charm10_q3.avif", name: "Fae Shroom" },
+        { id: "charm_frog", src: "/data/items/charm/charm8_q3.avif", name: "Frog Lungs" },
+        { id: "charm_blood", src: "/data/items/charm/charm7_q3.avif", name: "Blood Ritual" },
+        { id: "charm_gamble", src: "/data/items/charm/charm14_q3.avif", name: "Gamble" },
+        { id: "pot_large_mp", src: "/data/items/misc/misc5_q0.avif", name: "Large MP Potion" },
+        { id: "pot_large_hp", src: "/data/items/misc/misc4_q0.avif", name: "Large HP Potion" },
+        { id: "pot_medium_mp", src: "/data/items/misc/misc3_q0.avif", name: "Medium MP Potion" },
+        { id: "pot_medium_hp", src: "/data/items/misc/misc2_q0.avif", name: "Medium HP Potion" },
+        { id: "pot_small_mp", src: "/data/items/misc/misc1_q0.avif", name: "Small MP Potion" },
+        { id: "pot_small_hp", src: "/data/items/misc/misc0_q0.avif", name: "Small HP Potion" },
+    ],
+
     ccEffects: [
         { id: "cc_deepFrozen", src: "/data/ui/skills/deepFrozen.avif", name: "Deep Frozen", color: "#0088ff", priority: 1 },
-        { id: "cc_14", src: "/data/ui/skills/14.avif", name: "Skill 14", color: "#0088ff", priority: 6 },
-        { id: "cc_37", src: "/data/ui/skills/37.avif", name: "Skill 37", color: "#ff0000", priority: 10 },
+        { id: "cc_14", src: "/data/ui/skills/14.avif", name: "Radiance", color: "#0088ff", priority: 6 },
+        { id: "cc_37", src: "/data/ui/skills/37.avif", name: "Agonize", color: "#ff0000", priority: 10 },
         { id: "cc_stunBuff", src: "/data/ui/skills/stunBuff.avif", name: "Stun", color: "#ff0000", priority: 10 },
-        { id: "cc_49", src: "/data/ui/skills/49.avif", name: "Skill 49", color: "#ffff00", priority: 5 },
-        { id: "cc_50", src: "/data/ui/skills/50.avif", name: "Skill 50", color: "#ffff00", priority: 5 },
+        { id: "cc_49", src: "/data/ui/skills/49.avif", name: "Blind Shot", color: "#ffff00", priority: 5 },
+        { id: "cc_50", src: "/data/ui/skills/50.avif", name: "Relentless Cry", color: "#ffff00", priority: 5 },
+    ],
+
+    fpsOptions: [
+        { id: "fps_minimap", selector: ".l-corner-ul", name: "Minimap", default: true },
+        { id: "fps_topbar", selector: ".l-corner-ur > small.bar", name: "Top Resource Bar", default: true },
+        { id: "fps_expbar", selector: "#expbar", name: "Experience Bar", default: true },
+        { id: "fps_leaderboard", selector: '.window-pos:has(.titleframe img[src*="trophy.svg"])', name: "Leaderboard", default: true },
+        { id: "fps_avatars", selector: 'img[src^="data:image"]', name: "Player Avatars", default: true },
+        { id: "fps_cooldown_overlay", selector: ".overlay.offCd", name: "Cooldown Overlays", default: true },
+        { id: "fps_queued_overlay", selector: ".overlay.queued", name: "Queued Skill Overlay", default: true },
+        { id: "fps_autocast", selector: ".autocast", name: "Autocast Indicators", default: true },
+        { id: "fps_damage_numbers", selector: ".panel-black.container.svelte-1wip79f", name: "Floating Numbers", default: true },
     ],
     
     defaults: {
@@ -152,18 +178,9 @@ window.DELTA_CONFIG = {
             fameLabels: true,
         },
 
-        // Default hidden buffs (all false = visible)
         hiddenBuffs: {},
-
-        // Default CC settings
-        ccSettings: {
-            "cc_deepFrozen": { color: "#0088ff", priority: 1 },
-            "cc_14": { color: "#0088ff", priority: 6 },
-            "cc_37": { color: "#ff0000", priority: 10 },
-            "cc_stunBuff": { color: "#ff0000", priority: 10 },
-            "cc_49": { color: "#ffff00", priority: 5 },
-            "cc_50": { color: "#ffff00", priority: 5 },
-        },
+        ccSettings: {},
+        fpsSettings: {},
     },
 
     charmNames: {
@@ -185,20 +202,20 @@ window.DELTA_CONFIG = {
     },
 
     classIcons: {
-        "bgc0": `/data/ui/classes/0.avif?v=${ASSET_VERSION}`,
-        "bgc1": `/data/ui/classes/1.avif?v=${ASSET_VERSION}`,
-        "bgc2": `/data/ui/classes/2.avif?v=${ASSET_VERSION}`,
-        "bgc3": `/data/ui/classes/3.avif?v=${ASSET_VERSION}`,
+        "bgc0": "/data/ui/classes/0.avif?v=8829640",
+        "bgc1": "/data/ui/classes/1.avif?v=8829640",
+        "bgc2": "/data/ui/classes/2.avif?v=8829640",
+        "bgc3": "/data/ui/classes/3.avif?v=8829640",
     },
 
     factionIcons: {
-        warrior: `/data/ui/classes/0.avif?v=${ASSET_VERSION}`,
-        mage: `/data/ui/classes/1.avif?v=${ASSET_VERSION}`,
-        archer: `/data/ui/classes/2.avif?v=${ASSET_VERSION}`,
-        shaman: `/data/ui/classes/3.avif?v=${ASSET_VERSION}`,
-        fame: `/data/ui/currency/fame.svg?v=${ASSET_VERSION}`,
-        vg: `/data/ui/factions/0.avif?v=${ASSET_VERSION}`,
-        bl: `/data/ui/factions/1.avif?v=${ASSET_VERSION}`,
+        warrior: "/data/ui/classes/0.avif?v=8829640",
+        mage: "/data/ui/classes/1.avif?v=8829640",
+        archer: "/data/ui/classes/2.avif?v=8829640",
+        shaman: "/data/ui/classes/3.avif?v=8829640",
+        fame: "/data/ui/currency/fame.svg?v=8829640",
+        vg: "/data/ui/factions/0.avif?v=8829640",
+        bl: "/data/ui/factions/1.avif?v=8829640",
     },
 
     qualityColors: {
@@ -221,6 +238,7 @@ window.DELTA_CONFIG = {
         FULLSCREEN_KEY: "deltaUI_fullscreenKey",
         HIDDEN_BUFFS: "deltaUI_hiddenBuffs",
         CC_SETTINGS: "deltaUI_ccSettings",
+        FPS_SETTINGS: "deltaUI_fpsSettings",
     },
 
     skillColors: {
@@ -242,4 +260,4 @@ window.DELTA_CONFIG = {
     },
 };
 
-console.log("Delta UI Config v" + window.DELTA_CONFIG.version + " loaded");
+console.log("✅ Delta UI Config v" + window.DELTA_CONFIG.version + " loaded");
