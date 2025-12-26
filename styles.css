@@ -906,6 +906,14 @@ style.textContent = `
     max-width: 600px;
 }
 
+/* Fix the slot container to have proper background */
+#delta-settings-window .slot.svelte-1f1v3u3 {
+    background: rgba(16, 19, 29, 0.95);
+    border: 1px solid rgba(166, 220, 213, 0.15);
+    border-top: none;
+    border-radius: 0 0 10px 10px;
+}
+
 #delta-settings-window .divide {
     display: flex;
     min-height: 450px;
@@ -946,7 +954,7 @@ style.textContent = `
     overflow-y: auto;
 }
 
-/* Remove the panel-black border from menu since parent window already has it */
+/* Remove duplicate panel styling from menu */
 #delta-settings-window .menu.panel-black {
     border: none !important;
     background: transparent !important;
