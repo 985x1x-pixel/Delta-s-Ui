@@ -181,48 +181,48 @@
             const hiddenBuffs = getHiddenBuffs();
             const classes = ["warrior", "archer", "mage", "shaman"];
             let html = '';
-
+        
             classes.forEach(className => {
                 const buffs = (CONFIG.buffIcons || {})[className] || [];
                 if (buffs.length === 0) return;
-
+        
                 html += `<h4 class="textprimary class-header">${className.charAt(0).toUpperCase() + className.slice(1)}</h4>`;
-                html += '<div class="settings buff-settings">';
-
+                html += '<div class="settings fps-settings">'; // Changed from buff-settings to fps-settings
+        
                 buffs.forEach(buff => {
                     const isHidden = hiddenBuffs[buff.id] === true;
                     html += `
-                        <div class="buff-row">
-                            <img src="${buff.src}" class="buff-icon" alt="${buff.name}">
-                            <span class="buff-name">${buff.name}</span>
+                        <div class="fps-row">
+                            <img src="${buff.src}" class="buff-icon" alt="${buff.name}" style="width:20px;height:20px;margin-right:8px;border-radius:3px;">
+                            <span class="fps-name">${buff.name}</span>
                         </div>
                         <div class="btn checkbox ${isHidden ? "active" : ""}" data-buff-id="${buff.id}"></div>
                     `;
                 });
-
+        
                 html += '</div>';
             });
-
+        
             // Utility section
             const utilityBuffs = CONFIG.utilityBuffs || [];
             if (utilityBuffs.length > 0) {
                 html += `<h4 class="textprimary class-header">Utility</h4>`;
-                html += '<div class="settings buff-settings">';
-
+                html += '<div class="settings fps-settings">'; // Changed from buff-settings to fps-settings
+        
                 utilityBuffs.forEach(buff => {
                     const isHidden = hiddenBuffs[buff.id] === true;
                     html += `
-                        <div class="buff-row">
-                            <img src="${buff.src}" class="buff-icon" alt="${buff.name}">
-                            <span class="buff-name">${buff.name}</span>
+                        <div class="fps-row">
+                            <img src="${buff.src}" class="buff-icon" alt="${buff.name}" style="width:20px;height:20px;margin-right:8px;border-radius:3px;">
+                            <span class="fps-name">${buff.name}</span>
                         </div>
                         <div class="btn checkbox ${isHidden ? "active" : ""}" data-buff-id="${buff.id}"></div>
                     `;
                 });
-
+        
                 html += '</div>';
             }
-
+        
             return html;
         }
 
