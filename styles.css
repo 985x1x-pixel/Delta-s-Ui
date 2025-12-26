@@ -1104,6 +1104,13 @@ style.textContent = `
     margin: 0 auto;
 }
 
+#delta-settings-window .window.panel-black {
+    min-width: 500px;
+    max-width: 600px;
+    height: auto !important;
+    padding-bottom: 0 !important;
+}
+
 /* ==========================================
    GENERIC UI POLISH
    ========================================== */
