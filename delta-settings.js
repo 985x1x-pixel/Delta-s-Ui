@@ -91,6 +91,31 @@
             }
         }
 
+        // Load FPS settings
+        function getFPSSettings() {
+            try {
+                const saved = localStorage.getItem(CONFIG.storageKeys.FPS_SETTINGS);
+                if (saved) {
+                    return JSON.parse(saved);
+                }
+                // Return defaults if nothing saved
+                const defaults = {};
+                (CONFIG.fpsOptions || []).forEach(opt => {
+                    defaults[opt.id] = opt.default;
+                });
+                return defaults;
+            } catch (e) {
+                return {};
+            }
+        }
+
+        function saveFPSSettings(fpsSettings) {
+            localStorage.setItem(CONFIG.storageKeys.FPS_SETTINGS, JSON.stringify(fpsSettings));
+            if (DeltaUI.updateFPSConfig) {
+                DeltaUI.updateFPSConfig(fpsSettings);
+            }
+        }
+
         function scanSkillbar() {
             const skillbar = document.querySelector("#skillbar");
             const slots = [];
@@ -158,7 +183,7 @@
             let html = '';
 
             classes.forEach(className => {
-                const buffs = CONFIG.buffIcons[className] || [];
+                const buffs = (CONFIG.buffIcons || {})[className] || [];
                 if (buffs.length === 0) return;
 
                 html += `<h4 class="textprimary class-header">${className.charAt(0).toUpperCase() + className.slice(1)}</h4>`;
@@ -178,9 +203,25 @@
                 html += '</div>';
             });
 
-            // Utility section placeholder
-            html += `<h4 class="textprimary class-header">Utility</h4>`;
-            html += '<div class="settings buff-settings"><div class="coming-soon">Coming soon...</div></div>';
+            // Utility section
+            const utilityBuffs = CONFIG.utilityBuffs || [];
+            if (utilityBuffs.length > 0) {
+                html += `<h4 class="textprimary class-header">Utility</h4>`;
+                html += '<div class="settings buff-settings">';
+
+                utilityBuffs.forEach(buff => {
+                    const isHidden = hiddenBuffs[buff.id] === true;
+                    html += `
+                        <div class="buff-row">
+                            <img src="${buff.src}" class="buff-icon" alt="${buff.name}">
+                            <span class="buff-name">${buff.name}</span>
+                        </div>
+                        <div class="btn checkbox ${isHidden ? "active" : ""}" data-buff-id="${buff.id}"></div>
+                    `;
+                });
+
+                html += '</div>';
+            }
 
             return html;
         }
@@ -203,6 +244,23 @@
                         </div>
                         <input type="number" class="cc-priority-input" data-cc-id="${cc.id}" value="${settings.priority}" min="0" max="10" title="Priority (0 = disabled)">
                     </div>
+                `;
+            });
+
+            return html;
+        }
+
+        function generateFPSRows() {
+            const fpsSettings = getFPSSettings();
+            let html = '';
+
+            (CONFIG.fpsOptions || []).forEach(opt => {
+                const isEnabled = fpsSettings[opt.id] !== undefined ? fpsSettings[opt.id] : opt.default;
+                html += `
+                    <div class="fps-row">
+                        <span class="fps-name">${opt.name}</span>
+                    </div>
+                    <div class="btn checkbox ${isEnabled ? "active" : ""}" data-fps-id="${opt.id}"></div>
                 `;
             });
 
@@ -237,6 +295,7 @@
             const currentFullscreenKey = localStorage.getItem("deltaUI_fullscreenKey") || "o";
             const hideBuffsEnabled = getToggle("hideBuffs", false);
             const ccIndicatorEnabled = getToggle("ccIndicator", true);
+            const fpsModeEnabled = getToggle("fpsMode", false);
 
             deltaSettingsWindow.innerHTML = `
                 <div class="window panel-black svelte-1f1v3u3">
@@ -268,7 +327,7 @@
                                         <div>Hide Buffs<br><small class="textgrey">Hide selected buff icons</small></div>
                                         <div class="btn checkbox ${getToggle("hideBuffs", false) ? "active" : ""}" data-toggle="hideBuffs"></div>
                                         
-                                        <div>FPS Mode<br><small class="textgrey">Hide UI for performance</small></div>
+                                        <div>FPS Mode<br><small class="textgrey">Hide UI elements for performance</small></div>
                                         <div class="btn checkbox ${getToggle("fpsMode", false) ? "active" : ""}" data-toggle="fpsMode"></div>
                                     </div>
 
@@ -355,24 +414,37 @@
 
                                 <!-- Customization Tab -->
                                 <div class="tab-panel" data-panel="customization">
-                                    <h3 class="textprimary">Remove Buffs Customization</h3>
-                                    <div class="customization-notice ${hideBuffsEnabled ? 'hidden' : ''}">
+                                    <h3 class="textprimary">Hide Buffs Customization</h3>
+                                    <div class="customization-notice" data-for="hideBuffs" ${hideBuffsEnabled ? 'style="display:none;"' : ''}>
                                         <small class="textgrey">⚠️ Enable "Hide Buffs" in Features tab to use this section.</small>
                                     </div>
-                                    <div class="customization-section ${hideBuffsEnabled ? '' : 'disabled'}">
+                                    <div class="customization-section" data-for="hideBuffs" ${!hideBuffsEnabled ? 'style="opacity:0.5;pointer-events:none;"' : ''}>
                                         ${generateBuffToggleRows()}
                                     </div>
 
                                     <h3 class="textprimary">CC Indicator Customization</h3>
-                                    <div class="customization-notice ${ccIndicatorEnabled ? 'hidden' : ''}">
+                                    <div class="customization-notice" data-for="ccIndicator" ${ccIndicatorEnabled ? 'style="display:none;"' : ''}>
                                         <small class="textgrey">⚠️ Enable "CC Indicator" in Features tab to use this section.</small>
                                     </div>
-                                    <div class="customization-section ${ccIndicatorEnabled ? '' : 'disabled'}">
+                                    <div class="customization-section" data-for="ccIndicator" ${!ccIndicatorEnabled ? 'style="opacity:0.5;pointer-events:none;"' : ''}>
                                         <div class="cc-header">
                                             <small class="textgrey">Priority 0 = disabled. Higher priority shows first.</small>
                                         </div>
                                         <div class="settings cc-settings">
                                             ${generateCCRows()}
+                                        </div>
+                                    </div>
+
+                                    <h3 class="textprimary">FPS Mode Customization</h3>
+                                    <div class="customization-notice" data-for="fpsMode" ${fpsModeEnabled ? 'style="display:none;"' : ''}>
+                                        <small class="textgrey">⚠️ Enable "FPS Mode" in Features tab to use this section.</small>
+                                    </div>
+                                    <div class="customization-section" data-for="fpsMode" ${!fpsModeEnabled ? 'style="opacity:0.5;pointer-events:none;"' : ''}>
+                                        <div class="fps-header">
+                                            <small class="textgrey">Choose which UI elements to hide when FPS Mode is active.</small>
+                                        </div>
+                                        <div class="settings fps-settings">
+                                            ${generateFPSRows()}
                                         </div>
                                     </div>
                                 </div>
@@ -398,6 +470,21 @@
 
             document.body.appendChild(deltaSettingsWindow);
             setupEventListeners();
+        }
+
+        function updateCustomizationVisibility(toggleId, isEnabled) {
+            if (!deltaSettingsWindow) return;
+
+            const notice = $(`.customization-notice[data-for="${toggleId}"]`, deltaSettingsWindow);
+            const section = $(`.customization-section[data-for="${toggleId}"]`, deltaSettingsWindow);
+
+            if (notice) {
+                notice.style.display = isEnabled ? "none" : "block";
+            }
+            if (section) {
+                section.style.opacity = isEnabled ? "1" : "0.5";
+                section.style.pointerEvents = isEnabled ? "auto" : "none";
+            }
         }
 
         function setupEventListeners() {
@@ -429,9 +516,9 @@
                         DeltaUI.applyToggle(toggleId, isNowActive);
                     }
 
-                    // Update customization section visibility
-                    if (toggleId === "hideBuffs" || toggleId === "ccIndicator") {
-                        updateCustomizationVisibility();
+                    // Update customization section visibility immediately
+                    if (toggleId === "hideBuffs" || toggleId === "ccIndicator" || toggleId === "fpsMode") {
+                        updateCustomizationVisibility(toggleId, isNowActive);
                     }
                 });
             });
@@ -446,6 +533,19 @@
                     const hiddenBuffs = getHiddenBuffs();
                     hiddenBuffs[buffId] = isNowActive;
                     saveHiddenBuffs(hiddenBuffs);
+                });
+            });
+
+            // FPS toggle handlers
+            $$(".btn.checkbox[data-fps-id]", deltaSettingsWindow).forEach(checkbox => {
+                checkbox.addEventListener("click", () => {
+                    const fpsId = checkbox.dataset.fpsId;
+                    const isNowActive = !checkbox.classList.contains("active");
+                    checkbox.classList.toggle("active");
+
+                    const fpsSettings = getFPSSettings();
+                    fpsSettings[fpsId] = isNowActive;
+                    saveFPSSettings(fpsSettings);
                 });
             });
 
@@ -559,7 +659,8 @@
                         charmColors: CONFIG.charmColors, 
                         petColor: CONFIG.petColor,
                         hiddenBuffs: getHiddenBuffs(),
-                        ccSettings: getCCSettings()
+                        ccSettings: getCCSettings(),
+                        fpsSettings: getFPSSettings()
                     };
                     navigator.clipboard.writeText(JSON.stringify(data, null, 2)).then(() => {
                         exportBtn.textContent = "Copied!";
@@ -581,6 +682,7 @@
                         if (data.petColor) CONFIG.petColor = data.petColor;
                         if (data.hiddenBuffs) saveHiddenBuffs(data.hiddenBuffs);
                         if (data.ccSettings) saveCCSettings(data.ccSettings);
+                        if (data.fpsSettings) saveFPSSettings(data.fpsSettings);
                         if (DeltaUI.saveSkillbarColors) DeltaUI.saveSkillbarColors();
                         if (DeltaUI.saveCharmColors) DeltaUI.saveCharmColors();
                         if (DeltaUI.savePetColor) DeltaUI.savePetColor();
@@ -645,25 +747,6 @@
                     console.log("[Delta UI] Fullscreen key reset to: O");
                 });
             }
-        }
-
-        function updateCustomizationVisibility() {
-            if (!deltaSettingsWindow) return;
-
-            const hideBuffsEnabled = getToggle("hideBuffs", false);
-            const ccIndicatorEnabled = getToggle("ccIndicator", true);
-
-            const buffNotice = $(".tab-panel[data-panel='customization'] .customization-notice:first-of-type", deltaSettingsWindow);
-            const buffSection = $(".tab-panel[data-panel='customization'] .customization-section:first-of-type", deltaSettingsWindow);
-            
-            if (buffNotice) buffNotice.classList.toggle("hidden", hideBuffsEnabled);
-            if (buffSection) buffSection.classList.toggle("disabled", !hideBuffsEnabled);
-
-            const ccNotice = $$(".tab-panel[data-panel='customization'] .customization-notice", deltaSettingsWindow)[1];
-            const ccSection = $$(".tab-panel[data-panel='customization'] .customization-section", deltaSettingsWindow)[1];
-            
-            if (ccNotice) ccNotice.classList.toggle("hidden", ccIndicatorEnabled);
-            if (ccSection) ccSection.classList.toggle("disabled", !ccIndicatorEnabled);
         }
 
         window.DeltaSettings = {
