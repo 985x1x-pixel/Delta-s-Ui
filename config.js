@@ -2,6 +2,8 @@
 // DELTA UI CONFIGURATION v3.7
 // ==========================================
 
+const ASSET_VERSION = "8829640";
+
 window.DELTA_CONFIG = {
     version: "3.7",
 
@@ -183,20 +185,20 @@ window.DELTA_CONFIG = {
     },
 
     classIcons: {
-        "bgc0": "/data/ui/classes/0.avif?v=8822612",
-        "bgc1": "/data/ui/classes/1.avif?v=8822612",
-        "bgc2": "/data/ui/classes/2.avif?v=8822612",
-        "bgc3": "/data/ui/classes/3.avif?v=8822612",
+        "bgc0": `/data/ui/classes/0.avif?v=${ASSET_VERSION}`,
+        "bgc1": `/data/ui/classes/1.avif?v=${ASSET_VERSION}`,
+        "bgc2": `/data/ui/classes/2.avif?v=${ASSET_VERSION}`,
+        "bgc3": `/data/ui/classes/3.avif?v=${ASSET_VERSION}`,
     },
 
     factionIcons: {
-        warrior: "https://hordes.io/data/ui/classes/0.avif?v=8829640",
-        mage: "https://hordes.io/data/ui/classes/1.avif?v=8829640",
-        archer: "https://hordes.io/data/ui/classes/2.avif?v=8829640",
-        shaman: "https://hordes.io/data/ui/classes/3.avif?v=8829640",
-        fame: "https://hordes.io/data/ui/currency/fame.svg?v=8822612",
-        vg: "https://hordes.io/data/ui/factions/0.avif?v=8829640",
-        bl: "https://hordes.io/data/ui/factions/1.avif?v=8829640",
+        warrior: `/data/ui/classes/0.avif?v=${ASSET_VERSION}`,
+        mage: `/data/ui/classes/1.avif?v=${ASSET_VERSION}`,
+        archer: `/data/ui/classes/2.avif?v=${ASSET_VERSION}`,
+        shaman: `/data/ui/classes/3.avif?v=${ASSET_VERSION}`,
+        fame: `/data/ui/currency/fame.svg?v=${ASSET_VERSION}`,
+        vg: `/data/ui/factions/0.avif?v=${ASSET_VERSION}`,
+        bl: `/data/ui/factions/1.avif?v=${ASSET_VERSION}`,
     },
 
     qualityColors: {
