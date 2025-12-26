@@ -134,12 +134,21 @@
             }
         }
 
+        function centerWindow() {
+            if (!deltaSettingsWindow) return;
+            deltaSettingsWindow.style.left = "50%";
+            deltaSettingsWindow.style.top = "50%";
+            deltaSettingsWindow.style.transform = "translate(-50%, -50%)";
+        }
+
         function createDeltaSettingsWindow() {
             if (deltaSettingsWindow) deltaSettingsWindow.remove();
 
             deltaSettingsWindow = document.createElement("div");
             deltaSettingsWindow.className = "window-pos";
             deltaSettingsWindow.id = "delta-settings-window";
+            
+            // Always start centered
             deltaSettingsWindow.style.cssText = "z-index: 100; position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);";
 
             const skillbarSlots = scanSkillbar();
@@ -147,7 +156,7 @@
 
             deltaSettingsWindow.innerHTML = `
                 <div class="window panel-black svelte-1f1v3u3">
-                    <div class="titleframe svelte-1f1v3u3" style="cursor: pointer;">
+                    <div class="titleframe svelte-1f1v3u3" style="cursor: move;">
                         <img src="/data/ui/icons/cog.svg" class="titleicon svgicon svelte-1f1v3u3">
                         <div class="textprimary title svelte-1f1v3u3">
                             <div>Delta UI <small style="color: #5b858e;">v${CONFIG.version}</small></div>
@@ -280,7 +289,58 @@
 
             document.body.appendChild(deltaSettingsWindow);
             setupEventListeners();
+            setupDragging();
         }
+
+        function setupDragging() {
+            if (!deltaSettingsWindow) return;
+
+            const titleframe = $(".titleframe", deltaSettingsWindow);
+            if (!titleframe) return;
+
+            titleframe.addEventListener("mousedown", (e) => {
+                // Don't drag if clicking close button
+                if (e.target.closest(".close-btn") || e.target.closest(".btn")) return;
+                
+                isDragging = true;
+                
+                // Get current position
+                const rect = deltaSettingsWindow.getBoundingClientRect();
+                
+                // Calculate offset from mouse to top-left of window
+                dragOffset.x = e.clientX - rect.left;
+                dragOffset.y = e.clientY - rect.top;
+                
+                // Switch from centered transform to absolute positioning
+                deltaSettingsWindow.style.transform = "none";
+                deltaSettingsWindow.style.left = rect.left + "px";
+                deltaSettingsWindow.style.top = rect.top + "px";
+                
+                // Prevent text selection while dragging
+                e.preventDefault();
+            });
+        }
+
+        // Global mouse move handler
+        document.addEventListener("mousemove", (e) => {
+            if (!isDragging || !deltaSettingsWindow) return;
+            
+            const newX = e.clientX - dragOffset.x;
+            const newY = e.clientY - dragOffset.y;
+            
+            // Keep window within viewport bounds
+            const rect = deltaSettingsWindow.getBoundingClientRect();
+            const maxX = window.innerWidth - rect.width;
+            const maxY = window.innerHeight - rect.height;
+            
+            deltaSettingsWindow.style.left = Math.max(0, Math.min(newX, maxX)) + "px";
+            deltaSettingsWindow.style.top = Math.max(0, Math.min(newY, maxY)) + "px";
+        });
+
+        // Global mouse up handler
+        document.addEventListener("mouseup", () => {
+            isDragging = false;
+        });
 
         function setupEventListeners() {
             if (!deltaSettingsWindow) return;
@@ -310,28 +370,6 @@
                     }
                 });
             });
-
-            const titleframe = $(".titleframe", deltaSettingsWindow);
-            if (titleframe) {
-                titleframe.addEventListener("mousedown", (e) => {
-                    if (e.target.closest(".close-btn") || e.target.closest(".btn")) return;
-                    isDragging = true;
-                    const rect = deltaSettingsWindow.getBoundingClientRect();
-                    dragOffset.x = e.clientX - rect.left;
-                    dragOffset.y = e.clientY - rect.top;
-                    deltaSettingsWindow.style.transform = "none";
-                    deltaSettingsWindow.style.left = rect.left + "px";
-                    deltaSettingsWindow.style.top = rect.top + "px";
-                });
-            }
-
-            document.addEventListener("mousemove", (e) => {
-                if (!isDragging || !deltaSettingsWindow) return;
-                deltaSettingsWindow.style.left = (e.clientX - dragOffset.x) + "px";
-                deltaSettingsWindow.style.top = (e.clientY - dragOffset.y) + "px";
-            });
-
-            document.addEventListener("mouseup", () => { isDragging = false; });
 
             $$(".skill-color-input", deltaSettingsWindow).forEach(input => {
                 input.addEventListener("input", (e) => {
@@ -465,7 +503,8 @@
         window.DeltaSettings = {
             toggle: toggleDeltaSettings,
             close: closeDeltaSettingsWindow,
-            open: createDeltaSettingsWindow
+            open: createDeltaSettingsWindow,
+            center: centerWindow
         };
 
         console.log("✅ Delta Settings module loaded");
