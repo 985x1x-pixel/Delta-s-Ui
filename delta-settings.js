@@ -189,7 +189,7 @@
             const ccSettings = getCCSettings();
             let html = '';
 
-            CONFIG.ccEffects.forEach(cc => {
+            (CONFIG.ccEffects || []).forEach(cc => {
                 const settings = ccSettings[cc.id] || { color: cc.color, priority: cc.priority };
                 html += `
                     <div class="cc-row">
