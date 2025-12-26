@@ -1109,6 +1109,8 @@ style.textContent = `
     max-width: 600px;
     height: auto !important;
     padding-bottom: 0 !important;
+    display: flex !important;
+    flex-direction: column !important;
 }
 
 /* ==========================================
