@@ -30,6 +30,24 @@ window.DELTA_CONFIG = {
         "items/shield/shield4_q3.avif": "https://raw.githubusercontent.com/Shturmovicc/hordes-legendary-items/refs/heads/main/items/shield/shield4_q4.avif",
     },
 
+    ccEffects: [
+        { src: "/data/ui/skills/deepFrozen.avif", color: "blue", priority: 1 },
+        { src: "/data/ui/skills/14.avif", color: "blue", priority: 6 },
+        { src: "/data/ui/skills/37.avif", color: "red", priority: 10 },
+        { src: "/data/ui/skills/stunBuff.avif", color: "red", priority: 10 },
+        { src: "/data/ui/skills/49.avif", color: "yellow", priority: 5 },
+        { src: "/data/ui/skills/50.avif", color: "yellow", priority: 5 },
+    ],
+    
+    hiddenBuffs: [
+        "/data/ui/skills/25.avif",
+        "/data/ui/skills/24.avif",
+        "/data/ui/skills/22.avif",
+        "/data/ui/skills/20.avif",
+        "/data/ui/skills/19.avif",
+        "/data/ui/skills/18.avif",
+    ],
+    
     defaults: {
         skillbarColors: {
             "skp": "#9d00ff",
