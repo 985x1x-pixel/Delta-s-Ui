@@ -8,7 +8,11 @@
 
     function waitForConfig(callback) {
         if (window.DELTA_CONFIG && window.DeltaUI) {
-            callback();
+            if (document.body) {
+                callback();
+            } else {
+                document.addEventListener("DOMContentLoaded", callback);
+            }
         } else {
             setTimeout(() => waitForConfig(callback), 50);
         }
@@ -20,12 +24,33 @@
         const CONFIG = window.DELTA_CONFIG;
         const DeltaUI = window.DeltaUI;
 
+        if (!CONFIG || !DeltaUI) {
+            console.warn("[Delta Settings] CONFIG or DeltaUI not ready, retrying...");
+            setTimeout(initSettings, 100);
+            return;
+        }
+
         let deltaSettingsWindow = null;
         let isDragging = false;
         let dragOffset = { x: 0, y: 0 };
 
-        const $ = (sel, root = document) => root.querySelector(sel);
-        const $$ = (sel, root = document) => Array.from(root.querySelectorAll(sel));
+        const $ = (sel, root = document) => {
+            try {
+                return root ? root.querySelector(sel) : null;
+            } catch (e) {
+                console.warn("[Delta Settings] Query failed:", sel, e);
+                return null;
+            }
+        };
+
+        const $$ = (sel, root = document) => {
+            try {
+                return root ? Array.from(root.querySelectorAll(sel)) : [];
+            } catch (e) {
+                console.warn("[Delta Settings] QueryAll failed:", sel, e);
+                return [];
+            }
+        };
 
         function getToggle(key, defaultVal = false) {
             const saved = localStorage.getItem("deltaUI_" + key);
@@ -33,14 +58,18 @@
         }
 
         function scanSkillbar() {
-            const skillbar = $("#skillbar");
+            const skillbar = document.querySelector("#skillbar");
             const slots = [];
-            if (!skillbar) return slots;
 
-            $$(".slot[id]", skillbar).forEach(slot => {
+            if (!skillbar) {
+                console.log("[Delta Settings] Skillbar not found yet");
+                return slots;
+            }
+
+            skillbar.querySelectorAll(".slot[id]").forEach(slot => {
                 const id = slot.id;
                 if (id && id.startsWith("sk")) {
-                    const keyText = $(".slottext.key", slot);
+                    const keyText = slot.querySelector(".slottext.key");
                     const keybind = keyText ? keyText.textContent.trim() : id.replace("sk", "").toUpperCase();
                     slots.push({
                         id,
@@ -107,17 +136,15 @@
 
         function createDeltaSettingsWindow() {
             if (deltaSettingsWindow) deltaSettingsWindow.remove();
-        
+
             deltaSettingsWindow = document.createElement("div");
             deltaSettingsWindow.className = "window-pos";
             deltaSettingsWindow.id = "delta-settings-window";
             deltaSettingsWindow.style.cssText = "z-index: 100; position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);";
-        
+
             const skillbarSlots = scanSkillbar();
-            
-            // Get current fullscreen key
             const currentFullscreenKey = localStorage.getItem("deltaUI_fullscreenKey") || "o";
-        
+
             deltaSettingsWindow.innerHTML = `
                 <div class="window panel-black svelte-1f1v3u3">
                     <div class="titleframe svelte-1f1v3u3" style="cursor: pointer;">
@@ -150,13 +177,13 @@
                                         <div>FPS Mode<br><small class="textgrey">Hide UI for performance</small></div>
                                         <div class="btn checkbox ${getToggle("fpsMode", false) ? "active" : ""}" data-toggle="fpsMode"></div>
                                     </div>
-        
+
                                     <h3 class="textprimary">Chat</h3>
                                     <div class="settings svelte-13nnce4">
                                         <div>Chat Tweaks<br><small class="textgrey">Resizable chat & controls</small></div>
                                         <div class="btn checkbox ${getToggle("chatTweaks", true) ? "active" : ""}" data-toggle="chatTweaks"></div>
                                     </div>
-        
+
                                     <h3 class="textprimary">Visual</h3>
                                     <div class="settings svelte-13nnce4">
                                         <div>Item Recolor<br><small class="textgrey">Quality-based item borders</small></div>
@@ -165,7 +192,7 @@
                                         <div>Charm Colors<br><small class="textgrey">Custom charm border colors</small></div>
                                         <div class="btn checkbox ${getToggle("charmColors", true) ? "active" : ""}" data-toggle="charmColors"></div>
                                     </div>
-        
+
                                     <h3 class="textprimary">Stats Display</h3>
                                     <div class="settings svelte-13nnce4">
                                         <div>Playtime Labels<br><small class="textgrey">Session & total time</small></div>
@@ -175,8 +202,8 @@
                                         <div class="btn checkbox ${getToggle("fameLabels", true) ? "active" : ""}" data-toggle="fameLabels"></div>
                                     </div>
                                 </div>
-        
-                                <!-- Controls Tab (NEW) -->
+
+                                <!-- Controls Tab -->
                                 <div class="tab-panel" data-panel="controls">
                                     <h3 class="textprimary">Keybinds</h3>
                                     <div class="settings svelte-13nnce4">
@@ -197,19 +224,19 @@
                                         <small class="textgrey">Click the input box and press any key to set a new keybind.</small>
                                     </div>
                                 </div>
-        
+
                                 <!-- Colors Tab -->
                                 <div class="tab-panel" data-panel="colors">
                                     <h3 class="textprimary">Skillbar Colors</h3>
                                     <div class="settings svelte-13nnce4">
                                         ${generateSkillbarColorRows(skillbarSlots)}
                                     </div>
-        
+
                                     <h3 class="textprimary">Charm Colors</h3>
                                     <div class="settings svelte-13nnce4">
                                         ${generateCharmColorRows()}
                                     </div>
-        
+
                                     <h3 class="textprimary">Pet Color</h3>
                                     <div class="settings svelte-13nnce4">
                                         <div>Pet Border Glow</div>
@@ -218,7 +245,7 @@
                                             <input type="color" id="pet-color-input" value="${CONFIG.petColor}">
                                         </div>
                                     </div>
-        
+
                                     <h3 class="textprimary">Actions</h3>
                                     <div class="settings svelte-13nnce4">
                                         <div>Export Colors</div>
@@ -231,7 +258,7 @@
                                         <div class="btn orange" id="reset-all-colors">Reset</div>
                                     </div>
                                 </div>
-        
+
                                 <!-- About Tab -->
                                 <div class="tab-panel" data-panel="about">
                                     <h3 class="textprimary">Delta UI</h3>
@@ -250,7 +277,7 @@
                     </div>
                 </div>
             `;
-        
+
             document.body.appendChild(deltaSettingsWindow);
             setupEventListeners();
         }
@@ -258,7 +285,7 @@
         function setupEventListeners() {
             if (!deltaSettingsWindow) return;
 
-            $(".close-btn", deltaSettingsWindow).addEventListener("click", closeDeltaSettingsWindow);
+            $(".close-btn", deltaSettingsWindow)?.addEventListener("click", closeDeltaSettingsWindow);
 
             $$(".delta-nav .choice", deltaSettingsWindow).forEach(choice => {
                 choice.addEventListener("click", () => {
@@ -285,16 +312,18 @@
             });
 
             const titleframe = $(".titleframe", deltaSettingsWindow);
-            titleframe.addEventListener("mousedown", (e) => {
-                if (e.target.closest(".close-btn") || e.target.closest(".btn")) return;
-                isDragging = true;
-                const rect = deltaSettingsWindow.getBoundingClientRect();
-                dragOffset.x = e.clientX - rect.left;
-                dragOffset.y = e.clientY - rect.top;
-                deltaSettingsWindow.style.transform = "none";
-                deltaSettingsWindow.style.left = rect.left + "px";
-                deltaSettingsWindow.style.top = rect.top + "px";
-            });
+            if (titleframe) {
+                titleframe.addEventListener("mousedown", (e) => {
+                    if (e.target.closest(".close-btn") || e.target.closest(".btn")) return;
+                    isDragging = true;
+                    const rect = deltaSettingsWindow.getBoundingClientRect();
+                    dragOffset.x = e.clientX - rect.left;
+                    dragOffset.y = e.clientY - rect.top;
+                    deltaSettingsWindow.style.transform = "none";
+                    deltaSettingsWindow.style.left = rect.left + "px";
+                    deltaSettingsWindow.style.top = rect.top + "px";
+                });
+            }
 
             document.addEventListener("mousemove", (e) => {
                 if (!isDragging || !deltaSettingsWindow) return;
@@ -377,70 +406,62 @@
                     }
                 });
             }
+
+            // Fullscreen keybind input
+            const fullscreenKeyInput = $("#fullscreen-key-input", deltaSettingsWindow);
+            if (fullscreenKeyInput) {
+                fullscreenKeyInput.addEventListener("click", () => {
+                    fullscreenKeyInput.value = "";
+                    fullscreenKeyInput.placeholder = "Press a key...";
+                });
+
+                fullscreenKeyInput.addEventListener("keydown", (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+
+                    const key = e.key.toLowerCase();
+
+                    if (["shift", "control", "alt", "meta"].includes(key)) {
+                        return;
+                    }
+
+                    fullscreenKeyInput.value = key.toUpperCase();
+                    localStorage.setItem("deltaUI_fullscreenKey", key);
+
+                    if (DeltaUI.setFullscreenKey) {
+                        DeltaUI.setFullscreenKey(key);
+                    }
+
+                    fullscreenKeyInput.blur();
+                    console.log("[Delta UI] Fullscreen key set to: " + key.toUpperCase());
+                });
+
+                fullscreenKeyInput.addEventListener("blur", () => {
+                    const currentKey = localStorage.getItem("deltaUI_fullscreenKey") || "o";
+                    if (!fullscreenKeyInput.value) {
+                        fullscreenKeyInput.value = currentKey.toUpperCase();
+                    }
+                    fullscreenKeyInput.placeholder = "Press a key";
+                });
+            }
+
+            const clearFullscreenKey = $("#clear-fullscreen-key", deltaSettingsWindow);
+            if (clearFullscreenKey) {
+                clearFullscreenKey.addEventListener("click", () => {
+                    const defaultKey = "o";
+                    const input = $("#fullscreen-key-input", deltaSettingsWindow);
+                    if (input) input.value = defaultKey.toUpperCase();
+                    localStorage.setItem("deltaUI_fullscreenKey", defaultKey);
+
+                    if (DeltaUI.setFullscreenKey) {
+                        DeltaUI.setFullscreenKey(defaultKey);
+                    }
+
+                    console.log("[Delta UI] Fullscreen key reset to: O");
+                });
+            }
         }
 
-        // Fullscreen keybind input
-        const fullscreenKeyInput = $("#fullscreen-key-input", deltaSettingsWindow);
-        if (fullscreenKeyInput) {
-            // Click to focus
-            fullscreenKeyInput.addEventListener("click", () => {
-                fullscreenKeyInput.value = "";
-                fullscreenKeyInput.placeholder = "Press a key...";
-            });
-            
-            // Capture keypress
-            fullscreenKeyInput.addEventListener("keydown", (e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                
-                const key = e.key.toLowerCase();
-                
-                // Ignore modifier keys alone
-                if (["shift", "control", "alt", "meta"].includes(key)) {
-                    return;
-                }
-                
-                // Set the new key
-                fullscreenKeyInput.value = key.toUpperCase();
-                localStorage.setItem("deltaUI_fullscreenKey", key);
-                
-                // Update the main script
-                if (DeltaUI.setFullscreenKey) {
-                    DeltaUI.setFullscreenKey(key);
-                }
-                
-                // Blur the input
-                fullscreenKeyInput.blur();
-                
-                console.log("[Delta UI] Fullscreen key set to: " + key.toUpperCase());
-            });
-            
-            // Handle blur
-            fullscreenKeyInput.addEventListener("blur", () => {
-                const currentKey = localStorage.getItem("deltaUI_fullscreenKey") || "o";
-                if (!fullscreenKeyInput.value) {
-                    fullscreenKeyInput.value = currentKey.toUpperCase();
-                }
-                fullscreenKeyInput.placeholder = "Press a key";
-            });
-        }
-        
-        // Clear fullscreen key button
-        const clearFullscreenKey = $("#clear-fullscreen-key", deltaSettingsWindow);
-        if (clearFullscreenKey) {
-            clearFullscreenKey.addEventListener("click", () => {
-                const defaultKey = "o";
-                fullscreenKeyInput.value = defaultKey.toUpperCase();
-                localStorage.setItem("deltaUI_fullscreenKey", defaultKey);
-                
-                if (DeltaUI.setFullscreenKey) {
-                    DeltaUI.setFullscreenKey(defaultKey);
-                }
-                
-                console.log("[Delta UI] Fullscreen key reset to: O");
-            });
-        }
-        
         window.DeltaSettings = {
             toggle: toggleDeltaSettings,
             close: closeDeltaSettingsWindow,
