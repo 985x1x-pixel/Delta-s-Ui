@@ -28,6 +28,22 @@ window.DELTA_CONFIG = {
         "items/totem/totem4_q3.avif": "https://raw.githubusercontent.com/Shturmovicc/hordes-legendary-items/refs/heads/main/items/totem/totem4_q4.avif",
         "items/quiver/quiver4_q3.avif": "https://raw.githubusercontent.com/Shturmovicc/hordes-legendary-items/refs/heads/main/items/quiver/quiver4_q4.avif",
         "items/shield/shield4_q3.avif": "https://raw.githubusercontent.com/Shturmovicc/hordes-legendary-items/refs/heads/main/items/shield/shield4_q4.avif",
+
+        "items/staff/staff7_grey.avif": "https://raw.githubusercontent.com/Shturmovicc/hordes-legendary-items/refs/heads/main/items/staff/staff7_q4.webp",
+        "items/armlet/armlet5_grey.avif": "https://github.com/Shturmovicc/hordes-legendary-items/blob/main/items/armlet/armlet5_q4.avif?raw=true",
+        "items/armor/armor4_grey.avif": "https://raw.githubusercontent.com/Shturmovicc/hordes-legendary-items/refs/heads/main/items/armor/armor4_q4.avif",
+        "items/bag/bag2_grey.avif": "https://raw.githubusercontent.com/Shturmovicc/hordes-legendary-items/refs/heads/main/items/bag/bag2_q4.avif",
+        "items/boot/boot5_grey.avif": "https://raw.githubusercontent.com/Shturmovicc/hordes-legendary-items/refs/heads/main/items/boot/boot5_q4.avif",
+        "items/glove/glove5_grey.avif": "https://raw.githubusercontent.com/Shturmovicc/hordes-legendary-items/refs/heads/main/items/glove/glove5_q4.avif",
+        "items/ring/ring4_grey.avif": "https://raw.githubusercontent.com/Shturmovicc/hordes-legendary-items/refs/heads/main/items/ring/ring4_q4.avif",
+        "items/amulet/amulet4_grey.avif": "https://raw.githubusercontent.com/Shturmovicc/hordes-legendary-items/refs/heads/main/items/amulet/amulet4_q4.avif",
+        "items/orb/orb4_grey.avif": "https://raw.githubusercontent.com/Shturmovicc/hordes-legendary-items/refs/heads/main/items/orb/orb4_q4.avif",
+        "items/bow/bow7_grey.avif": "https://raw.githubusercontent.com/Shturmovicc/hordes-legendary-items/refs/heads/main/items/bow/bow7_q4.webp",
+        "items/hammer/hammer7_grey.avif": "https://raw.githubusercontent.com/Shturmovicc/hordes-legendary-items/refs/heads/main/items/hammer/hammer7_q4.webp",
+        "items/sword/sword7_grey.avif": "https://raw.githubusercontent.com/Shturmovicc/hordes-legendary-items/refs/heads/main/items/sword/sword7_q4.webp",
+        "items/totem/totem4_grey.avif": "https://raw.githubusercontent.com/Shturmovicc/hordes-legendary-items/refs/heads/main/items/totem/totem4_q4.avif",
+        "items/quiver/quiver4_grey.avif": "https://raw.githubusercontent.com/Shturmovicc/hordes-legendary-items/refs/heads/main/items/quiver/quiver4_q4.avif",
+        "items/shield/shield4_grey.avif": "https://raw.githubusercontent.com/Shturmovicc/hordes-legendary-items/refs/heads/main/items/shield/shield4_q4.avif",
     },
 
     ccEffects: [
