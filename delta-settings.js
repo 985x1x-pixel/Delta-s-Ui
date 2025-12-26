@@ -150,7 +150,7 @@
                     <div class="titleframe svelte-1f1v3u3" style="cursor: pointer;">
                         <img src="/data/ui/icons/cog.svg" class="titleicon svgicon svelte-1f1v3u3">
                         <div class="textprimary title svelte-1f1v3u3">
-                            <div><span style="color: #F5C247; font-weight: bold;"></span> Delta UI <small style="color: #5b858e;">v${CONFIG.version}</small></div>
+                            <div>Delta UI <small style="color: #5b858e;">v${CONFIG.version}</small></div>
                         </div>
                         <img src="/data/ui/icons/cross.svg" class="btn black svgicon close-btn">
                     </div>
