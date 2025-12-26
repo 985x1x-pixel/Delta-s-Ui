@@ -3408,5 +3408,234 @@ section.post .btn.formatted.secondary.disabled {
     border-left: 2px solid #5b858e;
 }
 
+/* ==========================================
+   BUFF SETTINGS - Smaller Checkboxes
+   ==========================================*/
+
+.buff-settings {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 8px 12px;
+    align-items: center;
+}
+
+.buff-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.buff-icon {
+    width: 24px;
+    height: 24px;
+    border-radius: 4px;
+    flex-shrink: 0;
+}
+
+.buff-name {
+    font-size: 13px;
+    color: #c8c8c8;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Smaller checkboxes for buff settings */
+.buff-settings .btn.checkbox {
+    width: 18px !important;
+    height: 18px !important;
+    min-width: 18px !important;
+    min-height: 18px !important;
+    padding: 0 !important;
+    border-radius: 4px !important;
+    border: 2px solid #5b858e !important;
+    background: rgba(0, 0, 0, 0.3) !important;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.buff-settings .btn.checkbox:hover {
+    border-color: #7ab8c4 !important;
+    background: rgba(91, 133, 142, 0.2) !important;
+}
+
+.buff-settings .btn.checkbox.active {
+    background: #5b858e !important;
+    border-color: #7ab8c4 !important;
+}
+
+.buff-settings .btn.checkbox.active::after {
+    content: "✓";
+    color: white;
+    font-size: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+}
+
+/* ==========================================
+   FPS SETTINGS - Match Style
+   ==========================================*/
+
+.fps-settings {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 8px 12px;
+    align-items: center;
+}
+
+.fps-row {
+    display: flex;
+    align-items: center;
+}
+
+.fps-name {
+    font-size: 13px;
+    color: #c8c8c8;
+}
+
+/* Smaller checkboxes for FPS settings */
+.fps-settings .btn.checkbox {
+    width: 18px !important;
+    height: 18px !important;
+    min-width: 18px !important;
+    min-height: 18px !important;
+    padding: 0 !important;
+    border-radius: 4px !important;
+    border: 2px solid #5b858e !important;
+    background: rgba(0, 0, 0, 0.3) !important;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.fps-settings .btn.checkbox:hover {
+    border-color: #7ab8c4 !important;
+    background: rgba(91, 133, 142, 0.2) !important;
+}
+
+.fps-settings .btn.checkbox.active {
+    background: #5b858e !important;
+    border-color: #7ab8c4 !important;
+}
+
+.fps-settings .btn.checkbox.active::after {
+    content: "✓";
+    color: white;
+    font-size: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+}
+
+/* ==========================================
+   CC SETTINGS - Match Style
+   ==========================================*/
+
+.cc-settings {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 8px 12px;
+    align-items: center;
+}
+
+.cc-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.cc-icon {
+    width: 24px;
+    height: 24px;
+    border-radius: 4px;
+    flex-shrink: 0;
+}
+
+.cc-name {
+    font-size: 13px;
+    color: #c8c8c8;
+}
+
+.cc-controls {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.cc-color-preview {
+    width: 18px;
+    height: 18px;
+    border-radius: 4px;
+    border: 2px solid #5b858e;
+}
+
+.cc-priority-input {
+    width: 45px;
+    height: 24px;
+    background: rgba(0, 0, 0, 0.4);
+    border: 1px solid #5b858e;
+    border-radius: 4px;
+    color: #c8c8c8;
+    text-align: center;
+    font-size: 12px;
+}
+
+.cc-priority-input:focus {
+    outline: none;
+    border-color: #7ab8c4;
+}
+
+/* ==========================================
+   CLASS HEADERS
+   ==========================================*/
+
+.class-header {
+    margin-top: 16px;
+    margin-bottom: 8px;
+    font-size: 14px;
+    color: #f5c247;
+    text-transform: capitalize;
+    border-bottom: 1px solid rgba(91, 133, 142, 0.3);
+    padding-bottom: 4px;
+}
+
+.class-header:first-child {
+    margin-top: 0;
+}
+
+/* ==========================================
+   CUSTOMIZATION SECTIONS
+   ==========================================*/
+
+.customization-notice {
+    background: rgba(245, 194, 71, 0.1);
+    border: 1px solid rgba(245, 194, 71, 0.3);
+    border-radius: 6px;
+    padding: 8px 12px;
+    margin-bottom: 12px;
+}
+
+.customization-notice.hidden {
+    display: none;
+}
+
+.customization-section {
+    transition: opacity 0.2s ease;
+}
+
+.customization-section.disabled {
+    opacity: 0.5;
+    pointer-events: none;
+}
+
+.fps-header,
+.cc-header {
+    margin-bottom: 12px;
+}
+
 `;
 document.head.appendChild(style);
