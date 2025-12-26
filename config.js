@@ -86,6 +86,17 @@ window.DELTA_CONFIG = {
         },
 
         petColor: "#0aa2af",
+
+        toggles: {
+            ccIndicator: true,
+            hideBuffs: false,
+            fpsMode: false,
+            chatTweaks: true,
+            itemRecolor: true,
+            charmColors: true,
+            playtimeLabels: true,
+            fameLabels: true,
+        },
     },
 
     charmNames: {
