@@ -1,11 +1,9 @@
 {
-    "version": "3.8",
-    "minLoaderVersion": "3.8",
+    "version": "3.9",
+    "minLoaderVersion": "3.9",
     "changelog": [
-        "Added auto-update system",
-        "Improved loading performance",
-        "Fixed FPS mode customization",
-        "Better error handling"
+        "Fixed chat functions not appearing",
+        "Fixed fame not working",
     ],
     "releaseDate": "2025-12-27"
 }
