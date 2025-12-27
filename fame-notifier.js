@@ -1,157 +1,170 @@
 // ==========================================
-// FAME NOTIFIER MODULE v1.1
+// FAME NOTIFIER MODULE v1.2
 // Tracks fame gained/lost from chat messages
 // ==========================================
 
 (function() {
     "use strict";
 
-    // Wait for DeltaLib (optional - works without it too)
+    // Prevent multiple initializations
+    if (window.FameNotifier) {
+        console.log("[Fame Notifier] Already initialized, skipping...");
+        return;
+    }
+
+    const STORAGE_KEYS = {
+        GAINED: "totalFameGained",
+        LOST: "totalFameLost"
+    };
+
+    const RESET_KEY = "[";
+
+    // State
+    let chatObserver = null;
+    let isInitialized = false;
+
+    // ==========================================
+    // STORAGE HELPERS
+    // ==========================================
+
+    function getFromStorage(key, defaultVal = "0") {
+        try {
+            return localStorage.getItem(key) || defaultVal;
+        } catch {
+            return defaultVal;
+        }
+    }
+
+    function setToStorage(key, value) {
+        try {
+            localStorage.setItem(key, String(value));
+        } catch (e) {
+            console.warn("[Fame Notifier] Storage error:", e);
+        }
+    }
+
+    const getGained = () => parseInt(getFromStorage(STORAGE_KEYS.GAINED, "0"), 10);
+    const getLost = () => parseInt(getFromStorage(STORAGE_KEYS.LOST, "0"), 10);
+
+    const addGained = (amount) => {
+        setToStorage(STORAGE_KEYS.GAINED, getGained() + amount);
+    };
+
+    const addLost = (amount) => {
+        setToStorage(STORAGE_KEYS.LOST, getLost() + amount);
+    };
+
+    const reset = () => {
+        setToStorage(STORAGE_KEYS.GAINED, 0);
+        setToStorage(STORAGE_KEYS.LOST, 0);
+        console.log("[Fame Notifier] Reset to 0!");
+    };
+
+    // ==========================================
+    // FAME PARSING
+    // ==========================================
+
+    function parseFameText(text) {
+        if (!text) return;
+
+        const normalizedText = text.replace(/\s+/g, " ").trim();
+
+        // Check for fame gain
+        const gainMatch = normalizedText.match(/Gained\s+([\d,]+)/i);
+        if (gainMatch) {
+            const amount = parseInt(gainMatch[1].replace(/,/g, ""), 10);
+            if (amount > 0) {
+                addGained(amount);
+                console.log(`[Fame Notifier] +${amount.toLocaleString()} (Total: ${getGained().toLocaleString()})`);
+            }
+            return;
+        }
+
+        // Check for fame loss
+        const lossMatch = normalizedText.match(/Lost\s+([\d,]+)/i);
+        if (lossMatch) {
+            const amount = parseInt(lossMatch[1].replace(/,/g, ""), 10);
+            if (amount > 0) {
+                addLost(amount);
+                console.log(`[Fame Notifier] -${amount.toLocaleString()} (Total Lost: ${getLost().toLocaleString()})`);
+            }
+        }
+    }
+
+    function processChatLine(node) {
+        if (!(node instanceof HTMLElement)) return;
+        if (!node.matches?.("article.line")) return;
+        if (node.dataset.fameProcessed) return;
+
+        node.dataset.fameProcessed = "true";
+
+        const fameSpans = node.querySelectorAll("span.textfame");
+        fameSpans.forEach(span => parseFameText(span.textContent));
+    }
+
+    // ==========================================
+    // OBSERVER SETUP
+    // ==========================================
+
+    function attachChatObserver() {
+        const chat = document.getElementById("chat");
+        if (!chat) return false;
+
+        // Already observing this chat element
+        if (chatObserver) {
+            return true;
+        }
+
+        chatObserver = new MutationObserver((mutations) => {
+            for (const mutation of mutations) {
+                for (const node of mutation.addedNodes) {
+                    processChatLine(node);
+                }
+            }
+        });
+
+        chatObserver.observe(chat, { childList: true, subtree: true });
+        console.log("[Fame Notifier] Observer attached");
+        return true;
+    }
+
+    // ==========================================
+    // KEYBOARD HANDLER
+    // ==========================================
+
+    function setupKeyboardHandler() {
+        window.addEventListener("keydown", (e) => {
+            const active = document.activeElement;
+            const isTyping = active?.tagName === "INPUT" ||
+                           active?.tagName === "TEXTAREA" ||
+                           active?.isContentEditable;
+
+            if (!isTyping && e.key === RESET_KEY) {
+                reset();
+            }
+        });
+    }
+
+    // ==========================================
+    // INITIALIZATION
+    // ==========================================
+
     function init() {
-        const Lib = window.DeltaLib;
-
-        const STORAGE_KEYS = {
-            GAINED: "totalFameGained",
-            LOST: "totalFameLost"
-        };
-
-        const RESET_KEY = "[";
-
-        // State
-        let chatObserver = null;
-
-        // ==========================================
-        // STORAGE HELPERS
-        // ==========================================
-
-        function getFromStorage(key, defaultVal = "0") {
-            try {
-                return localStorage.getItem(key) || defaultVal;
-            } catch {
-                return defaultVal;
-            }
-        }
-
-        function setToStorage(key, value) {
-            try {
-                localStorage.setItem(key, String(value));
-            } catch (e) {
-                console.warn("[Fame Notifier] Storage error:", e);
-            }
-        }
-
-        const getGained = () => parseInt(getFromStorage(STORAGE_KEYS.GAINED, "0"), 10);
-        const getLost = () => parseInt(getFromStorage(STORAGE_KEYS.LOST, "0"), 10);
-
-        const addGained = (amount) => {
-            setToStorage(STORAGE_KEYS.GAINED, getGained() + amount);
-        };
-
-        const addLost = (amount) => {
-            setToStorage(STORAGE_KEYS.LOST, getLost() + amount);
-        };
-
-        const reset = () => {
-            setToStorage(STORAGE_KEYS.GAINED, 0);
-            setToStorage(STORAGE_KEYS.LOST, 0);
-            console.log("[Fame Notifier] Reset to 0!");
-        };
-
-        // ==========================================
-        // FAME PARSING
-        // ==========================================
-
-        function parseFameText(text) {
-            if (!text) return;
-
-            const normalizedText = text.replace(/\s+/g, " ").trim();
-
-            // Check for fame gain
-            const gainMatch = normalizedText.match(/Gained\s+([\d,]+)/i);
-            if (gainMatch) {
-                const amount = parseInt(gainMatch[1].replace(/,/g, ""), 10);
-                if (amount > 0) {
-                    addGained(amount);
-                    console.log(`[Fame Notifier] +${amount.toLocaleString()} (Total: ${getGained().toLocaleString()})`);
-                }
-                return;
-            }
-
-            // Check for fame loss
-            const lossMatch = normalizedText.match(/Lost\s+([\d,]+)/i);
-            if (lossMatch) {
-                const amount = parseInt(lossMatch[1].replace(/,/g, ""), 10);
-                if (amount > 0) {
-                    addLost(amount);
-                    console.log(`[Fame Notifier] -${amount.toLocaleString()} (Total Lost: ${getLost().toLocaleString()})`);
-                }
-            }
-        }
-
-        function processChatLine(node) {
-            if (!(node instanceof HTMLElement)) return;
-            if (!node.matches?.("article.line")) return;
-            if (node.dataset.fameProcessed) return;
-
-            node.dataset.fameProcessed = "true";
-
-            const fameSpans = node.querySelectorAll("span.textfame");
-            fameSpans.forEach(span => parseFameText(span.textContent));
-        }
-
-        // ==========================================
-        // OBSERVER SETUP
-        // ==========================================
-
-        function attachChatObserver() {
-            const chat = document.getElementById("chat");
-            if (!chat) return;
-
-            // Disconnect existing observer if chat element changed
-            if (chatObserver) {
-                chatObserver.disconnect();
-                chatObserver = null;
-            }
-
-            chatObserver = new MutationObserver((mutations) => {
-                for (const mutation of mutations) {
-                    for (const node of mutation.addedNodes) {
-                        processChatLine(node);
-                    }
-                }
-            });
-
-            chatObserver.observe(chat, { childList: true, subtree: true });
-            console.log("[Fame Notifier] Observer attached");
-        }
-
-        // ==========================================
-        // KEYBOARD HANDLER
-        // ==========================================
-
-        function setupKeyboardHandler() {
-            window.addEventListener("keydown", (e) => {
-                const active = document.activeElement;
-                const isTyping = active?.tagName === "INPUT" ||
-                               active?.tagName === "TEXTAREA" ||
-                               active?.isContentEditable;
-
-                if (!isTyping && e.key === RESET_KEY) {
-                    reset();
-                }
-            });
-        }
-
-        // ==========================================
-        // INITIALIZATION
-        // ==========================================
-
-        // Watch for chat element to appear
-        const bodyObserver = new MutationObserver(attachChatObserver);
-        bodyObserver.observe(document.body, { childList: true, subtree: true });
+        if (isInitialized) return;
+        isInitialized = true;
 
         // Try to attach immediately
-        attachChatObserver();
+        if (!attachChatObserver()) {
+            // If chat not found, wait for it
+            const checkInterval = setInterval(() => {
+                if (attachChatObserver()) {
+                    clearInterval(checkInterval);
+                }
+            }, 500);
+
+            // Stop checking after 30 seconds
+            setTimeout(() => clearInterval(checkInterval), 30000);
+        }
 
         // Setup keyboard
         setupKeyboardHandler();
@@ -170,10 +183,7 @@
         console.log(`[Fame Notifier] Press '${RESET_KEY}' to reset.`);
     }
 
-    // Start initialization immediately - no dependencies required
-    if (document.readyState === "loading") {
-        document.addEventListener("DOMContentLoaded", init);
-    } else {
-        init();
-    }
+    // Start initialization
+    init();
+
 })();
