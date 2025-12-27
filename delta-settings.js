@@ -13,9 +13,71 @@
             return;
         }
 
-        const { $, $$, storage, injectStyle } = DeltaLib;
+        const Lib = window.DeltaLib;
         const CONFIG = window.DELTA_CONFIG;
         const DeltaUI = window.DeltaUI;
+
+        // ==========================================
+        // HELPER FUNCTIONS
+        // ==========================================
+
+        function $(selector, root = document) {
+            return Lib.$(selector, root);
+        }
+
+        function $$(selector, root = document) {
+            return Lib.$$(selector, root);
+        }
+
+        function injectStyle(id, css) {
+            let style = document.getElementById(id);
+            if (!style) {
+                style = document.createElement("style");
+                style.id = id;
+                document.head.appendChild(style);
+            }
+            style.textContent = css;
+            return style;
+        }
+
+        function storageGet(key, defaultVal = null) {
+            try {
+                return localStorage.getItem(key) ?? defaultVal;
+            } catch {
+                return defaultVal;
+            }
+        }
+
+        function storageSet(key, value) {
+            try {
+                localStorage.setItem(key, value);
+            } catch (e) {
+                console.warn("[Delta Settings] Storage error:", e);
+            }
+        }
+
+        function storageGetJSON(key, defaultVal = null) {
+            try {
+                const val = localStorage.getItem(key);
+                return val ? JSON.parse(val) : defaultVal;
+            } catch {
+                return defaultVal;
+            }
+        }
+
+        function storageSetJSON(key, value) {
+            try {
+                localStorage.setItem(key, JSON.stringify(value));
+            } catch (e) {
+                console.warn("[Delta Settings] Storage error:", e);
+            }
+        }
+
+        function getToggle(key, defaultVal = false) {
+            const saved = storageGet(`deltaUI_${key}`);
+            if (saved !== null) return saved === "true";
+            return CONFIG.defaults.toggles[key] ?? defaultVal;
+        }
 
         // ==========================================
         // STATE
@@ -409,30 +471,26 @@
         // SETTINGS HELPERS
         // ==========================================
 
-        const getToggle = (key, defaultVal = false) => {
-            return storage.getToggle(key, CONFIG.defaults.toggles[key] ?? defaultVal);
-        };
-
         const getHiddenBuffs = () => {
-            return storage.getJSON(CONFIG.storageKeys.HIDDEN_BUFFS, { ...CONFIG.defaults.hiddenBuffs });
+            return storageGetJSON(CONFIG.storageKeys.HIDDEN_BUFFS, { ...CONFIG.defaults.hiddenBuffs });
         };
 
         const saveHiddenBuffs = (data) => {
-            storage.setJSON(CONFIG.storageKeys.HIDDEN_BUFFS, data);
+            storageSetJSON(CONFIG.storageKeys.HIDDEN_BUFFS, data);
             DeltaUI.updateHiddenBuffsConfig?.(data);
         };
 
         const getCCSettings = () => {
-            return storage.getJSON(CONFIG.storageKeys.CC_SETTINGS, { ...CONFIG.defaults.ccSettings });
+            return storageGetJSON(CONFIG.storageKeys.CC_SETTINGS, { ...CONFIG.defaults.ccSettings });
         };
 
         const saveCCSettings = (data) => {
-            storage.setJSON(CONFIG.storageKeys.CC_SETTINGS, data);
+            storageSetJSON(CONFIG.storageKeys.CC_SETTINGS, data);
             DeltaUI.updateCCConfig?.(data);
         };
 
         const getFPSSettings = () => {
-            const saved = storage.getJSON(CONFIG.storageKeys.FPS_SETTINGS, null);
+            const saved = storageGetJSON(CONFIG.storageKeys.FPS_SETTINGS, null);
             if (saved) return saved;
 
             // Return defaults
@@ -444,7 +502,7 @@
         };
 
         const saveFPSSettings = (data) => {
-            storage.setJSON(CONFIG.storageKeys.FPS_SETTINGS, data);
+            storageSetJSON(CONFIG.storageKeys.FPS_SETTINGS, data);
             DeltaUI.updateFPSConfig?.(data);
         };
 
@@ -630,7 +688,7 @@
             if (settingsWindow) settingsWindow.remove();
 
             const skillbarSlots = scanSkillbar();
-            const currentFullscreenKey = storage.get("deltaUI_fullscreenKey", "o");
+            const currentFullscreenKey = storageGet("deltaUI_fullscreenKey", "o");
 
             const hideBuffsEnabled = getToggle("hideBuffs", false);
             const ccIndicatorEnabled = getToggle("ccIndicator", true);
@@ -857,7 +915,7 @@
                     const isNowActive = !checkbox.classList.contains("active");
 
                     checkbox.classList.toggle("active");
-                    storage.setToggle(toggleId, isNowActive);
+                    storageSet(`deltaUI_${toggleId}`, String(isNowActive));
                     DeltaUI.applyToggle?.(toggleId, isNowActive);
 
                     // Update customization visibility
@@ -1065,7 +1123,7 @@
                     if (["shift", "control", "alt", "meta"].includes(key)) return;
 
                     fullscreenKeyInput.value = key.toUpperCase();
-                    storage.set("deltaUI_fullscreenKey", key);
+                    storageSet("deltaUI_fullscreenKey", key);
                     DeltaUI.setFullscreenKey?.(key);
                     fullscreenKeyInput.blur();
 
@@ -1073,7 +1131,7 @@
                 });
 
                 fullscreenKeyInput.addEventListener("blur", () => {
-                    const currentKey = storage.get("deltaUI_fullscreenKey", "o");
+                    const currentKey = storageGet("deltaUI_fullscreenKey", "o");
                     if (!fullscreenKeyInput.value) {
                         fullscreenKeyInput.value = currentKey.toUpperCase();
                     }
@@ -1087,7 +1145,7 @@
                 const input = $("#fullscreen-key-input", settingsWindow);
 
                 if (input) input.value = defaultKey.toUpperCase();
-                storage.set("deltaUI_fullscreenKey", defaultKey);
+                storageSet("deltaUI_fullscreenKey", defaultKey);
                 DeltaUI.setFullscreenKey?.(defaultKey);
 
                 console.log("[Delta Settings] Fullscreen key reset to: O");
