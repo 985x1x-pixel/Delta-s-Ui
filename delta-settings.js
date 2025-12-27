@@ -1,135 +1,467 @@
 // ==========================================
 // DELTA UI SETTINGS WINDOW v3.7
-// Game-Native Style
+// Game-Native Style Settings Panel
 // ==========================================
 
 (function() {
     "use strict";
 
-    function waitForConfig(callback) {
-        if (window.DELTA_CONFIG && window.DeltaUI) {
-            if (document.body) {
-                callback();
-            } else {
-                document.addEventListener("DOMContentLoaded", callback);
-            }
-        } else {
-            setTimeout(() => waitForConfig(callback), 50);
-        }
-    }
-
-    waitForConfig(initSettings);
-
-    function initSettings() {
-        const CONFIG = window.DELTA_CONFIG;
-        const DeltaUI = window.DeltaUI;
-
-        if (!CONFIG || !DeltaUI) {
-            console.warn("[Delta Settings] CONFIG or DeltaUI not ready, retrying...");
-            setTimeout(initSettings, 100);
+    // Wait for dependencies
+    function init() {
+        if (!window.DeltaLib || !window.DELTA_CONFIG || !window.DeltaUI) {
+            setTimeout(init, 50);
             return;
         }
 
-        let deltaSettingsWindow = null;
+        const { $, $$, storage, injectStyle } = DeltaLib;
+        const CONFIG = window.DELTA_CONFIG;
+        const DeltaUI = window.DeltaUI;
+
+        // ==========================================
+        // STATE
+        // ==========================================
+
+        let settingsWindow = null;
         let isDragging = false;
         let dragOffset = { x: 0, y: 0 };
 
-        const $ = (sel, root = document) => {
-            try {
-                return root ? root.querySelector(sel) : null;
-            } catch (e) {
-                console.warn("[Delta Settings] Query failed:", sel, e);
-                return null;
+        // ==========================================
+        // CSS
+        // ==========================================
+
+        const CSS = `
+            #delta-settings-window {
+                position: fixed !important;
+                z-index: 99999 !important;
             }
+
+            #delta-settings-window .window {
+                width: 480px;
+                max-height: 600px;
+            }
+
+            #delta-settings-window .divide {
+                display: flex;
+                flex-direction: column;
+                height: 100%;
+            }
+
+            /* Navigation */
+            .delta-nav {
+                display: flex;
+                gap: 2px;
+                padding: 8px;
+                background: rgba(0, 0, 0, 0.3);
+                border-bottom: 1px solid rgba(91, 133, 142, 0.3);
+                flex-wrap: wrap;
+            }
+
+            .delta-nav .choice {
+                padding: 6px 12px;
+                cursor: pointer;
+                border-radius: 4px;
+                font-size: 12px;
+                color: #5b858e;
+                transition: all 0.15s;
+                background: rgba(0, 0, 0, 0.2);
+            }
+
+            .delta-nav .choice:hover {
+                color: #F5C247;
+                background: rgba(245, 194, 71, 0.1);
+            }
+
+            .delta-nav .choice.active {
+                color: #F5C247;
+                background: rgba(245, 194, 71, 0.2);
+            }
+
+            /* Tab panels */
+            .tab-panel {
+                display: none;
+                padding: 12px;
+            }
+
+            .tab-panel.active {
+                display: block;
+            }
+
+            .tab-panel h3 {
+                margin: 16px 0 8px 0;
+                font-size: 13px;
+                border-bottom: 1px solid rgba(91, 133, 142, 0.2);
+                padding-bottom: 4px;
+            }
+
+            .tab-panel h3:first-child {
+                margin-top: 0;
+            }
+
+            /* Settings grid */
+            #delta-settings-window .settings {
+                display: grid;
+                grid-template-columns: 1fr auto;
+                gap: 8px 12px;
+                align-items: center;
+            }
+
+            #delta-settings-window .settings > div:first-child {
+                font-size: 12px;
+            }
+
+            #delta-settings-window .settings small {
+                display: block;
+                margin-top: 2px;
+                opacity: 0.6;
+            }
+
+            /* Checkbox buttons */
+            #delta-settings-window .btn.checkbox {
+                width: 40px;
+                height: 22px;
+                border-radius: 11px;
+                background: rgba(91, 133, 142, 0.3);
+                position: relative;
+                cursor: pointer;
+                transition: all 0.2s;
+            }
+
+            #delta-settings-window .btn.checkbox::after {
+                content: "";
+                position: absolute;
+                width: 16px;
+                height: 16px;
+                border-radius: 50%;
+                background: #5b858e;
+                top: 3px;
+                left: 3px;
+                transition: all 0.2s;
+            }
+
+            #delta-settings-window .btn.checkbox.active {
+                background: rgba(245, 194, 71, 0.3);
+            }
+
+            #delta-settings-window .btn.checkbox.active::after {
+                background: #F5C247;
+                left: 21px;
+            }
+
+            /* Color inputs */
+            .color-input-wrapper {
+                display: flex;
+                align-items: center;
+                gap: 6px;
+            }
+
+            .color-preview {
+                width: 24px;
+                height: 24px;
+                border-radius: 4px;
+                border: 1px solid rgba(91, 133, 142, 0.4);
+            }
+
+            input[type="color"] {
+                width: 32px;
+                height: 24px;
+                padding: 0;
+                border: none;
+                border-radius: 4px;
+                cursor: pointer;
+                background: transparent;
+            }
+
+            input[type="color"]::-webkit-color-swatch-wrapper {
+                padding: 0;
+            }
+
+            input[type="color"]::-webkit-color-swatch {
+                border: 1px solid rgba(91, 133, 142, 0.4);
+                border-radius: 4px;
+            }
+
+            /* Keybind input */
+            .keybind-input-wrapper {
+                display: flex;
+                align-items: center;
+                gap: 6px;
+            }
+
+            .keybind-input {
+                width: 50px;
+                height: 28px;
+                text-align: center;
+                font-size: 14px;
+                font-weight: bold;
+                background: rgba(0, 0, 0, 0.3);
+                border: 1px solid rgba(91, 133, 142, 0.4);
+                border-radius: 4px;
+                color: #F5C247;
+                cursor: pointer;
+                transition: all 0.15s;
+            }
+
+            .keybind-input:focus {
+                border-color: #F5C247;
+                outline: none;
+                background: rgba(245, 194, 71, 0.1);
+            }
+
+            .keybind-hint {
+                margin-top: 12px;
+                padding: 8px;
+                background: rgba(0, 0, 0, 0.2);
+                border-radius: 4px;
+            }
+
+            /* Keybind badge */
+            .keybind-badge {
+                display: inline-block;
+                padding: 2px 6px;
+                background: rgba(245, 194, 71, 0.2);
+                color: #F5C247;
+                border-radius: 3px;
+                font-size: 11px;
+                font-weight: bold;
+            }
+
+            /* Action buttons */
+            #delta-settings-window .btn.blue {
+                background: rgba(6, 129, 234, 0.3);
+                color: #0681ea;
+                padding: 6px 12px;
+                border-radius: 4px;
+                cursor: pointer;
+                transition: all 0.15s;
+            }
+
+            #delta-settings-window .btn.blue:hover {
+                background: rgba(6, 129, 234, 0.5);
+            }
+
+            #delta-settings-window .btn.orange {
+                background: rgba(255, 118, 0, 0.3);
+                color: #ff7600;
+                padding: 6px 12px;
+                border-radius: 4px;
+                cursor: pointer;
+                transition: all 0.15s;
+            }
+
+            #delta-settings-window .btn.orange:hover {
+                background: rgba(255, 118, 0, 0.5);
+            }
+
+            #delta-settings-window .btn.small {
+                width: 24px;
+                height: 24px;
+                padding: 0;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 14px;
+                background: rgba(91, 133, 142, 0.2);
+                color: #5b858e;
+                border-radius: 4px;
+                cursor: pointer;
+                transition: all 0.15s;
+            }
+
+            #delta-settings-window .btn.small:hover {
+                background: rgba(255, 0, 0, 0.3);
+                color: #ff4444;
+            }
+
+            /* Scrollable menu */
+            #delta-settings-window .menu {
+                max-height: 450px;
+                overflow-y: auto;
+            }
+
+            /* Class headers */
+            .class-header {
+                margin: 16px 0 8px 0 !important;
+                font-size: 12px !important;
+                text-transform: capitalize;
+            }
+
+            .class-header:first-child {
+                margin-top: 0 !important;
+            }
+
+            /* CC settings */
+            .cc-settings {
+                grid-template-columns: 1fr auto !important;
+            }
+
+            .cc-row {
+                display: flex;
+                align-items: center;
+                gap: 8px;
+            }
+
+            .cc-icon {
+                width: 20px;
+                height: 20px;
+                border-radius: 3px;
+            }
+
+            .cc-name {
+                font-size: 12px;
+            }
+
+            .cc-controls {
+                display: flex;
+                align-items: center;
+                gap: 8px;
+            }
+
+            .cc-priority-input {
+                width: 40px;
+                height: 24px;
+                text-align: center;
+                background: rgba(0, 0, 0, 0.3);
+                border: 1px solid rgba(91, 133, 142, 0.4);
+                border-radius: 4px;
+                color: #F5C247;
+                font-size: 12px;
+            }
+
+            .cc-header {
+                margin-bottom: 12px;
+            }
+
+            /* FPS settings */
+            .fps-settings {
+                grid-template-columns: 1fr auto !important;
+            }
+
+            .fps-row {
+                display: flex;
+                align-items: center;
+                gap: 8px;
+            }
+
+            .fps-name {
+                font-size: 12px;
+            }
+
+            .fps-header {
+                margin-bottom: 12px;
+            }
+
+            /* Buff icon */
+            .buff-icon {
+                width: 20px;
+                height: 20px;
+                border-radius: 3px;
+            }
+
+            /* Customization notices */
+            .customization-notice {
+                padding: 8px 12px;
+                background: rgba(255, 118, 0, 0.1);
+                border: 1px solid rgba(255, 118, 0, 0.3);
+                border-radius: 4px;
+                margin-bottom: 12px;
+            }
+
+            .customization-section {
+                transition: opacity 0.2s;
+            }
+
+            /* About tab */
+            .about-content {
+                text-align: center;
+                padding: 20px;
+            }
+
+            .about-logo {
+                font-size: 64px;
+                color: #F5C247;
+                margin-bottom: 16px;
+                text-shadow: 0 0 20px rgba(245, 194, 71, 0.5);
+            }
+
+            .about-version {
+                font-size: 14px;
+                color: #5b858e;
+                margin-bottom: 8px;
+            }
+
+            .about-author {
+                font-size: 13px;
+                margin-bottom: 16px;
+            }
+
+            .about-desc {
+                font-size: 12px;
+                color: #8ba3a8;
+                line-height: 1.5;
+                max-width: 300px;
+                margin: 0 auto;
+            }
+        `;
+
+        injectStyle("delta-settings-css", CSS);
+
+        // ==========================================
+        // SETTINGS HELPERS
+        // ==========================================
+
+        const getToggle = (key, defaultVal = false) => {
+            return storage.getToggle(key, CONFIG.defaults.toggles[key] ?? defaultVal);
         };
 
-        const $$ = (sel, root = document) => {
-            try {
-                return root ? Array.from(root.querySelectorAll(sel)) : [];
-            } catch (e) {
-                console.warn("[Delta Settings] QueryAll failed:", sel, e);
-                return [];
-            }
+        const getHiddenBuffs = () => {
+            return storage.getJSON(CONFIG.storageKeys.HIDDEN_BUFFS, { ...CONFIG.defaults.hiddenBuffs });
         };
 
-        function getToggle(key, defaultVal = false) {
-            const saved = localStorage.getItem("deltaUI_" + key);
-            return saved !== null ? saved === "true" : defaultVal;
-        }
+        const saveHiddenBuffs = (data) => {
+            storage.setJSON(CONFIG.storageKeys.HIDDEN_BUFFS, data);
+            DeltaUI.updateHiddenBuffsConfig?.(data);
+        };
 
-        // Load hidden buffs settings
-        function getHiddenBuffs() {
-            try {
-                const saved = localStorage.getItem(CONFIG.storageKeys.HIDDEN_BUFFS);
-                return saved ? JSON.parse(saved) : { ...CONFIG.defaults.hiddenBuffs };
-            } catch (e) {
-                return { ...CONFIG.defaults.hiddenBuffs };
-            }
-        }
+        const getCCSettings = () => {
+            return storage.getJSON(CONFIG.storageKeys.CC_SETTINGS, { ...CONFIG.defaults.ccSettings });
+        };
 
-        function saveHiddenBuffs(hiddenBuffs) {
-            localStorage.setItem(CONFIG.storageKeys.HIDDEN_BUFFS, JSON.stringify(hiddenBuffs));
-            if (DeltaUI.updateHiddenBuffsConfig) {
-                DeltaUI.updateHiddenBuffsConfig(hiddenBuffs);
-            }
-        }
+        const saveCCSettings = (data) => {
+            storage.setJSON(CONFIG.storageKeys.CC_SETTINGS, data);
+            DeltaUI.updateCCConfig?.(data);
+        };
 
-        // Load CC settings
-        function getCCSettings() {
-            try {
-                const saved = localStorage.getItem(CONFIG.storageKeys.CC_SETTINGS);
-                return saved ? JSON.parse(saved) : { ...CONFIG.defaults.ccSettings };
-            } catch (e) {
-                return { ...CONFIG.defaults.ccSettings };
-            }
-        }
+        const getFPSSettings = () => {
+            const saved = storage.getJSON(CONFIG.storageKeys.FPS_SETTINGS, null);
+            if (saved) return saved;
 
-        function saveCCSettings(ccSettings) {
-            localStorage.setItem(CONFIG.storageKeys.CC_SETTINGS, JSON.stringify(ccSettings));
-            if (DeltaUI.updateCCConfig) {
-                DeltaUI.updateCCConfig(ccSettings);
-            }
-        }
+            // Return defaults
+            const defaults = {};
+            (CONFIG.fpsOptions || []).forEach(opt => {
+                defaults[opt.id] = opt.default;
+            });
+            return defaults;
+        };
 
-        // Load FPS settings
-        function getFPSSettings() {
-            try {
-                const saved = localStorage.getItem(CONFIG.storageKeys.FPS_SETTINGS);
-                if (saved) {
-                    return JSON.parse(saved);
-                }
-                // Return defaults if nothing saved
-                const defaults = {};
-                (CONFIG.fpsOptions || []).forEach(opt => {
-                    defaults[opt.id] = opt.default;
-                });
-                return defaults;
-            } catch (e) {
-                return {};
-            }
-        }
+        const saveFPSSettings = (data) => {
+            storage.setJSON(CONFIG.storageKeys.FPS_SETTINGS, data);
+            DeltaUI.updateFPSConfig?.(data);
+        };
 
-        function saveFPSSettings(fpsSettings) {
-            localStorage.setItem(CONFIG.storageKeys.FPS_SETTINGS, JSON.stringify(fpsSettings));
-            if (DeltaUI.updateFPSConfig) {
-                DeltaUI.updateFPSConfig(fpsSettings);
-            }
-        }
+        // ==========================================
+        // SKILLBAR SCANNER
+        // ==========================================
 
         function scanSkillbar() {
-            const skillbar = document.querySelector("#skillbar");
+            const skillbar = $("#skillbar");
+            if (!skillbar) return [];
+
             const slots = [];
-
-            if (!skillbar) {
-                console.log("[Delta Settings] Skillbar not found yet");
-                return slots;
-            }
-
             skillbar.querySelectorAll(".slot[id]").forEach(slot => {
                 const id = slot.id;
-                if (id && id.startsWith("sk")) {
+                if (id?.startsWith("sk")) {
                     const keyText = slot.querySelector(".slottext.key");
-                    const keybind = keyText ? keyText.textContent.trim() : id.replace("sk", "").toUpperCase();
+                    const keybind = keyText?.textContent.trim() || id.replace("sk", "").toUpperCase();
                     slots.push({
                         id,
                         keybind,
@@ -141,8 +473,13 @@
             return slots;
         }
 
-        function generateSkillbarColorRows(slots) {
+        // ==========================================
+        // HTML GENERATORS
+        // ==========================================
+
+        function generateSkillbarRows(slots) {
             if (slots.length === 0) {
+                // Fallback to config
                 return Object.entries(CONFIG.skillbarColors).map(([id, color]) => {
                     const key = id.replace("sk", "").toUpperCase();
                     return `
@@ -164,7 +501,7 @@
             `).join("");
         }
 
-        function generateCharmColorRows() {
+        function generateCharmRows() {
             return Object.entries(CONFIG.charmColors).map(([charm, color]) => {
                 const name = CONFIG.charmNames[charm] || charm;
                 return `
@@ -177,58 +514,59 @@
             }).join("");
         }
 
-        function generateBuffToggleRows() {
+        function generateBuffRows() {
             const hiddenBuffs = getHiddenBuffs();
             const classes = ["warrior", "archer", "mage", "shaman"];
-            let html = '';
-        
+            let html = "";
+
+            // Class buffs
             classes.forEach(className => {
-                const buffs = (CONFIG.buffIcons || {})[className] || [];
+                const buffs = CONFIG.buffIcons?.[className] || [];
                 if (buffs.length === 0) return;
-        
-                html += `<h4 class="textprimary class-header">${className.charAt(0).toUpperCase() + className.slice(1)}</h4>`;
-                html += '<div class="settings fps-settings">'; // Changed from buff-settings to fps-settings
-        
+
+                html += `<h4 class="textprimary class-header">${className}</h4>`;
+                html += '<div class="settings fps-settings">';
+
                 buffs.forEach(buff => {
                     const isHidden = hiddenBuffs[buff.id] === true;
                     html += `
                         <div class="fps-row">
-                            <img src="${buff.src}" class="buff-icon" alt="${buff.name}" style="width:20px;height:20px;margin-right:8px;border-radius:3px;">
+                            <img src="${buff.src}" class="buff-icon" alt="${buff.name}">
                             <span class="fps-name">${buff.name}</span>
                         </div>
                         <div class="btn checkbox ${isHidden ? "active" : ""}" data-buff-id="${buff.id}"></div>
                     `;
                 });
-        
+
                 html += '</div>';
             });
-        
-            // Utility section
+
+            // Utility buffs
             const utilityBuffs = CONFIG.utilityBuffs || [];
             if (utilityBuffs.length > 0) {
                 html += `<h4 class="textprimary class-header">Utility</h4>`;
-                html += '<div class="settings fps-settings">'; // Changed from buff-settings to fps-settings
-        
+                html += '<div class="settings fps-settings">';
+
                 utilityBuffs.forEach(buff => {
                     const isHidden = hiddenBuffs[buff.id] === true;
                     html += `
                         <div class="fps-row">
-                            <img src="${buff.src}" class="buff-icon" alt="${buff.name}" style="width:20px;height:20px;margin-right:8px;border-radius:3px;">
+                            <img src="${buff.src}" class="buff-icon" alt="${buff.name}">
                             <span class="fps-name">${buff.name}</span>
                         </div>
                         <div class="btn checkbox ${isHidden ? "active" : ""}" data-buff-id="${buff.id}"></div>
                     `;
                 });
-        
+
                 html += '</div>';
             }
-        
+
             return html;
         }
 
         function generateCCRows() {
             const ccSettings = getCCSettings();
-            let html = '';
+            let html = "";
 
             (CONFIG.ccEffects || []).forEach(cc => {
                 const settings = ccSettings[cc.id] || { color: cc.color, priority: cc.priority };
@@ -239,10 +577,11 @@
                     </div>
                     <div class="cc-controls">
                         <div class="color-input-wrapper">
-                            <div class="color-preview cc-color-preview" style="background: ${settings.color};"></div>
+                            <div class="color-preview" style="background: ${settings.color};"></div>
                             <input type="color" class="cc-color-input" data-cc-id="${cc.id}" value="${settings.color}">
                         </div>
-                        <input type="number" class="cc-priority-input" data-cc-id="${cc.id}" value="${settings.priority}" min="0" max="10" title="Priority (0 = disabled)">
+                        <input type="number" class="cc-priority-input" data-cc-id="${cc.id}" 
+                               value="${settings.priority}" min="0" max="10" title="Priority (0 = disabled)">
                     </div>
                 `;
             });
@@ -252,10 +591,10 @@
 
         function generateFPSRows() {
             const fpsSettings = getFPSSettings();
-            let html = '';
+            let html = "";
 
             (CONFIG.fpsOptions || []).forEach(opt => {
-                const isEnabled = fpsSettings[opt.id] !== undefined ? fpsSettings[opt.id] : opt.default;
+                const isEnabled = fpsSettings[opt.id] ?? opt.default;
                 html += `
                     <div class="fps-row">
                         <span class="fps-name">${opt.name}</span>
@@ -267,37 +606,42 @@
             return html;
         }
 
-        function closeDeltaSettingsWindow() {
-            if (deltaSettingsWindow) {
-                deltaSettingsWindow.remove();
-                deltaSettingsWindow = null;
+        // ==========================================
+        // WINDOW MANAGEMENT
+        // ==========================================
+
+        function close() {
+            if (settingsWindow) {
+                settingsWindow.remove();
+                settingsWindow = null;
             }
             isDragging = false;
         }
 
-        function toggleDeltaSettings() {
-            if (deltaSettingsWindow && document.contains(deltaSettingsWindow)) {
-                closeDeltaSettingsWindow();
+        function toggle() {
+            if (settingsWindow && document.contains(settingsWindow)) {
+                close();
             } else {
-                createDeltaSettingsWindow();
+                open();
             }
         }
 
-        function createDeltaSettingsWindow() {
-            if (deltaSettingsWindow) deltaSettingsWindow.remove();
-
-            deltaSettingsWindow = document.createElement("div");
-            deltaSettingsWindow.className = "window-pos";
-            deltaSettingsWindow.id = "delta-settings-window";
-            deltaSettingsWindow.style.cssText = "z-index: 100; position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);";
+        function open() {
+            if (settingsWindow) settingsWindow.remove();
 
             const skillbarSlots = scanSkillbar();
-            const currentFullscreenKey = localStorage.getItem("deltaUI_fullscreenKey") || "o";
+            const currentFullscreenKey = storage.get("deltaUI_fullscreenKey", "o");
+
             const hideBuffsEnabled = getToggle("hideBuffs", false);
             const ccIndicatorEnabled = getToggle("ccIndicator", true);
             const fpsModeEnabled = getToggle("fpsMode", false);
 
-            deltaSettingsWindow.innerHTML = `
+            settingsWindow = document.createElement("div");
+            settingsWindow.className = "window-pos";
+            settingsWindow.id = "delta-settings-window";
+            settingsWindow.style.cssText = "left: 50%; top: 50%; transform: translate(-50%, -50%);";
+
+            settingsWindow.innerHTML = `
                 <div class="window panel-black svelte-1f1v3u3">
                     <div class="titleframe svelte-1f1v3u3" style="cursor: move;">
                         <img src="/data/ui/icons/cog.svg" class="titleicon svgicon svelte-1f1v3u3">
@@ -362,17 +706,12 @@
                                     <div class="settings svelte-13nnce4">
                                         <div>Fullscreen Toggle<br><small class="textgrey">Press key to toggle fullscreen</small></div>
                                         <div class="keybind-input-wrapper">
-                                            <input type="text" 
-                                                   id="fullscreen-key-input" 
-                                                   class="keybind-input" 
-                                                   value="${currentFullscreenKey.toUpperCase()}" 
-                                                   maxlength="1" 
-                                                   readonly
-                                                   placeholder="Press a key">
+                                            <input type="text" id="fullscreen-key-input" class="keybind-input" 
+                                                   value="${currentFullscreenKey.toUpperCase()}" maxlength="1" 
+                                                   readonly placeholder="Press a key">
                                             <div class="btn small" id="clear-fullscreen-key">✕</div>
                                         </div>
                                     </div>
-                                    
                                     <div class="keybind-hint">
                                         <small class="textgrey">Click the input box and press any key to set a new keybind.</small>
                                     </div>
@@ -382,12 +721,12 @@
                                 <div class="tab-panel" data-panel="colors">
                                     <h3 class="textprimary">Skillbar Colors</h3>
                                     <div class="settings svelte-13nnce4">
-                                        ${generateSkillbarColorRows(skillbarSlots)}
+                                        ${generateSkillbarRows(skillbarSlots)}
                                     </div>
 
                                     <h3 class="textprimary">Charm Colors</h3>
                                     <div class="settings svelte-13nnce4">
-                                        ${generateCharmColorRows()}
+                                        ${generateCharmRows()}
                                     </div>
 
                                     <h3 class="textprimary">Pet Color</h3>
@@ -419,7 +758,7 @@
                                         <small class="textgrey">⚠️ Enable "Hide Buffs" in Features tab to use this section.</small>
                                     </div>
                                     <div class="customization-section" data-for="hideBuffs" ${!hideBuffsEnabled ? 'style="opacity:0.5;pointer-events:none;"' : ''}>
-                                        ${generateBuffToggleRows()}
+                                        ${generateBuffRows()}
                                     </div>
 
                                     <h3 class="textprimary">CC Indicator Customization</h3>
@@ -468,15 +807,19 @@
                 </div>
             `;
 
-            document.body.appendChild(deltaSettingsWindow);
+            document.body.appendChild(settingsWindow);
             setupEventListeners();
         }
 
-        function updateCustomizationVisibility(toggleId, isEnabled) {
-            if (!deltaSettingsWindow) return;
+        // ==========================================
+        // EVENT LISTENERS
+        // ==========================================
 
-            const notice = $(`.customization-notice[data-for="${toggleId}"]`, deltaSettingsWindow);
-            const section = $(`.customization-section[data-for="${toggleId}"]`, deltaSettingsWindow);
+        function updateCustomizationVisibility(toggleId, isEnabled) {
+            if (!settingsWindow) return;
+
+            const notice = $(`.customization-notice[data-for="${toggleId}"]`, settingsWindow);
+            const section = $(`.customization-section[data-for="${toggleId}"]`, settingsWindow);
 
             if (notice) {
                 notice.style.display = isEnabled ? "none" : "block";
@@ -488,46 +831,48 @@
         }
 
         function setupEventListeners() {
-            if (!deltaSettingsWindow) return;
+            if (!settingsWindow) return;
 
-            $(".close-btn", deltaSettingsWindow)?.addEventListener("click", closeDeltaSettingsWindow);
+            // Close button
+            $(".close-btn", settingsWindow)?.addEventListener("click", close);
 
             // Tab navigation
-            $$(".delta-nav .choice", deltaSettingsWindow).forEach(choice => {
+            $$(".delta-nav .choice", settingsWindow).forEach(choice => {
                 choice.addEventListener("click", () => {
                     const targetTab = choice.dataset.tab;
-                    $$(".delta-nav .choice", deltaSettingsWindow).forEach(c => c.classList.remove("active"));
+
+                    $$(".delta-nav .choice", settingsWindow).forEach(c => c.classList.remove("active"));
                     choice.classList.add("active");
-                    $$(".tab-panel", deltaSettingsWindow).forEach(panel => {
+
+                    $$(".tab-panel", settingsWindow).forEach(panel => {
                         panel.classList.toggle("active", panel.dataset.panel === targetTab);
                     });
                 });
             });
 
             // Feature toggles
-            $$(".btn.checkbox[data-toggle]", deltaSettingsWindow).forEach(checkbox => {
+            $$(".btn.checkbox[data-toggle]", settingsWindow).forEach(checkbox => {
                 checkbox.addEventListener("click", () => {
                     const toggleId = checkbox.dataset.toggle;
                     const isNowActive = !checkbox.classList.contains("active");
+
                     checkbox.classList.toggle("active");
-                    localStorage.setItem("deltaUI_" + toggleId, isNowActive.toString());
+                    storage.setToggle(toggleId, isNowActive);
+                    DeltaUI.applyToggle?.(toggleId, isNowActive);
 
-                    if (DeltaUI.applyToggle) {
-                        DeltaUI.applyToggle(toggleId, isNowActive);
-                    }
-
-                    // Update customization section visibility immediately
-                    if (toggleId === "hideBuffs" || toggleId === "ccIndicator" || toggleId === "fpsMode") {
+                    // Update customization visibility
+                    if (["hideBuffs", "ccIndicator", "fpsMode"].includes(toggleId)) {
                         updateCustomizationVisibility(toggleId, isNowActive);
                     }
                 });
             });
 
-            // Buff toggle handlers
-            $$(".btn.checkbox[data-buff-id]", deltaSettingsWindow).forEach(checkbox => {
+            // Buff toggles
+            $$(".btn.checkbox[data-buff-id]", settingsWindow).forEach(checkbox => {
                 checkbox.addEventListener("click", () => {
                     const buffId = checkbox.dataset.buffId;
                     const isNowActive = !checkbox.classList.contains("active");
+
                     checkbox.classList.toggle("active");
 
                     const hiddenBuffs = getHiddenBuffs();
@@ -536,11 +881,12 @@
                 });
             });
 
-            // FPS toggle handlers
-            $$(".btn.checkbox[data-fps-id]", deltaSettingsWindow).forEach(checkbox => {
+            // FPS toggles
+            $$(".btn.checkbox[data-fps-id]", settingsWindow).forEach(checkbox => {
                 checkbox.addEventListener("click", () => {
                     const fpsId = checkbox.dataset.fpsId;
                     const isNowActive = !checkbox.classList.contains("active");
+
                     checkbox.classList.toggle("active");
 
                     const fpsSettings = getFPSSettings();
@@ -549,16 +895,18 @@
                 });
             });
 
-            // CC color input handlers
-            $$(".cc-color-input", deltaSettingsWindow).forEach(input => {
+            // CC color inputs
+            $$(".cc-color-input", settingsWindow).forEach(input => {
                 input.addEventListener("input", (e) => {
                     const ccId = e.target.dataset.ccId;
                     const ccSettings = getCCSettings();
+
                     if (!ccSettings[ccId]) {
                         ccSettings[ccId] = { color: e.target.value, priority: 1 };
                     } else {
                         ccSettings[ccId].color = e.target.value;
                     }
+
                     saveCCSettings(ccSettings);
 
                     const preview = e.target.previousElementSibling;
@@ -566,136 +914,143 @@
                 });
             });
 
-            // CC priority input handlers
-            $$(".cc-priority-input", deltaSettingsWindow).forEach(input => {
+            // CC priority inputs
+            $$(".cc-priority-input", settingsWindow).forEach(input => {
                 input.addEventListener("input", (e) => {
                     const ccId = e.target.dataset.ccId;
                     const priority = parseInt(e.target.value, 10) || 0;
                     const ccSettings = getCCSettings();
+
                     if (!ccSettings[ccId]) {
-                        ccSettings[ccId] = { color: "#ffffff", priority: priority };
+                        ccSettings[ccId] = { color: "#ffffff", priority };
                     } else {
                         ccSettings[ccId].priority = priority;
                     }
+
                     saveCCSettings(ccSettings);
                 });
             });
 
             // Dragging
-            const titleframe = $(".titleframe", deltaSettingsWindow);
+            const titleframe = $(".titleframe", settingsWindow);
             if (titleframe) {
                 titleframe.addEventListener("mousedown", (e) => {
-                    if (e.target.closest(".close-btn") || e.target.closest(".btn")) return;
+                    if (e.target.closest(".close-btn, .btn")) return;
+
                     isDragging = true;
-                    const rect = deltaSettingsWindow.getBoundingClientRect();
+                    const rect = settingsWindow.getBoundingClientRect();
                     dragOffset.x = e.clientX - rect.left;
                     dragOffset.y = e.clientY - rect.top;
-                    deltaSettingsWindow.style.transform = "none";
-                    deltaSettingsWindow.style.left = rect.left + "px";
-                    deltaSettingsWindow.style.top = rect.top + "px";
+
+                    settingsWindow.style.transform = "none";
+                    settingsWindow.style.left = `${rect.left}px`;
+                    settingsWindow.style.top = `${rect.top}px`;
                 });
             }
 
             document.addEventListener("mousemove", (e) => {
-                if (!isDragging || !deltaSettingsWindow) return;
-                deltaSettingsWindow.style.left = (e.clientX - dragOffset.x) + "px";
-                deltaSettingsWindow.style.top = (e.clientY - dragOffset.y) + "px";
+                if (!isDragging || !settingsWindow) return;
+                settingsWindow.style.left = `${e.clientX - dragOffset.x}px`;
+                settingsWindow.style.top = `${e.clientY - dragOffset.y}px`;
             });
 
-            document.addEventListener("mouseup", () => { isDragging = false; });
+            document.addEventListener("mouseup", () => {
+                isDragging = false;
+            });
 
             // Skill color inputs
-            $$(".skill-color-input", deltaSettingsWindow).forEach(input => {
+            $$(".skill-color-input", settingsWindow).forEach(input => {
                 input.addEventListener("input", (e) => {
                     const skillId = e.target.dataset.skillId;
                     CONFIG.skillbarColors[skillId] = e.target.value;
-                    if (DeltaUI.saveSkillbarColors) DeltaUI.saveSkillbarColors();
-                    if (DeltaUI.updateDynamicStyles) DeltaUI.updateDynamicStyles();
+
+                    DeltaUI.saveSkillbarColors?.();
+                    DeltaUI.updateDynamicStyles?.();
+
                     const preview = e.target.previousElementSibling;
                     if (preview) preview.style.background = e.target.value;
                 });
             });
 
             // Charm color inputs
-            $$(".charm-color-input", deltaSettingsWindow).forEach(input => {
+            $$(".charm-color-input", settingsWindow).forEach(input => {
                 input.addEventListener("input", (e) => {
                     const charmId = e.target.dataset.charmId;
                     CONFIG.charmColors[charmId] = e.target.value;
-                    if (DeltaUI.saveCharmColors) DeltaUI.saveCharmColors();
-                    if (DeltaUI.updateDynamicStyles) DeltaUI.updateDynamicStyles();
+
+                    DeltaUI.saveCharmColors?.();
+                    DeltaUI.updateDynamicStyles?.();
+
                     const preview = e.target.previousElementSibling;
                     if (preview) preview.style.background = e.target.value;
                 });
             });
 
             // Pet color input
-            const petInput = $("#pet-color-input", deltaSettingsWindow);
-            if (petInput) {
-                petInput.addEventListener("input", (e) => {
-                    CONFIG.petColor = e.target.value;
-                    if (DeltaUI.savePetColor) DeltaUI.savePetColor();
-                    if (DeltaUI.updateDynamicStyles) DeltaUI.updateDynamicStyles();
-                    const preview = $("#pet-preview", deltaSettingsWindow);
-                    if (preview) preview.style.background = e.target.value;
-                });
-            }
+            const petInput = $("#pet-color-input", settingsWindow);
+            petInput?.addEventListener("input", (e) => {
+                CONFIG.petColor = e.target.value;
+
+                DeltaUI.savePetColor?.();
+                DeltaUI.updateDynamicStyles?.();
+
+                const preview = $("#pet-preview", settingsWindow);
+                if (preview) preview.style.background = e.target.value;
+            });
 
             // Reset button
-            const resetBtn = $("#reset-all-colors", deltaSettingsWindow);
-            if (resetBtn) {
-                resetBtn.addEventListener("click", () => {
-                    if (DeltaUI.resetToDefaults) DeltaUI.resetToDefaults();
-                    if (DeltaUI.updateDynamicStyles) DeltaUI.updateDynamicStyles();
-                    createDeltaSettingsWindow();
-                });
-            }
+            $("#reset-all-colors", settingsWindow)?.addEventListener("click", () => {
+                DeltaUI.resetToDefaults?.();
+                DeltaUI.updateDynamicStyles?.();
+                open(); // Recreate window
+            });
 
             // Export button
-            const exportBtn = $("#export-colors", deltaSettingsWindow);
-            if (exportBtn) {
-                exportBtn.addEventListener("click", () => {
-                    const data = { 
-                        skillbarColors: CONFIG.skillbarColors, 
-                        charmColors: CONFIG.charmColors, 
-                        petColor: CONFIG.petColor,
-                        hiddenBuffs: getHiddenBuffs(),
-                        ccSettings: getCCSettings(),
-                        fpsSettings: getFPSSettings()
-                    };
-                    navigator.clipboard.writeText(JSON.stringify(data, null, 2)).then(() => {
-                        exportBtn.textContent = "Copied!";
-                        setTimeout(() => exportBtn.textContent = "Export", 1500);
-                    });
+            const exportBtn = $("#export-colors", settingsWindow);
+            exportBtn?.addEventListener("click", () => {
+                const data = {
+                    skillbarColors: CONFIG.skillbarColors,
+                    charmColors: CONFIG.charmColors,
+                    petColor: CONFIG.petColor,
+                    hiddenBuffs: getHiddenBuffs(),
+                    ccSettings: getCCSettings(),
+                    fpsSettings: getFPSSettings()
+                };
+
+                navigator.clipboard.writeText(JSON.stringify(data, null, 2)).then(() => {
+                    exportBtn.textContent = "Copied!";
+                    setTimeout(() => exportBtn.textContent = "Export", 1500);
                 });
-            }
+            });
 
             // Import button
-            const importBtn = $("#import-colors", deltaSettingsWindow);
-            if (importBtn) {
-                importBtn.addEventListener("click", () => {
-                    const json = prompt("Paste your color configuration:");
-                    if (!json) return;
-                    try {
-                        const data = JSON.parse(json);
-                        if (data.skillbarColors) Object.assign(CONFIG.skillbarColors, data.skillbarColors);
-                        if (data.charmColors) Object.assign(CONFIG.charmColors, data.charmColors);
-                        if (data.petColor) CONFIG.petColor = data.petColor;
-                        if (data.hiddenBuffs) saveHiddenBuffs(data.hiddenBuffs);
-                        if (data.ccSettings) saveCCSettings(data.ccSettings);
-                        if (data.fpsSettings) saveFPSSettings(data.fpsSettings);
-                        if (DeltaUI.saveSkillbarColors) DeltaUI.saveSkillbarColors();
-                        if (DeltaUI.saveCharmColors) DeltaUI.saveCharmColors();
-                        if (DeltaUI.savePetColor) DeltaUI.savePetColor();
-                        if (DeltaUI.updateDynamicStyles) DeltaUI.updateDynamicStyles();
-                        createDeltaSettingsWindow();
-                    } catch (e) {
-                        alert("Invalid JSON format!");
-                    }
-                });
-            }
+            $("#import-colors", settingsWindow)?.addEventListener("click", () => {
+                const json = prompt("Paste your color configuration:");
+                if (!json) return;
+
+                try {
+                    const data = JSON.parse(json);
+
+                    if (data.skillbarColors) Object.assign(CONFIG.skillbarColors, data.skillbarColors);
+                    if (data.charmColors) Object.assign(CONFIG.charmColors, data.charmColors);
+                    if (data.petColor) CONFIG.petColor = data.petColor;
+                    if (data.hiddenBuffs) saveHiddenBuffs(data.hiddenBuffs);
+                    if (data.ccSettings) saveCCSettings(data.ccSettings);
+                    if (data.fpsSettings) saveFPSSettings(data.fpsSettings);
+
+                    DeltaUI.saveSkillbarColors?.();
+                    DeltaUI.saveCharmColors?.();
+                    DeltaUI.savePetColor?.();
+                    DeltaUI.updateDynamicStyles?.();
+
+                    open(); // Recreate window
+                } catch (e) {
+                    alert("Invalid JSON format!");
+                }
+            });
 
             // Fullscreen keybind input
-            const fullscreenKeyInput = $("#fullscreen-key-input", deltaSettingsWindow);
+            const fullscreenKeyInput = $("#fullscreen-key-input", settingsWindow);
             if (fullscreenKeyInput) {
                 fullscreenKeyInput.addEventListener("click", () => {
                     fullscreenKeyInput.value = "";
@@ -707,24 +1062,18 @@
                     e.stopPropagation();
 
                     const key = e.key.toLowerCase();
-
-                    if (["shift", "control", "alt", "meta"].includes(key)) {
-                        return;
-                    }
+                    if (["shift", "control", "alt", "meta"].includes(key)) return;
 
                     fullscreenKeyInput.value = key.toUpperCase();
-                    localStorage.setItem("deltaUI_fullscreenKey", key);
-
-                    if (DeltaUI.setFullscreenKey) {
-                        DeltaUI.setFullscreenKey(key);
-                    }
-
+                    storage.set("deltaUI_fullscreenKey", key);
+                    DeltaUI.setFullscreenKey?.(key);
                     fullscreenKeyInput.blur();
-                    console.log("[Delta UI] Fullscreen key set to: " + key.toUpperCase());
+
+                    console.log(`[Delta Settings] Fullscreen key set to: ${key.toUpperCase()}`);
                 });
 
                 fullscreenKeyInput.addEventListener("blur", () => {
-                    const currentKey = localStorage.getItem("deltaUI_fullscreenKey") || "o";
+                    const currentKey = storage.get("deltaUI_fullscreenKey", "o");
                     if (!fullscreenKeyInput.value) {
                         fullscreenKeyInput.value = currentKey.toUpperCase();
                     }
@@ -732,29 +1081,36 @@
                 });
             }
 
-            const clearFullscreenKey = $("#clear-fullscreen-key", deltaSettingsWindow);
-            if (clearFullscreenKey) {
-                clearFullscreenKey.addEventListener("click", () => {
-                    const defaultKey = "o";
-                    const input = $("#fullscreen-key-input", deltaSettingsWindow);
-                    if (input) input.value = defaultKey.toUpperCase();
-                    localStorage.setItem("deltaUI_fullscreenKey", defaultKey);
+            // Clear fullscreen key
+            $("#clear-fullscreen-key", settingsWindow)?.addEventListener("click", () => {
+                const defaultKey = "o";
+                const input = $("#fullscreen-key-input", settingsWindow);
 
-                    if (DeltaUI.setFullscreenKey) {
-                        DeltaUI.setFullscreenKey(defaultKey);
-                    }
+                if (input) input.value = defaultKey.toUpperCase();
+                storage.set("deltaUI_fullscreenKey", defaultKey);
+                DeltaUI.setFullscreenKey?.(defaultKey);
 
-                    console.log("[Delta UI] Fullscreen key reset to: O");
-                });
-            }
+                console.log("[Delta Settings] Fullscreen key reset to: O");
+            });
         }
 
+        // ==========================================
+        // EXPOSE API
+        // ==========================================
+
         window.DeltaSettings = {
-            toggle: toggleDeltaSettings,
-            close: closeDeltaSettingsWindow,
-            open: createDeltaSettingsWindow
+            toggle,
+            open,
+            close
         };
 
         console.log("✅ Delta Settings module loaded");
+    }
+
+    // Start initialization
+    if (document.readyState === "loading") {
+        document.addEventListener("DOMContentLoaded", init);
+    } else {
+        init();
     }
 })();
