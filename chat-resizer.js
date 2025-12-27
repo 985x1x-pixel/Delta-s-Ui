@@ -13,7 +13,7 @@
             return;
         }
 
-        const { $, injectStyle, storage } = DeltaLib;
+        const Lib = window.DeltaLib;
 
         // ==========================================
         // CONSTANTS
@@ -202,6 +202,21 @@
         // HELPERS
         // ==========================================
 
+        function $(selector, root = document) {
+            return Lib.$(selector, root);
+        }
+
+        function injectStyle(id, css) {
+            let style = document.getElementById(id);
+            if (!style) {
+                style = document.createElement("style");
+                style.id = id;
+                document.head.appendChild(style);
+            }
+            style.textContent = css;
+            return style;
+        }
+
         function getDefaults() {
             return {
                 x: 10,
@@ -216,16 +231,27 @@
         }
 
         function loadSettings() {
-            const data = storage.getJSON(STORAGE_KEY);
-            if (data?.width && data?.height) {
-                saved = data;
-            } else {
-                saved = getDefaults();
+            try {
+                const data = localStorage.getItem(STORAGE_KEY);
+                if (data) {
+                    const parsed = JSON.parse(data);
+                    if (parsed?.width && parsed?.height) {
+                        saved = parsed;
+                        return;
+                    }
+                }
+            } catch (e) {
+                console.warn("[Chat Resizer] Failed to load settings:", e);
             }
+            saved = getDefaults();
         }
 
         function saveSettings() {
-            storage.setJSON(STORAGE_KEY, saved);
+            try {
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(saved));
+            } catch (e) {
+                console.warn("[Chat Resizer] Failed to save settings:", e);
+            }
         }
 
         function keepInBounds() {
