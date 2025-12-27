@@ -1,0 +1,11 @@
+{
+    "version": "3.8",
+    "minLoaderVersion": "3.8",
+    "changelog": [
+        "Added auto-update system",
+        "Improved loading performance",
+        "Fixed FPS mode customization",
+        "Better error handling"
+    ],
+    "releaseDate": "2025-12-27"
+}
