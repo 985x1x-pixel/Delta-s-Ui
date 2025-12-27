@@ -5,7 +5,7 @@
 (function() {
     "use strict";
 
-    const VERSION = "3.9";
+    const VERSION = "1.0";
     const ASSET_VERSION = "8829640";
     const BASE_URL = "https://raw.githubusercontent.com/985x1x-pixel/Delta-s-Ui/refs/heads/main/work%20in%20progress/";
 
