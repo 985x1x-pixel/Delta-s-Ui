@@ -6,14 +6,9 @@
 (function() {
     "use strict";
 
-    // Wait for DeltaLib
+    // Wait for DeltaLib (optional - works without it too)
     function init() {
-        if (!window.DeltaLib) {
-            setTimeout(init, 50);
-            return;
-        }
-
-        const { storage } = DeltaLib;
+        const Lib = window.DeltaLib;
 
         const STORAGE_KEYS = {
             GAINED: "totalFameGained",
@@ -29,20 +24,36 @@
         // STORAGE HELPERS
         // ==========================================
 
-        const getGained = () => parseInt(storage.get(STORAGE_KEYS.GAINED, "0"), 10);
-        const getLost = () => parseInt(storage.get(STORAGE_KEYS.LOST, "0"), 10);
+        function getFromStorage(key, defaultVal = "0") {
+            try {
+                return localStorage.getItem(key) || defaultVal;
+            } catch {
+                return defaultVal;
+            }
+        }
+
+        function setToStorage(key, value) {
+            try {
+                localStorage.setItem(key, String(value));
+            } catch (e) {
+                console.warn("[Fame Notifier] Storage error:", e);
+            }
+        }
+
+        const getGained = () => parseInt(getFromStorage(STORAGE_KEYS.GAINED, "0"), 10);
+        const getLost = () => parseInt(getFromStorage(STORAGE_KEYS.LOST, "0"), 10);
 
         const addGained = (amount) => {
-            storage.set(STORAGE_KEYS.GAINED, String(getGained() + amount));
+            setToStorage(STORAGE_KEYS.GAINED, getGained() + amount);
         };
 
         const addLost = (amount) => {
-            storage.set(STORAGE_KEYS.LOST, String(getLost() + amount));
+            setToStorage(STORAGE_KEYS.LOST, getLost() + amount);
         };
 
         const reset = () => {
-            storage.set(STORAGE_KEYS.GAINED, "0");
-            storage.set(STORAGE_KEYS.LOST, "0");
+            setToStorage(STORAGE_KEYS.GAINED, 0);
+            setToStorage(STORAGE_KEYS.LOST, 0);
             console.log("[Fame Notifier] Reset to 0!");
         };
 
@@ -96,27 +107,39 @@
             const chat = document.getElementById("chat");
             if (!chat) return;
 
-            // Disconnect existing observer if it's orphaned
+            // Disconnect existing observer if chat element changed
             if (chatObserver) {
-                const isAttached = document.body.contains(chat);
-                if (!isAttached) {
-                    chatObserver.disconnect();
-                    chatObserver = null;
-                }
+                chatObserver.disconnect();
+                chatObserver = null;
             }
 
-            if (!chatObserver) {
-                chatObserver = new MutationObserver((mutations) => {
-                    for (const mutation of mutations) {
-                        for (const node of mutation.addedNodes) {
-                            processChatLine(node);
-                        }
+            chatObserver = new MutationObserver((mutations) => {
+                for (const mutation of mutations) {
+                    for (const node of mutation.addedNodes) {
+                        processChatLine(node);
                     }
-                });
+                }
+            });
 
-                chatObserver.observe(chat, { childList: true, subtree: true });
-                console.log("[Fame Notifier] Observer attached");
-            }
+            chatObserver.observe(chat, { childList: true, subtree: true });
+            console.log("[Fame Notifier] Observer attached");
+        }
+
+        // ==========================================
+        // KEYBOARD HANDLER
+        // ==========================================
+
+        function setupKeyboardHandler() {
+            window.addEventListener("keydown", (e) => {
+                const active = document.activeElement;
+                const isTyping = active?.tagName === "INPUT" ||
+                               active?.tagName === "TEXTAREA" ||
+                               active?.isContentEditable;
+
+                if (!isTyping && e.key === RESET_KEY) {
+                    reset();
+                }
+            });
         }
 
         // ==========================================
@@ -130,8 +153,8 @@
         // Try to attach immediately
         attachChatObserver();
 
-        // Reset hotkey
-        DeltaLib.events.onKeyPress(RESET_KEY, reset);
+        // Setup keyboard
+        setupKeyboardHandler();
 
         // Expose API
         window.FameNotifier = {
@@ -147,7 +170,7 @@
         console.log(`[Fame Notifier] Press '${RESET_KEY}' to reset.`);
     }
 
-    // Start initialization
+    // Start initialization immediately - no dependencies required
     if (document.readyState === "loading") {
         document.addEventListener("DOMContentLoaded", init);
     } else {
