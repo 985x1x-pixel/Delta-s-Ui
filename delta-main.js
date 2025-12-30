@@ -160,7 +160,12 @@
     // ==========================================
 
     function buildRuntimeConfig() {
-        const CONFIG = window.DELTA_CONFIG || FALLBACK_CONFIG;
+         const CONFIG = window.DELTA_CONFIG;
+    
+            if (!CONFIG) {
+                console.error("[Delta UI] DELTA_CONFIG not found! config.js may have failed to load.");
+                return null;
+            }
 
         CONFIG.skillbarColors = { ...CONFIG.defaults.skillbarColors };
         CONFIG.charmColors = { ...CONFIG.defaults.charmColors };
