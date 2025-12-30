@@ -1,8 +1,13 @@
+// ==========================================
+// PARTY ARRANGER MODULE
+// ==========================================
+
 (function () {
   'use strict';
 
   const STORAGE_KEY = 'hordesPartyOrder_v6';
   const LOCK_KEY = 'hordesPartyLocked_v6';
+  const PARTY_RESET_KEY_STORAGE = 'deltaUI_partyResetKey';
   const ENFORCE_DELAY = 150;
   const UI_CHECK_INTERVAL = 500;
   const ENFORCE_INTERVALS = [100, 300, 600, 1000, 1500, 2500];
@@ -16,10 +21,16 @@
   let draggedFrame = null;
   let lastFrameCount = 0;
   let lastEnforceTime = 0;
-
-  const PARTY_RESET_KEY_STORAGE = 'deltaUI_partyResetKey';
+  let isEnabled = false;
+  let uiCheckerInterval = null;
   let partyResetKey = localStorage.getItem(PARTY_RESET_KEY_STORAGE) || ']';
-  
+
+  function setResetKey(newKey) {
+    partyResetKey = newKey.toLowerCase();
+    localStorage.setItem(PARTY_RESET_KEY_STORAGE, partyResetKey);
+    console.log('[PA] Reset key changed to:', partyResetKey);
+  }
+
   function injectStyles() {
     if (document.getElementById('pa-styles')) return;
 
@@ -165,6 +176,11 @@
     document.head.appendChild(styles);
   }
 
+  function removeStyles() {
+    const styles = document.getElementById('pa-styles');
+    if (styles) styles.remove();
+  }
+
   function getToast() {
     let toast = document.getElementById('pa-toast');
     if (!toast) {
@@ -173,6 +189,11 @@
       document.body.appendChild(toast);
     }
     return toast;
+  }
+
+  function removeToast() {
+    const toast = document.getElementById('pa-toast');
+    if (toast) toast.remove();
   }
 
   function showToast(msg, bgColor, duration = 2500) {
@@ -246,7 +267,13 @@
     return document.getElementById('pa-arrange-btn');
   }
 
+  function removeButton() {
+    const btn = getButton();
+    if (btn) btn.remove();
+  }
+
   function createButton() {
+    if (!isEnabled) return;
     if (getButton()) {
       updateButtonState();
       return;
@@ -325,7 +352,7 @@
   }
 
   function enforceOrder() {
-    if (applying || editMode || !isLocked) return;
+    if (applying || editMode || !isLocked || !isEnabled) return;
 
     const container = getContainer();
     if (!container) return;
@@ -336,14 +363,12 @@
     const frameList = getFrames();
     if (frameList.length === 0) return;
 
-    // Build name -> frame map
     const frameMap = new Map();
     frameList.forEach(f => {
       const name = getName(f);
       if (name) frameMap.set(name, f);
     });
 
-    // Check if reorder needed
     const currentOrder = getCurrentOrder();
     if (ordersMatch(savedOrder, currentOrder)) return;
 
@@ -410,16 +435,16 @@
   }
 
   function debouncedEnforce() {
-    if (editMode || !isLocked) return;
+    if (editMode || !isLocked || !isEnabled) return;
     clearTimeout(debounceTimer);
     debounceTimer = setTimeout(enforceOrder, ENFORCE_DELAY);
   }
 
   function scheduleMultipleEnforcements() {
-    if (!isLocked || editMode) return;
+    if (!isLocked || editMode || !isEnabled) return;
     ENFORCE_INTERVALS.forEach(delay => {
       setTimeout(() => {
-        if (isLocked && !editMode) enforceOrder();
+        if (isLocked && !editMode && isEnabled) enforceOrder();
       }, delay);
     });
   }
@@ -430,6 +455,8 @@
     }
 
     observer = new MutationObserver((mutations) => {
+      if (!isEnabled) return;
+
       let needsButtonCheck = false;
       let needsEnforce = false;
 
@@ -476,7 +503,7 @@
   }
 
   function resumeObserver() {
-    if (observer) {
+    if (observer && isEnabled) {
       observer.observe(document.body, {
         childList: true,
         subtree: true
@@ -485,7 +512,11 @@
   }
 
   function startUIChecker() {
-    setInterval(() => {
+    if (uiCheckerInterval) return;
+
+    uiCheckerInterval = setInterval(() => {
+      if (!isEnabled) return;
+
       injectStyles();
 
       if (!getButton() && getBtnBar()) {
@@ -509,8 +540,15 @@
     }, UI_CHECK_INTERVAL);
   }
 
+  function stopUIChecker() {
+    if (uiCheckerInterval) {
+      clearInterval(uiCheckerInterval);
+      uiCheckerInterval = null;
+    }
+  }
+
   function enableEditMode() {
-    if (editMode) return;
+    if (editMode || !isEnabled) return;
 
     editMode = true;
     pauseObserver();
@@ -578,7 +616,7 @@
     }
 
     updateButtonState();
-    resumeObserver();
+    if (isEnabled) resumeObserver();
     console.log('[PA] Edit mode OFF, save:', save);
   }
 
@@ -634,7 +672,6 @@
 
     if (dragIdx === -1 || dropIdx === -1) return;
 
-    // Insert at correct position
     if (dragIdx < dropIdx) {
       container.insertBefore(draggedFrame, target.nextSibling);
     } else {
@@ -689,62 +726,85 @@
     console.log('[PA] Swapped:', getName(a), '↔', getName(b));
   }
 
-  function setupGlobalEvents() {
-    document.addEventListener('click', e => {
-      if (!editMode) return;
-      if (e.target.closest('.partyframes') || e.target.closest('#pa-arrange-btn')) return;
+  // Global event handlers
+  function onGlobalClick(e) {
+    if (!editMode || !isEnabled) return;
+    if (e.target.closest('.partyframes') || e.target.closest('#pa-arrange-btn')) return;
 
-      disableEditMode(true);
-      showToast('🔒 Order saved!', '#27ae60');
-    }, true);
-
-    document.addEventListener('keydown', e => {
-      if (e.key === 'Escape' && editMode) {
-        e.preventDefault();
-        disableEditMode(false);
-        showToast('❌ Edit cancelled', '#e74c3c');
-      }
-    });
-
-    document.addEventListener('visibilitychange', () => {
-      if (!document.hidden && isLocked && !editMode) {
-        scheduleMultipleEnforcements();
-      }
-    });
-
-    document.addEventListener('keydown', e => {
-      const tag = document.activeElement?.tagName?.toLowerCase();
-      if (tag === 'input' || tag === 'textarea') return;
-
-      if (e.key.toLowerCase() === 'o') {
-        e.preventDefault();
-
-        localStorage.removeItem(STORAGE_KEY);
-        localStorage.removeItem(LOCK_KEY);
-
-        isLocked = false;
-        if (editMode) {
-          disableEditMode(false);
-        }
-
-        updateButtonState();
-        showToast('🗑️ Party order data cleared!', '#e74c3c');
-      }
-    });
-
-    window.addEventListener('focus', () => {
-      if (isLocked && !editMode) {
-        setTimeout(enforceOrder, 200);
-      }
-    });
+    disableEditMode(true);
+    showToast('🔒 Order saved!', '#27ae60');
   }
 
-  function init() {
-    console.log('[PA] Party Arranger v6.0 starting...');
+  function onGlobalKeydown(e) {
+    if (!isEnabled) return;
 
+    if (e.key === 'Escape' && editMode) {
+      e.preventDefault();
+      disableEditMode(false);
+      showToast('❌ Edit cancelled', '#e74c3c');
+    }
+  }
+
+  function onResetKeydown(e) {
+    if (!isEnabled) return;
+
+    const tag = document.activeElement?.tagName?.toLowerCase();
+    if (tag === 'input' || tag === 'textarea') return;
+
+    if (e.key.toLowerCase() === partyResetKey.toLowerCase()) {
+      e.preventDefault();
+
+      localStorage.removeItem(STORAGE_KEY);
+      localStorage.removeItem(LOCK_KEY);
+
+      isLocked = false;
+      if (editMode) {
+        disableEditMode(false);
+      }
+
+      updateButtonState();
+      showToast('🗑️ Party order reset!', '#e74c3c');
+      console.log('[PA] Party order reset via keybind');
+    }
+  }
+
+  function onVisibilityChange() {
+    if (!document.hidden && isLocked && !editMode && isEnabled) {
+      scheduleMultipleEnforcements();
+    }
+  }
+
+  function onWindowFocus() {
+    if (isLocked && !editMode && isEnabled) {
+      setTimeout(enforceOrder, 200);
+    }
+  }
+
+  function setupGlobalEvents() {
+    document.addEventListener('click', onGlobalClick, true);
+    document.addEventListener('keydown', onGlobalKeydown);
+    document.addEventListener('keydown', onResetKeydown);
+    document.addEventListener('visibilitychange', onVisibilityChange);
+    window.addEventListener('focus', onWindowFocus);
+  }
+
+  function removeGlobalEvents() {
+    document.removeEventListener('click', onGlobalClick, true);
+    document.removeEventListener('keydown', onGlobalKeydown);
+    document.removeEventListener('keydown', onResetKeydown);
+    document.removeEventListener('visibilitychange', onVisibilityChange);
+    window.removeEventListener('focus', onWindowFocus);
+  }
+
+  // ==========================================
+  // ENABLE / DISABLE
+  // ==========================================
+
+  function enable() {
+    if (isEnabled) return;
+    isEnabled = true;
 
     isLocked = loadLockState();
-
 
     injectStyles();
     createObserver();
@@ -764,7 +824,38 @@
       scheduleMultipleEnforcements();
     }
 
-    console.log('[PA] Initialized! Locked:', isLocked);
+    console.log('[PA] Enabled! Locked:', isLocked);
+  }
+
+  function disable() {
+    if (!isEnabled) return;
+
+    if (editMode) {
+      disableEditMode(false);
+    }
+
+    isEnabled = false;
+
+    pauseObserver();
+    stopUIChecker();
+    removeGlobalEvents();
+    removeButton();
+    removeToast();
+
+    console.log('[PA] Disabled');
+  }
+
+  // ==========================================
+  // INIT
+  // ==========================================
+
+  function init() {
+    console.log('[PA] Party Arranger module loaded');
+
+    const savedSetting = localStorage.getItem('deltaUI_partyUIEditor');
+    if (savedSetting === 'true') {
+      enable();
+    }
   }
 
   if (document.readyState === 'loading') {
@@ -773,14 +864,23 @@
     init();
   }
 
-  window.addEventListener('load', () => {
-    setTimeout(() => {
-      injectStyles();
-      createButton();
-      if (isLocked && !editMode) {
-        scheduleMultipleEnforcements();
-      }
-    }, 500);
-  });
+  // ==========================================
+  // EXPOSE API
+  // ==========================================
+
+  window.DeltaPartyArranger = {
+    enable: enable,
+    disable: disable,
+    isEnabled: function() { return isEnabled; },
+    setResetKey: setResetKey,
+    reset: function() {
+      localStorage.removeItem(STORAGE_KEY);
+      localStorage.removeItem(LOCK_KEY);
+      isLocked = false;
+      if (editMode) disableEditMode(false);
+      updateButtonState();
+      showToast('🗑️ Party order reset!', '#e74c3c');
+    }
+  };
 
 })();
