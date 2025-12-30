@@ -22,7 +22,6 @@
     
     const SCRIPTS = [
         "config.js",
-        "delta-lib.js",
         "fame-notifier.js",
         "chat-resizer.js",
         "delta-main.js",
