@@ -428,6 +428,24 @@
                                     <div class="keybind-hint">
                                         <small class="textgrey">Click the input box and press any key to set a new keybind.</small>
                                     </div>
+                                
+                                    <h3 class="textprimary">Canvas Scale</h3>
+                                    <div class="settings svelte-13nnce4">
+                                        <div>UI Scale<br><small class="textgrey">Adjust game UI canvas size</small></div>
+                                        <div class="slider-wrapper">
+                                            <input type="range" 
+                                                   id="canvas-scale-slider" 
+                                                   class="delta-slider"
+                                                   min="0.1" 
+                                                   max="2.5" 
+                                                   step="0.1" 
+                                                   value="${localStorage.getItem('deltaUI_canvasScale') || '1.0'}">
+                                            <span id="canvas-scale-value" class="slider-value">${localStorage.getItem('deltaUI_canvasScale') || '1.0'}x</span>
+                                        </div>
+                                        
+                                        <div>Enable Canvas Scaler<br><small class="textgrey">Apply custom UI scale</small></div>
+                                        <div class="btn checkbox ${getToggle("canvasScaler", false) ? "active" : ""}" data-toggle="canvasScaler"></div>
+                                    </div>
                                 </div>
 
                                 <!-- Colors Tab -->
