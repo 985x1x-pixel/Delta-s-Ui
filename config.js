@@ -166,8 +166,16 @@
                 mouseover: false,
                 partyUIEditor: false,
                 canvasScaler: false,
+                partyAutoSort: false,
             },
 
+            partyPriorities: {
+                shaman: 1,
+                archer: 2,
+                mage: 3,
+                warrior: 4
+            },
+            
             hiddenBuffs: {},
             ccSettings: {},
             fpsSettings: {},
@@ -218,6 +226,7 @@
             HIDDEN_BUFFS: "deltaUI_hiddenBuffs",
             CC_SETTINGS: "deltaUI_ccSettings",
             FPS_SETTINGS: "deltaUI_fpsSettings",
+            PARTY_PRIORITIES: "deltaUI_partyPriorities",
         },
 
         skillColors: {
