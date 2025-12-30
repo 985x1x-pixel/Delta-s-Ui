@@ -10,6 +10,7 @@
 
   let hoveredFrame = null;
   let isEnabled = false;
+  let isRedispatching = false;
 
   // ==========================================
   // STYLES
@@ -71,8 +72,49 @@
     }
   }
 
+  function simulateKey(key, code, keyCode) {
+    const targets = [document, document.body, document.documentElement];
+    
+    targets.forEach(target => {
+      target.dispatchEvent(new KeyboardEvent('keydown', {
+        key: key,
+        code: code,
+        keyCode: keyCode,
+        which: keyCode,
+        bubbles: true,
+        cancelable: true,
+        view: window
+      }));
+      
+      target.dispatchEvent(new KeyboardEvent('keypress', {
+        key: key,
+        code: code,
+        keyCode: keyCode,
+        which: keyCode,
+        bubbles: true,
+        cancelable: true,
+        view: window
+      }));
+    });
+    
+    setTimeout(() => {
+      targets.forEach(target => {
+        target.dispatchEvent(new KeyboardEvent('keyup', {
+          key: key,
+          code: code,
+          keyCode: keyCode,
+          which: keyCode,
+          bubbles: true,
+          cancelable: true,
+          view: window
+        }));
+      });
+    }, 20);
+  }
+
   function handleKeydown(e) {
     if (!isEnabled) return;
+    if (isRedispatching) return;
     
     const tag = document.activeElement?.tagName?.toLowerCase();
     if (tag === 'input' || tag === 'textarea') return;
@@ -88,14 +130,33 @@
                         hoveredFrame.querySelector('.barsInner') || 
                         hoveredFrame;
       
+      clickable.dispatchEvent(new MouseEvent('mousedown', {
+        bubbles: true,
+        cancelable: true,
+        view: window
+      }));
+      
+      clickable.dispatchEvent(new MouseEvent('mouseup', {
+        bubbles: true,
+        cancelable: true,
+        view: window
+      }));
+      
       clickable.dispatchEvent(new MouseEvent('click', {
         bubbles: true,
         cancelable: true,
         view: window
       }));
       
-      const name = hoveredFrame.querySelector('span.left')?.textContent || 'Unknown';
-      console.log('[Mouse-Over] Selected:', name);
+      isRedispatching = true;
+      
+      setTimeout(() => {
+        simulateKey(e.key, e.code, e.keyCode);
+        
+        setTimeout(() => {
+          isRedispatching = false;
+        }, 100);
+      }, 30);
     }
   }
 
@@ -112,15 +173,12 @@
     document.addEventListener('mouseover', handleMouseover);
     document.addEventListener('mouseout', handleMouseout);
     document.addEventListener('keydown', handleKeydown, true);
-    
-    console.log('[Mouse-Over] Enabled - Hover + press 1-0 to select');
   }
 
   function disableMouseover() {
     if (!isEnabled) return;
     isEnabled = false;
     
-    // Clear any existing hover
     if (hoveredFrame) {
       hoveredFrame.classList.remove('mo-hover');
       hoveredFrame = null;
@@ -129,8 +187,6 @@
     document.removeEventListener('mouseover', handleMouseover);
     document.removeEventListener('mouseout', handleMouseout);
     document.removeEventListener('keydown', handleKeydown, true);
-    
-    console.log('[Mouse-Over] Disabled');
   }
 
   // ==========================================
@@ -138,7 +194,6 @@
   // ==========================================
 
   function init() {
-    // Check saved setting and auto-enable if it was on
     const saved = localStorage.getItem('deltaUI_mouseover');
     if (saved === 'true') {
       enableMouseover();
@@ -157,7 +212,5 @@
     isEnabled: () => isEnabled,
     getHoveredFrame: () => hoveredFrame
   };
-
-  console.log('[Mouse-Over] Module loaded');
 
 })();
