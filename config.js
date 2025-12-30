@@ -162,6 +162,7 @@
                 charmColors: true,
                 playtimeLabels: true,
                 fameLabels: true,
+                mouseover: false,
             },
 
             hiddenBuffs: {},
