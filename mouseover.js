@@ -31,16 +31,6 @@
       .partyframes .grid.left.mo-hover .barsInner {
         box-shadow: inset 0 0 10px rgba(52, 152, 219, 0.3) !important;
       }
-      
-      .partyframes .grid.left.mo-clicked {
-        animation: mo-flash 0.2s ease !important;
-      }
-      
-      @keyframes mo-flash {
-        0% { outline-color: rgba(52, 152, 219, 0.8); }
-        50% { outline-color: rgba(46, 204, 113, 1); outline-width: 3px; }
-        100% { outline-color: rgba(52, 152, 219, 0.8); }
-      }
     `;
     document.head.appendChild(style);
   }
@@ -97,11 +87,6 @@
       const clickable = hoveredFrame.querySelector('.barsInner.targetable') || 
                         hoveredFrame.querySelector('.barsInner') || 
                         hoveredFrame;
-      
-      hoveredFrame.classList.add('mo-clicked');
-      setTimeout(() => {
-        hoveredFrame?.classList.remove('mo-clicked');
-      }, 200);
       
       clickable.dispatchEvent(new MouseEvent('click', {
         bubbles: true,
