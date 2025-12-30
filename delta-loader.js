@@ -27,6 +27,7 @@
         "delta-main.js",
         "delta-settings.js",
         "mouseover.js",
+        "party-arranger.js",
     ];
 
     const CSS_FILE = "styles.css";
