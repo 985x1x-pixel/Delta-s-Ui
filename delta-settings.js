@@ -313,6 +313,7 @@
 
             const skillbarSlots = scanSkillbar();
             const currentFullscreenKey = localStorage.getItem("deltaUI_fullscreenKey") || "o";
+            const currentFameResetKey = localStorage.getItem("deltaUI_fameResetKey") || "[";
             const hideBuffsEnabled = getToggle("hideBuffs", false);
             const ccIndicatorEnabled = getToggle("ccIndicator", true);
             const fpsModeEnabled = getToggle("fpsMode", false);
@@ -390,6 +391,19 @@
                                                    readonly
                                                    placeholder="Press a key">
                                             <div class="btn small" id="clear-fullscreen-key">✕</div>
+                                        </div>
+                                    </div>
+
+                                     <div>Fame Reset<br><small class="textgrey">Press key to reset fame counters</small></div>
+                                        <div class="keybind-input-wrapper">
+                                            <input type="text" 
+                                                   id="fame-reset-key-input" 
+                                                   class="keybind-input" 
+                                                   value="${currentFameResetKey.toUpperCase()}" 
+                                                   maxlength="1" 
+                                                   readonly
+                                                   placeholder="Press a key">
+                                            <div class="btn small" id="clear-fame-reset-key">✕</div>
                                         </div>
                                     </div>
                                     
@@ -773,6 +787,60 @@
                     }
 
                     console.log("[Delta UI] Fullscreen key reset to: O");
+                });
+            }
+
+            // Fame reset keybind input
+            const fameResetKeyInput = $("#fame-reset-key-input", deltaSettingsWindow);
+            if (fameResetKeyInput) {
+                fameResetKeyInput.addEventListener("click", () => {
+                    fameResetKeyInput.value = "";
+                    fameResetKeyInput.placeholder = "Press a key...";
+                });
+            
+                fameResetKeyInput.addEventListener("keydown", (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+            
+                    const key = e.key.toLowerCase();
+            
+                    if (["shift", "control", "alt", "meta"].includes(key)) {
+                        return;
+                    }
+            
+                    fameResetKeyInput.value = key.length === 1 ? key.toUpperCase() : key;
+                    localStorage.setItem("deltaUI_fameResetKey", key);
+            
+                    if (window.FameNotifier?.setResetKey) {
+                        window.FameNotifier.setResetKey(key);
+                    }
+            
+                    fameResetKeyInput.blur();
+                    console.log("[Delta Settings] Fame reset key set to:", key);
+                });
+            
+                fameResetKeyInput.addEventListener("blur", () => {
+                    const currentKey = localStorage.getItem("deltaUI_fameResetKey") || "[";
+                    if (!fameResetKeyInput.value) {
+                        fameResetKeyInput.value = currentKey.length === 1 ? currentKey.toUpperCase() : currentKey;
+                    }
+                    fameResetKeyInput.placeholder = "Press a key";
+                });
+            }
+            
+            const clearFameResetKey = $("#clear-fame-reset-key", deltaSettingsWindow);
+            if (clearFameResetKey) {
+                clearFameResetKey.addEventListener("click", () => {
+                    const defaultKey = "[";
+                    const input = $("#fame-reset-key-input", deltaSettingsWindow);
+                    if (input) input.value = defaultKey;
+                    localStorage.setItem("deltaUI_fameResetKey", defaultKey);
+            
+                    if (window.FameNotifier?.setResetKey) {
+                        window.FameNotifier.setResetKey(defaultKey);
+                    }
+            
+                    console.log("[Delta Settings] Fame reset key reset to: [");
                 });
             }
         }
