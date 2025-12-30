@@ -659,9 +659,10 @@
     // INIT
     // ==========================================
 
-    function init() {
+   function init() {
+    // Always enable by default, let Delta UI control it
         var savedSetting = localStorage.getItem('deltaUI_chatTweaks');
-        if (savedSetting === 'true' || savedSetting === null) {
+        if (savedSetting !== 'false') {
             enable();
         }
     }
