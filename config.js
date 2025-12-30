@@ -152,7 +152,8 @@
 
             petColor: "#0aa2af",
             fullscreenKey: "o",
-
+            partyResetKey: "n",
+            
             toggles: {
                 ccIndicator: true,
                 hideBuffs: false,
