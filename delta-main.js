@@ -699,13 +699,20 @@
                     if (l) l.style.display = isEnabled ? "flex" : "none";
                     break;
                 }
+
+                    case "mouseover":
+                        if (window.DeltaMouseover) {
+                            isEnabled ? window.DeltaMouseover.enable() : window.DeltaMouseover.disable();
+                        }
+                        break;
             }
         }
 
         function applyAllSavedToggles() {
             const toggleIds = [
                 "ccIndicator", "hideBuffs", "fpsMode", "chatTweaks",
-                "itemRecolor", "charmColors", "playtimeLabels", "fameLabels"
+                "itemRecolor", "charmColors", "playtimeLabels", "fameLabels",
+                "mouseover"
             ];
 
             toggleIds.forEach(id => {
