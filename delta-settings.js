@@ -318,6 +318,7 @@
             const hideBuffsEnabled = getToggle("hideBuffs", false);
             const ccIndicatorEnabled = getToggle("ccIndicator", true);
             const fpsModeEnabled = getToggle("fpsMode", false);
+            const partyAutoSortEnabled = getToggle("partyAutoSort", false);
 
             deltaSettingsWindow.innerHTML = `
                 <div class="window panel-black svelte-1f1v3u3">
@@ -494,7 +495,7 @@
                                     <div class="customization-section" data-for="hideBuffs" ${!hideBuffsEnabled ? 'style="opacity:0.5;pointer-events:none;"' : ''}>
                                         ${generateBuffToggleRows()}
                                     </div>
-
+                                
                                     <h3 class="textprimary">CC Indicator Customization</h3>
                                     <div class="customization-notice" data-for="ccIndicator" ${ccIndicatorEnabled ? 'style="display:none;"' : ''}>
                                         <small class="textgrey">⚠️ Enable "CC Indicator" in Features tab to use this section.</small>
@@ -507,7 +508,7 @@
                                             ${generateCCRows()}
                                         </div>
                                     </div>
-
+                                
                                     <h3 class="textprimary">FPS Mode Customization</h3>
                                     <div class="customization-notice" data-for="fpsMode" ${fpsModeEnabled ? 'style="display:none;"' : ''}>
                                         <small class="textgrey">⚠️ Enable "FPS Mode" in Features tab to use this section.</small>
@@ -520,8 +521,42 @@
                                             ${generateFPSRows()}
                                         </div>
                                     </div>
+                                
+                                    <h3 class="textprimary">Party Auto Sort Priorities</h3>
+                                    <div class="customization-notice" data-for="partyAutoSort" ${partyAutoSortEnabled ? 'style="display:none;"' : ''}>
+                                        <small class="textgrey">⚠️ Enable "Party Auto Sort" in Features tab to use this section.</small>
+                                    </div>
+                                    <div class="customization-section" data-for="partyAutoSort" ${!partyAutoSortEnabled ? 'style="opacity:0.5;pointer-events:none;"' : ''}>
+                                        <div class="priority-header">
+                                            <small class="textgrey">Lower number = higher priority (sorted first)</small>
+                                        </div>
+                                        <div class="settings priority-settings">
+                                            <div class="priority-row">
+                                                <img src="/data/ui/classes/3.avif" class="class-icon" alt="Shaman">
+                                                <span class="priority-name">Shaman</span>
+                                            </div>
+                                            <input type="number" class="priority-input" data-class="shaman" value="${window.DeltaPartyArranger?.getPriorities?.()?.shaman || 1}" min="1" max="4">
+                                            
+                                            <div class="priority-row">
+                                                <img src="/data/ui/classes/2.avif" class="class-icon" alt="Archer">
+                                                <span class="priority-name">Archer</span>
+                                            </div>
+                                            <input type="number" class="priority-input" data-class="archer" value="${window.DeltaPartyArranger?.getPriorities?.()?.archer || 2}" min="1" max="4">
+                                            
+                                            <div class="priority-row">
+                                                <img src="/data/ui/classes/1.avif" class="class-icon" alt="Mage">
+                                                <span class="priority-name">Mage</span>
+                                            </div>
+                                            <input type="number" class="priority-input" data-class="mage" value="${window.DeltaPartyArranger?.getPriorities?.()?.mage || 3}" min="1" max="4">
+                                            
+                                            <div class="priority-row">
+                                                <img src="/data/ui/classes/0.avif" class="class-icon" alt="Warrior">
+                                                <span class="priority-name">Warrior</span>
+                                            </div>
+                                            <input type="number" class="priority-input" data-class="warrior" value="${window.DeltaPartyArranger?.getPriorities?.()?.warrior || 4}" min="1" max="4">
+                                        </div>
+                                    </div>
                                 </div>
-
                                 <!-- About Tab -->
                                 <div class="tab-panel" data-panel="about">
                                     <h3 class="textprimary">Delta UI</h3>
@@ -598,7 +633,7 @@
                         DeltaUI.applyToggle(toggleId, isNowActive);
                     }
 
-                    if (toggleId === "hideBuffs" || toggleId === "ccIndicator" || toggleId === "fpsMode") {
+                    if (toggleId === "hideBuffs" || toggleId === "ccIndicator" || toggleId === "fpsMode" || toggleId === "partyAutoSort") {
                         updateCustomizationVisibility(toggleId, isNowActive);
                     }
                 });
@@ -940,6 +975,19 @@
                     console.log("[Delta Settings] Canvas scale set to:", value);
                 });
             }
+
+            $$(".priority-input", deltaSettingsWindow).forEach(input => {
+                input.addEventListener("input", (e) => {
+                    const className = e.target.dataset.class;
+                    const priority = parseInt(e.target.value, 10) || 1;
+                    
+                    if (window.DeltaPartyArranger?.setPriority) {
+                        window.DeltaPartyArranger.setPriority(className, priority);
+                    }
+                    
+                    console.log("[Delta Settings] Priority updated:", className, "=", priority);
+                });
+            });
         }
 
         // ==========================================
