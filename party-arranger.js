@@ -8,9 +8,18 @@
   const STORAGE_KEY = 'hordesPartyOrder_v6';
   const LOCK_KEY = 'hordesPartyLocked_v6';
   const PARTY_RESET_KEY_STORAGE = 'deltaUI_partyResetKey';
+  const PARTY_PRIORITIES_STORAGE = 'deltaUI_partyPriorities';
   const ENFORCE_DELAY = 150;
   const UI_CHECK_INTERVAL = 500;
   const ENFORCE_INTERVALS = [100, 300, 600, 1000, 1500, 2500];
+
+  // Default priorities (lower = higher priority, sorted first)
+  const DEFAULT_PRIORITIES = {
+    shaman: 1,
+    archer: 2,
+    mage: 3,
+    warrior: 4
+  };
 
   let editMode = false;
   let isLocked = false;
@@ -22,14 +31,135 @@
   let lastFrameCount = 0;
   let lastEnforceTime = 0;
   let isEnabled = false;
+  let isAutoSortEnabled = false;
   let uiCheckerInterval = null;
-  let partyResetKey = localStorage.getItem(PARTY_RESET_KEY_STORAGE) || 'n';
+  let partyResetKey = localStorage.getItem(PARTY_RESET_KEY_STORAGE) || ']';
+  let priorities = loadPriorities();
+
+  function loadPriorities() {
+    try {
+      const saved = localStorage.getItem(PARTY_PRIORITIES_STORAGE);
+      if (saved) {
+        return { ...DEFAULT_PRIORITIES, ...JSON.parse(saved) };
+      }
+    } catch (e) {}
+    return { ...DEFAULT_PRIORITIES };
+  }
+
+  function savePriorities() {
+    localStorage.setItem(PARTY_PRIORITIES_STORAGE, JSON.stringify(priorities));
+  }
+
+  function setPriority(className, priority) {
+    priorities[className.toLowerCase()] = parseInt(priority, 10) || 1;
+    savePriorities();
+    if (isAutoSortEnabled) {
+      autoSortParty();
+    }
+    console.log('[PA] Priority updated:', className, '=', priority);
+  }
+
+  function getPriorities() {
+    return { ...priorities };
+  }
 
   function setResetKey(newKey) {
     partyResetKey = newKey.toLowerCase();
     localStorage.setItem(PARTY_RESET_KEY_STORAGE, partyResetKey);
     console.log('[PA] Reset key changed to:', partyResetKey);
   }
+
+  // ==========================================
+  // AUTO SORT FUNCTIONS
+  // ==========================================
+
+  function getFrameClass(frame) {
+    if (!frame) return null;
+    
+    // Look for class icon in the frame
+    const classIcon = frame.querySelector('img.icon[src*="/classes/"]');
+    if (classIcon) {
+      const src = classIcon.src;
+      if (src.includes('0.avif') || src.includes('/0.')) return 'warrior';
+      if (src.includes('1.avif') || src.includes('/1.')) return 'mage';
+      if (src.includes('2.avif') || src.includes('/2.')) return 'archer';
+      if (src.includes('3.avif') || src.includes('/3.')) return 'shaman';
+    }
+    
+    // Fallback: check for class in background style or other indicators
+    const bgClass = frame.querySelector('[class*="bgc"]');
+    if (bgClass) {
+      if (bgClass.classList.contains('bgc0')) return 'warrior';
+      if (bgClass.classList.contains('bgc1')) return 'mage';
+      if (bgClass.classList.contains('bgc2')) return 'archer';
+      if (bgClass.classList.contains('bgc3')) return 'shaman';
+    }
+    
+    return null;
+  }
+
+  function autoSortParty() {
+    if (!isAutoSortEnabled || applying) return;
+
+    const container = getContainer();
+    if (!container) return;
+
+    const frameList = getFrames();
+    if (frameList.length === 0) return;
+
+    applying = true;
+
+    try {
+      // Get frames with their classes and priorities
+      const framesWithPriority = frameList.map(frame => {
+        const frameClass = getFrameClass(frame);
+        const priority = frameClass ? (priorities[frameClass] || 99) : 99;
+        return { frame, frameClass, priority, name: getName(frame) };
+      });
+
+      // Sort by priority (lower number = higher priority)
+      framesWithPriority.sort((a, b) => {
+        if (a.priority !== b.priority) {
+          return a.priority - b.priority;
+        }
+        // If same priority, maintain original order by name
+        return (a.name || '').localeCompare(b.name || '');
+      });
+
+      // Apply sorted order
+      framesWithPriority.forEach(({ frame }) => {
+        container.appendChild(frame);
+      });
+
+      console.log('[PA] Auto-sorted party by class priority');
+
+    } catch (e) {
+      console.error('[PA] Auto-sort error:', e);
+    }
+
+    applying = false;
+  }
+
+  function enableAutoSort() {
+    if (isAutoSortEnabled) return;
+    isAutoSortEnabled = true;
+    
+    // Auto sort on enable
+    setTimeout(autoSortParty, 100);
+    
+    console.log('[PA] Auto-sort enabled');
+  }
+
+  function disableAutoSort() {
+    if (!isAutoSortEnabled) return;
+    isAutoSortEnabled = false;
+    
+    console.log('[PA] Auto-sort disabled');
+  }
+
+  // ==========================================
+  // STYLES
+  // ==========================================
 
   function injectStyles() {
     if (document.getElementById('pa-styles')) return;
@@ -343,16 +473,23 @@
       disableEditMode(false);
       showToast('❌ Edit cancelled', '#e74c3c');
     } else {
-      localStorage.removeItem(STORAGE_KEY);
-      isLocked = false;
-      saveLockState();
-      updateButtonState();
+      resetPartyData();
       showToast('🗑️ Order reset', '#e74c3c');
     }
   }
 
+  function resetPartyData() {
+    localStorage.removeItem(STORAGE_KEY);
+    localStorage.removeItem(LOCK_KEY);
+    isLocked = false;
+    if (editMode) {
+      disableEditMode(false);
+    }
+    updateButtonState();
+  }
+
   function enforceOrder() {
-    if (applying || editMode || !isLocked || !isEnabled) return;
+    if (applying || editMode || !isLocked || !isEnabled || isAutoSortEnabled) return;
 
     const container = getContainer();
     if (!container) return;
@@ -435,16 +572,29 @@
   }
 
   function debouncedEnforce() {
-    if (editMode || !isLocked || !isEnabled) return;
-    clearTimeout(debounceTimer);
-    debounceTimer = setTimeout(enforceOrder, ENFORCE_DELAY);
+    if (editMode || !isEnabled) return;
+    
+    if (isAutoSortEnabled) {
+      clearTimeout(debounceTimer);
+      debounceTimer = setTimeout(autoSortParty, ENFORCE_DELAY);
+    } else if (isLocked) {
+      clearTimeout(debounceTimer);
+      debounceTimer = setTimeout(enforceOrder, ENFORCE_DELAY);
+    }
   }
 
   function scheduleMultipleEnforcements() {
-    if (!isLocked || editMode || !isEnabled) return;
+    if (editMode || !isEnabled) return;
+    
     ENFORCE_INTERVALS.forEach(delay => {
       setTimeout(() => {
-        if (isLocked && !editMode && isEnabled) enforceOrder();
+        if (!editMode && isEnabled) {
+          if (isAutoSortEnabled) {
+            autoSortParty();
+          } else if (isLocked) {
+            enforceOrder();
+          }
+        }
       }, delay);
     });
   }
@@ -490,7 +640,7 @@
         setTimeout(createButton, 50);
       }
 
-      if (needsEnforce && isLocked && !editMode && !applying) {
+      if (needsEnforce && !editMode && !applying) {
         debouncedEnforce();
       }
     });
@@ -526,15 +676,23 @@
       const currentCount = getFrames().length;
       if (currentCount !== lastFrameCount) {
         lastFrameCount = currentCount;
-        if (isLocked && !editMode && currentCount > 0) {
-          setTimeout(enforceOrder, 200);
+        if (!editMode && currentCount > 0) {
+          if (isAutoSortEnabled) {
+            setTimeout(autoSortParty, 200);
+          } else if (isLocked) {
+            setTimeout(enforceOrder, 200);
+          }
         }
       }
 
-      if (isLocked && !editMode && !applying) {
+      if (!editMode && !applying) {
         const timeSinceLastEnforce = Date.now() - lastEnforceTime;
         if (timeSinceLastEnforce > 3000) {
-          enforceOrder();
+          if (isAutoSortEnabled) {
+            autoSortParty();
+          } else if (isLocked) {
+            enforceOrder();
+          }
         }
       }
     }, UI_CHECK_INTERVAL);
@@ -548,7 +706,7 @@
   }
 
   function enableEditMode() {
-    if (editMode || !isEnabled) return;
+    if (editMode || !isEnabled || isAutoSortEnabled) return;
 
     editMode = true;
     pauseObserver();
@@ -753,30 +911,25 @@
 
     if (e.key.toLowerCase() === partyResetKey.toLowerCase()) {
       e.preventDefault();
-
-      localStorage.removeItem(STORAGE_KEY);
-      localStorage.removeItem(LOCK_KEY);
-
-      isLocked = false;
-      if (editMode) {
-        disableEditMode(false);
-      }
-
-      updateButtonState();
+      resetPartyData();
       showToast('🗑️ Party order reset!', '#e74c3c');
       console.log('[PA] Party order reset via keybind');
     }
   }
 
   function onVisibilityChange() {
-    if (!document.hidden && isLocked && !editMode && isEnabled) {
+    if (!document.hidden && !editMode && isEnabled) {
       scheduleMultipleEnforcements();
     }
   }
 
   function onWindowFocus() {
-    if (isLocked && !editMode && isEnabled) {
-      setTimeout(enforceOrder, 200);
+    if (!editMode && isEnabled) {
+      if (isAutoSortEnabled) {
+        setTimeout(autoSortParty, 200);
+      } else if (isLocked) {
+        setTimeout(enforceOrder, 200);
+      }
     }
   }
 
@@ -820,7 +973,7 @@
     };
     tryCreateButton();
 
-    if (isLocked) {
+    if (isLocked && !isAutoSortEnabled) {
       scheduleMultipleEnforcements();
     }
 
@@ -856,6 +1009,11 @@
     if (savedSetting === 'true') {
       enable();
     }
+
+    const autoSortSetting = localStorage.getItem('deltaUI_partyAutoSort');
+    if (autoSortSetting === 'true') {
+      enableAutoSort();
+    }
   }
 
   if (document.readyState === 'loading') {
@@ -874,12 +1032,20 @@
     isEnabled: function() { return isEnabled; },
     setResetKey: setResetKey,
     reset: function() {
-      localStorage.removeItem(STORAGE_KEY);
-      localStorage.removeItem(LOCK_KEY);
-      isLocked = false;
-      if (editMode) disableEditMode(false);
-      updateButtonState();
+      resetPartyData();
       showToast('🗑️ Party order reset!', '#e74c3c');
+    },
+    // Auto sort API
+    enableAutoSort: enableAutoSort,
+    disableAutoSort: disableAutoSort,
+    isAutoSortEnabled: function() { return isAutoSortEnabled; },
+    autoSort: autoSortParty,
+    setPriority: setPriority,
+    getPriorities: getPriorities,
+    resetPriorities: function() {
+      priorities = { ...DEFAULT_PRIORITIES };
+      savePriorities();
+      if (isAutoSortEnabled) autoSortParty();
     }
   };
 
