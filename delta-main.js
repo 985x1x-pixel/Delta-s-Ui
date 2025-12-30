@@ -711,6 +711,12 @@
                         isEnabled ? window.DeltaChatResizer.enable() : window.DeltaChatResizer.disable();
                     }
                     break;
+
+                    case "canvasScaler":
+                        if (window.DeltaCanvasScaler) {
+                            isEnabled ? window.DeltaCanvasScaler.enable() : window.DeltaCanvasScaler.disable();
+                        }
+                        break;
             }
         }
 
