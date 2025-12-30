@@ -7,7 +7,10 @@
 
     const STORAGE_GAINED = 'totalFameGained';
     const STORAGE_LOST = 'totalFameLost';
-    const RESET_KEY = '[';
+    const STORAGE_RESET_KEY = 'deltaUI_fameResetKey';
+    
+    // Load saved key or use default
+    let resetKey = localStorage.getItem(STORAGE_RESET_KEY) || '[';
 
     const getTotal = key => parseInt(localStorage.getItem(key), 10) || 0;
     const setTotal = (key, val) => localStorage.setItem(key, val.toString());
@@ -19,13 +22,21 @@
         console.log('[Fame Notifier] Reset to 0!');
     };
 
+    // Function to update the reset key
+    const setResetKey = (newKey) => {
+        resetKey = newKey.toLowerCase();
+        localStorage.setItem(STORAGE_RESET_KEY, resetKey);
+        console.log(`[Fame Notifier] Reset key changed to: ${resetKey}`);
+    };
+
     window.addEventListener('keydown', (e) => {
         const active = document.activeElement;
         const isTyping = active.tagName === 'INPUT' ||
                          active.tagName === 'TEXTAREA' ||
                          active.isContentEditable;
 
-        if (!isTyping && e.key === RESET_KEY) {
+        // Compare with current resetKey (case-insensitive)
+        if (!isTyping && e.key.toLowerCase() === resetKey.toLowerCase()) {
             resetFame();
         }
     });
@@ -94,9 +105,11 @@
     window.FameNotifier = {
         getGained: () => getTotal(STORAGE_GAINED),
         getLost: () => getTotal(STORAGE_LOST),
-        reset: resetFame
+        reset: resetFame,
+        setResetKey: setResetKey,  // ADD THIS LINE
+        getResetKey: () => resetKey  // Optional: useful for debugging
     };
 
     console.log(`[Fame Notifier] Loaded. Gained: ${getTotal(STORAGE_GAINED)}, Lost: ${getTotal(STORAGE_LOST)}`);
-    console.log(`[Fame Notifier] Press '${RESET_KEY}' to reset.`);
+    console.log(`[Fame Notifier] Press '${resetKey}' to reset.`);
 })();
