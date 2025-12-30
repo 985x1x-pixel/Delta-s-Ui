@@ -353,6 +353,9 @@
 
                                         <div>Mouseover<br><small class="textgrey">Cast skills on mouseover targets</small></div>
                                         <div class="btn checkbox ${getToggle("mouseover", false) ? "active" : ""}" data-toggle="mouseover"></div>
+
+                                        <div>Party UI Editor<br><small class="textgrey">Resize and move chat window</small></div>
+                                        <div class="btn checkbox ${getToggle("partyUIEditor", false) ? "active" : ""}" data-toggle="partyUIEditor"></div>
                                     </div>
 
                                     <h3 class="textprimary">Chat</h3>
