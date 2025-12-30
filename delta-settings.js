@@ -377,40 +377,39 @@
                                     </div>
                                 </div>
 
-                                <!-- Controls Tab -->
-                                <div class="tab-panel" data-panel="controls">
-                                    <h3 class="textprimary">Keybinds</h3>
-                                    <div class="settings svelte-13nnce4">
-                                        <div>Fullscreen Toggle<br><small class="textgrey">Press key to toggle fullscreen</small></div>
-                                        <div class="keybind-input-wrapper">
-                                            <input type="text" 
-                                                   id="fullscreen-key-input" 
-                                                   class="keybind-input" 
-                                                   value="${currentFullscreenKey.toUpperCase()}" 
-                                                   maxlength="1" 
-                                                   readonly
-                                                   placeholder="Press a key">
-                                            <div class="btn small" id="clear-fullscreen-key">✕</div>
-                                        </div>
-                                    </div>
-
-                                     <div>Fame Reset<br><small class="textgrey">Press key to reset fame counters</small></div>
-                                        <div class="keybind-input-wrapper">
-                                            <input type="text" 
-                                                   id="fame-reset-key-input" 
-                                                   class="keybind-input" 
-                                                   value="${currentFameResetKey.toUpperCase()}" 
-                                                   maxlength="1" 
-                                                   readonly
-                                                   placeholder="Press a key">
-                                            <div class="btn small" id="clear-fame-reset-key">✕</div>
-                                        </div>
-                                    </div>
+                               <!-- Controls Tab -->
+                                    <div class="tab-panel" data-panel="controls">
+                                        <h3 class="textprimary">Keybinds</h3>
+                                        <div class="settings svelte-13nnce4">
+                                            <div>Fullscreen Toggle<br><small class="textgrey">Press key to toggle fullscreen</small></div>
+                                            <div class="keybind-input-wrapper">
+                                                <input type="text" 
+                                                       id="fullscreen-key-input" 
+                                                       class="keybind-input" 
+                                                       value="${currentFullscreenKey.toUpperCase()}" 
+                                                       maxlength="1" 
+                                                       readonly
+                                                       placeholder="Press a key">
+                                                <div class="btn small" id="clear-fullscreen-key">✕</div>
+                                            </div>
                                     
-                                    <div class="keybind-hint">
-                                        <small class="textgrey">Click the input box and press any key to set a new keybind.</small>
+                                            <div>Fame Reset<br><small class="textgrey">Press key to reset fame counters</small></div>
+                                            <div class="keybind-input-wrapper">
+                                                <input type="text" 
+                                                       id="fame-reset-key-input" 
+                                                       class="keybind-input" 
+                                                       value="${currentFameResetKey.toUpperCase()}" 
+                                                       maxlength="1" 
+                                                       readonly
+                                                       placeholder="Press a key">
+                                                <div class="btn small" id="clear-fame-reset-key">✕</div>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="keybind-hint">
+                                            <small class="textgrey">Click the input box and press any key to set a new keybind.</small>
+                                        </div>
                                     </div>
-                                </div>
 
                                 <!-- Colors Tab -->
                                 <div class="tab-panel" data-panel="colors">
