@@ -165,6 +165,7 @@
                 fameLabels: true,
                 mouseover: false,
                 partyUIEditor: false,
+                canvasScaler: false,
             },
 
             hiddenBuffs: {},
