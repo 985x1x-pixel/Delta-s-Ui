@@ -7,58 +7,6 @@
     "use strict";
 
     // ==========================================
-    // FALLBACK CONFIG (if config.js fails)
-    // ==========================================
-
-    const FALLBACK_CONFIG = {
-        version: "3.9-fallback",
-        timing: {
-            INIT_DELAY: 300,
-            SETTINGS_LOAD: 2000,
-            SLOW_POLL: 2000,
-            ELEMENT_WAIT: 250
-        },
-        replacements: {},
-        ccEffects: [],
-        buffIcons: { warrior: [], archer: [], mage: [], shaman: [] },
-        fpsOptions: [],
-        defaults: {
-            skillbarColors: {},
-            charmColors: {},
-            petColor: "#0aa2af",
-            toggles: {},
-            hiddenBuffs: {},
-            ccSettings: {},
-            fpsSettings: {}
-        },
-        charmNames: {},
-        classIcons: {},
-        factionIcons: {},
-        qualityColors: {
-            RED: "#ff0000",
-            ORANGE: "#ff7600",
-            PURPLE: "#9E3BF9",
-            BLUE: "#0681ea",
-            GREEN: "#34CB49",
-            GREY: "#5b858e",
-            UPGRADE: "#eab379"
-        },
-        storageKeys: {
-            FAME_GAINED: "totalFameGained",
-            FAME_LOST: "totalFameLost",
-            PLAYTIME: "totalPlaytime",
-            SKILLBAR_COLORS: "deltaUI_skillbarColors",
-            CHARM_COLORS: "deltaUI_charmColors",
-            PET_COLOR: "deltaUI_petColor",
-            HIDDEN_BUFFS: "deltaUI_hiddenBuffs",
-            CC_SETTINGS: "deltaUI_ccSettings",
-            FPS_SETTINGS: "deltaUI_fpsSettings"
-        },
-        skillColors: {},
-        utilityBuffs: []
-    };
-
-    // ==========================================
     // CRITICAL CSS
     // ==========================================
 
