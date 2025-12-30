@@ -350,6 +350,9 @@
                                         
                                         <div>FPS Mode<br><small class="textgrey">Hide UI elements for performance</small></div>
                                         <div class="btn checkbox ${getToggle("fpsMode", false) ? "active" : ""}" data-toggle="fpsMode"></div>
+
+                                        <div>Mouseover<br><small class="textgrey">Cast skills on mouseover targets</small></div>
+                                        <div class="btn checkbox ${getToggle("mouseover", false) ? "active" : ""}" data-toggle="mouseover"></div>
                                     </div>
 
                                     <h3 class="textprimary">Chat</h3>
