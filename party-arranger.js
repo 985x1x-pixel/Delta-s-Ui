@@ -17,6 +17,9 @@
   let lastFrameCount = 0;
   let lastEnforceTime = 0;
 
+  const PARTY_RESET_KEY_STORAGE = 'deltaUI_partyResetKey';
+  let partyResetKey = localStorage.getItem(PARTY_RESET_KEY_STORAGE) || ']';
+  
   function injectStyles() {
     if (document.getElementById('pa-styles')) return;
 
