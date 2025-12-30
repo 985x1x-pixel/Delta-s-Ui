@@ -845,20 +845,57 @@
                     fameResetKeyInput.placeholder = "Press a key";
                 });
             }
-            
-            const clearFameResetKey = $("#clear-fame-reset-key", deltaSettingsWindow);
-            if (clearFameResetKey) {
-                clearFameResetKey.addEventListener("click", () => {
-                    const defaultKey = "[";
-                    const input = $("#fame-reset-key-input", deltaSettingsWindow);
-                    if (input) input.value = defaultKey;
-                    localStorage.setItem("deltaUI_fameResetKey", defaultKey);
-            
-                    if (window.FameNotifier?.setResetKey) {
-                        window.FameNotifier.setResetKey(defaultKey);
+
+            const partyResetKeyInput = $("#party-reset-key-input", deltaSettingsWindow);
+            if (partyResetKeyInput) {
+                partyResetKeyInput.addEventListener("click", () => {
+                    partyResetKeyInput.value = "";
+                    partyResetKeyInput.placeholder = "Press a key...";
+                });
+
+                partyResetKeyInput.addEventListener("keydown", (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+
+                    const key = e.key.toLowerCase();
+
+                    if (["shift", "control", "alt", "meta"].includes(key)) {
+                        return;
                     }
-            
-                    console.log("[Delta Settings] Fame reset key reset to: [");
+
+                    partyResetKeyInput.value = key.length === 1 ? key.toUpperCase() : key;
+                    localStorage.setItem("deltaUI_partyResetKey", key);
+
+                    if (window.DeltaPartyArranger?.setResetKey) {
+                        window.DeltaPartyArranger.setResetKey(key);
+                    }
+
+                    partyResetKeyInput.blur();
+                    console.log("[Delta Settings] Party reset key set to:", key);
+                });
+
+                partyResetKeyInput.addEventListener("blur", () => {
+                    const currentKey = localStorage.getItem("deltaUI_partyResetKey") || "]";
+                    if (!partyResetKeyInput.value) {
+                        partyResetKeyInput.value = currentKey.length === 1 ? currentKey.toUpperCase() : currentKey;
+                    }
+                    partyResetKeyInput.placeholder = "Press a key";
+                });
+            }
+
+            const clearPartyResetKey = $("#clear-party-reset-key", deltaSettingsWindow);
+            if (clearPartyResetKey) {
+                clearPartyResetKey.addEventListener("click", () => {
+                    const defaultKey = "n";
+                    const input = $("#party-reset-key-input", deltaSettingsWindow);
+                    if (input) input.value = defaultKey;
+                    localStorage.setItem("deltaUI_partyResetKey", defaultKey);
+
+                    if (window.DeltaPartyArranger?.setResetKey) {
+                        window.DeltaPartyArranger.setResetKey(defaultKey);
+                    }
+
+                    console.log("[Delta Settings] Party reset key reset to: ]");
                 });
             }
         }
