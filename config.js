@@ -163,6 +163,7 @@
                 playtimeLabels: true,
                 fameLabels: true,
                 mouseover: false,
+                partyUIEditor: false,
             },
 
             hiddenBuffs: {},
