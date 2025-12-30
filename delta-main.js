@@ -724,7 +724,7 @@
             const toggleIds = [
                 "ccIndicator", "hideBuffs", "fpsMode", "chatTweaks",
                 "itemRecolor", "charmColors", "playtimeLabels", "fameLabels",
-                "mouseover", "partyUIEditor", "canvasScaler"
+                "mouseover", "partyUIEditor", "canvasScaler", "partyAutoSort"
             ];
 
             toggleIds.forEach(id => {
