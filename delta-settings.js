@@ -357,6 +357,9 @@
 
                                         <div>Party UI Editor<br><small class="textgrey">Resize and move chat window</small></div>
                                         <div class="btn checkbox ${getToggle("partyUIEditor", false) ? "active" : ""}" data-toggle="partyUIEditor"></div>
+
+                                        <div>Party Auto Sort<br><small class="textgrey">Auto-sort party by class priority</small></div>
+                                        <div class="btn checkbox ${getToggle("partyAutoSort", false) ? "active" : ""}" data-toggle="partyAutoSort"></div>
                                     </div>
 
                                     <h3 class="textprimary">Chat</h3>
