@@ -3728,5 +3728,48 @@ section.post .btn.formatted.secondary.disabled {
     font-size: 13px;
 }
 
+.priority-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.priority-row .class-icon {
+    width: 24px;
+    height: 24px;
+    border-radius: 4px;
+}
+
+.priority-name {
+    color: #fff;
+}
+
+.priority-input {
+    width: 50px;
+    padding: 4px 8px;
+    background: #1a1a2e;
+    border: 1px solid #5b858e;
+    border-radius: 4px;
+    color: #F5C247;
+    font-size: 14px;
+    text-align: center;
+}
+
+.priority-input:focus {
+    outline: none;
+    border-color: #F5C247;
+}
+
+.priority-settings {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 10px;
+    align-items: center;
+}
+
+.priority-header {
+    margin-bottom: 10px;
+}
+
 `;
 document.head.appendChild(style);
