@@ -23,7 +23,7 @@
   let lastEnforceTime = 0;
   let isEnabled = false;
   let uiCheckerInterval = null;
-  let partyResetKey = localStorage.getItem(PARTY_RESET_KEY_STORAGE) || ']';
+  let partyResetKey = localStorage.getItem(PARTY_RESET_KEY_STORAGE) || 'n';
 
   function setResetKey(newKey) {
     partyResetKey = newKey.toLowerCase();
