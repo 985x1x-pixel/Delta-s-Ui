@@ -25,7 +25,8 @@
         "fame-notifier.js",
         "chat-resizer.js",
         "delta-main.js",
-        "delta-settings.js"
+        "delta-settings.js",
+        "mouseover.js",
     ];
 
     const CSS_FILE = "styles.css";
