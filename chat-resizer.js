@@ -19,6 +19,9 @@
     var controlsCreated = false;
     var initAttempts = 0;
     var MAX_INIT_ATTEMPTS = 50;
+    var isEnabled = false;
+    var checkInterval = null;
+    var chatObserver = null;
 
     function getDefault() {
         return {
@@ -219,7 +222,7 @@
     }
 
     function updatePositions() {
-        if (!chat) return;
+        if (!chat || !isEnabled) return;
 
         keepInBounds();
 
@@ -303,7 +306,8 @@
     }
 
     function createControls() {
-        // Always remove old controls first
+        if (!isEnabled) return;
+        
         removeControls();
 
         var controls = document.createElement('div');
@@ -433,6 +437,8 @@
     }
 
     function ensureClasses() {
+        if (!isEnabled) return;
+        
         if (chat && !chat.classList.contains('resizer-active')) {
             chat.classList.add('resizer-active');
         }
@@ -444,13 +450,34 @@
         }
     }
 
+    function removeClasses() {
+        if (chat) {
+            chat.classList.remove('resizer-active');
+            chat.style.left = '';
+            chat.style.top = '';
+            chat.style.width = '';
+            chat.style.height = '';
+        }
+        if (chatInput) {
+            chatInput.classList.remove('resizer-active');
+            chatInput.style.left = '';
+            chatInput.style.top = '';
+            chatInput.style.width = '';
+        }
+        if (channelSelect) {
+            channelSelect.classList.remove('resizer-active');
+            channelSelect.style.left = '';
+            channelSelect.style.top = '';
+            channelSelect.style.width = '';
+        }
+    }
+
     function verifyControls() {
         var controls = document.getElementById('chat-controls');
         var moveHandle = document.getElementById('chat-move-handle');
         var resetBtn = document.getElementById('chat-reset-btn');
         var resizeHandle = document.getElementById('chat-resize-handle');
 
-        // Check if all controls exist and are in DOM
         if (!controls || !document.body.contains(controls)) return false;
         if (!moveHandle || !resetBtn || !resizeHandle) return false;
 
@@ -458,6 +485,8 @@
     }
 
     function setup() {
+        if (!isEnabled) return;
+        
         if (!findElements()) {
             initAttempts++;
             if (initAttempts < MAX_INIT_ATTEMPTS) {
@@ -468,7 +497,6 @@
 
         ensureClasses();
 
-        // Always verify controls exist, recreate if missing
         if (!verifyControls()) {
             createControls();
         }
@@ -477,51 +505,188 @@
     }
 
     function checkLoop() {
+        if (!isEnabled) return;
+        
         if (findElements()) {
             ensureClasses();
+            updatePositions();
 
-            // Recreate controls if they're missing
             if (!verifyControls()) {
                 console.log('[Chat Resizer] Controls missing, recreating...');
                 createControls();
             }
-
-            updatePositions();
         }
     }
 
-    function initChatResizer() {
+    function onWindowResize() {
+        if (!isEnabled) return;
+        keepInBounds();
+        updatePositions();
+    }
+
+    function onFullscreenChange() {
+        if (!isEnabled) return;
+        
+        setTimeout(function() {
+            if (findElements()) {
+                ensureClasses();
+                keepInBounds();
+                updatePositions();
+                
+                if (!verifyControls()) {
+                    createControls();
+                }
+            }
+        }, 100);
+        
+        setTimeout(function() {
+            if (findElements()) {
+                ensureClasses();
+                keepInBounds();
+                updatePositions();
+            }
+        }, 500);
+    }
+
+    function setupChatObserver() {
+        if (chatObserver) {
+            chatObserver.disconnect();
+        }
+        
+        chatObserver = new MutationObserver(function(mutations) {
+            if (!isEnabled) return;
+            
+            for (var i = 0; i < mutations.length; i++) {
+                var mutation = mutations[i];
+                for (var j = 0; j < mutation.addedNodes.length; j++) {
+                    var node = mutation.addedNodes[j];
+                    if (!(node instanceof HTMLElement)) continue;
+                    
+                    if (node.id === 'chat' || 
+                        node.id === 'chatinput' || 
+                        (node.querySelector && node.querySelector('#chat')) ||
+                        (node.querySelector && node.querySelector('#chatinput')) ||
+                        (node.classList && node.classList.contains('channelselect'))) {
+                        
+                        setTimeout(function() {
+                            if (findElements()) {
+                                ensureClasses();
+                                updatePositions();
+                                
+                                if (!verifyControls()) {
+                                    createControls();
+                                }
+                            }
+                        }, 50);
+                        
+                        setTimeout(function() {
+                            if (findElements()) {
+                                ensureClasses();
+                                updatePositions();
+                            }
+                        }, 200);
+                        
+                        return;
+                    }
+                }
+            }
+        });
+        
+        chatObserver.observe(document.body, {
+            childList: true,
+            subtree: true
+        });
+    }
+
+    // ==========================================
+    // ENABLE / DISABLE
+    // ==========================================
+
+    function enable() {
+        if (isEnabled) return;
+        isEnabled = true;
+
         injectChatResizerStyles();
         load();
 
         document.addEventListener('mousemove', onMouseMove);
         document.addEventListener('mouseup', onMouseUp);
+        window.addEventListener('resize', onWindowResize);
+        document.addEventListener('fullscreenchange', onFullscreenChange);
+        document.addEventListener('webkitfullscreenchange', onFullscreenChange);
 
-        window.addEventListener('resize', function() {
-            keepInBounds();
-            updatePositions();
-        });
+        setupChatObserver();
 
-        // Main check loop - checks frequently
-        setInterval(checkLoop, 500);
+        checkInterval = setInterval(checkLoop, 500);
 
-        // Initial setup with delay
+        initAttempts = 0;
+        setup();
+        
+        setTimeout(setup, 500);
         setTimeout(setup, 1000);
         setTimeout(setup, 2000);
-        setTimeout(setup, 3000);
 
-        console.log('[Chat Resizer] Initialized');
+        console.log('[Chat Resizer] Enabled');
     }
 
-    // Auto-init
+    function disable() {
+        if (!isEnabled) return;
+        isEnabled = false;
+
+        document.removeEventListener('mousemove', onMouseMove);
+        document.removeEventListener('mouseup', onMouseUp);
+        window.removeEventListener('resize', onWindowResize);
+        document.removeEventListener('fullscreenchange', onFullscreenChange);
+        document.removeEventListener('webkitfullscreenchange', onFullscreenChange);
+
+        if (chatObserver) {
+            chatObserver.disconnect();
+            chatObserver = null;
+        }
+
+        if (checkInterval) {
+            clearInterval(checkInterval);
+            checkInterval = null;
+        }
+
+        removeControls();
+        removeClasses();
+
+        console.log('[Chat Resizer] Disabled');
+    }
+
+    // ==========================================
+    // INIT
+    // ==========================================
+
+    function init() {
+        var savedSetting = localStorage.getItem('deltaUI_chatTweaks');
+        if (savedSetting === 'true' || savedSetting === null) {
+            enable();
+        }
+    }
+
     if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', initChatResizer);
+        document.addEventListener('DOMContentLoaded', init);
     } else {
-        initChatResizer();
+        init();
     }
 
-    // Expose for manual init if needed
-    window.initChatResizer = initChatResizer;
-    window.recreateChatControls = createControls;
+    // ==========================================
+    // EXPOSE API
+    // ==========================================
+
+    window.DeltaChatResizer = {
+        enable: enable,
+        disable: disable,
+        isEnabled: function() { return isEnabled; },
+        reset: function() {
+            saved = getDefault();
+            save();
+            updatePositions();
+        }
+    };
+
+    console.log('[Chat Resizer] Module loaded');
 
 })();
