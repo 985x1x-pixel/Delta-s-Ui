@@ -28,6 +28,7 @@
         "delta-settings.js",
         "mouseover.js",
         "party-arranger.js",
+        "canvas-scaler.js",
     ];
 
     const CSS_FILE = "styles.css";
