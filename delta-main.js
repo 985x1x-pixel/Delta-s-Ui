@@ -700,11 +700,17 @@
                     break;
                 }
 
-                    case "mouseover":
-                        if (window.DeltaMouseover) {
-                            isEnabled ? window.DeltaMouseover.enable() : window.DeltaMouseover.disable();
-                        }
-                        break;
+                case "mouseover":
+                    if (window.DeltaMouseover) {
+                        isEnabled ? window.DeltaMouseover.enable() : window.DeltaMouseover.disable();
+                    }
+                    break;
+
+                case "partyUIEditor":
+                    if (window.DeltaChatResizer) {
+                        isEnabled ? window.DeltaChatResizer.enable() : window.DeltaChatResizer.disable();
+                    }
+                    break;
             }
         }
 
