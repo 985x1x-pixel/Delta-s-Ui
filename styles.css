@@ -3676,5 +3676,57 @@ section.post .btn.formatted.secondary.disabled {
     margin-bottom: 12px;
 }
 
+.slider-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.delta-slider {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 120px;
+    height: 6px;
+    border-radius: 3px;
+    background: #1a1a2e;
+    outline: none;
+    cursor: pointer;
+    border: 1px solid #5b858e;
+}
+
+.delta-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: #F5C247;
+    cursor: pointer;
+    border: 2px solid #1a1a2e;
+    box-shadow: 0 0 6px rgba(245, 194, 71, 0.5);
+}
+
+.delta-slider::-moz-range-thumb {
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: #F5C247;
+    cursor: pointer;
+    border: 2px solid #1a1a2e;
+    box-shadow: 0 0 6px rgba(245, 194, 71, 0.5);
+}
+
+.delta-slider:hover::-webkit-slider-thumb {
+    box-shadow: 0 0 10px rgba(245, 194, 71, 0.8);
+}
+
+.slider-value {
+    min-width: 40px;
+    text-align: center;
+    color: #F5C247;
+    font-weight: bold;
+    font-size: 13px;
+}
+
 `;
 document.head.appendChild(style);
