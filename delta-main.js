@@ -1,5 +1,5 @@
 // ==========================================
-// DELTA UI MAIN v3.8
+// DELTA UI MAIN v3.9
 // Loaded by delta-loader.js
 // ==========================================
 
@@ -7,23 +7,11 @@
     "use strict";
 
     // ==========================================
-    // CONFIGURATION
+    // FALLBACK CONFIG (if config.js fails)
     // ==========================================
 
-    const BASE_URL = "https://985x1x-pixel.github.io/Delta-s-Ui";
-
-    const EXTERNAL_SCRIPTS = [
-        `${BASE_URL}/config.js`,
-        `${BASE_URL}/fame-notifier.js`,
-        `${BASE_URL}/chat-resizer.js`,
-        `${BASE_URL}/delta-settings.js`,
-    ];
-
-    const CSS_URL = `${BASE_URL}/styles.css`;
-
-    // Fallback config if external load fails
     const FALLBACK_CONFIG = {
-        version: "3.8-fallback",
+        version: "3.9-fallback",
         timing: {
             INIT_DELAY: 300,
             SETTINGS_LOAD: 2000,
@@ -121,10 +109,8 @@
             box-shadow: inset 0 0 0 6px red;
         }
 
-        /* FPS Mode - Dynamic selectors applied via JS */
         body.delta-fps-mode .delta-fps-hide { display: none !important; }
 
-        /* Item recolor styles */
         body:not(.delta-item-recolor) .border.purp {
             border-color: #9E3BF9 !important;
             box-shadow: 0 0 6px rgba(158, 59, 249, 0.5) !important;
@@ -143,7 +129,6 @@
             box-shadow: 0 0 12px #ff7600, 0 0 20px rgba(255, 118, 0, 0.3) !important;
         }
 
-        /* Charm colors */
         body:not(.delta-charm-colors) .slot.filled[data-charm="true"],
         body:not(.delta-charm-colors) .slot.filled[data-pet="true"] {
             border-color: #9E3BF9 !important;
@@ -155,7 +140,6 @@
             box-shadow: 0 0 12px rgba(158, 59, 249, 0.7) !important;
         }
 
-        /* Premium box decorations */
         .premium-crown {
             position: absolute;
             top: -8px;
@@ -194,7 +178,6 @@
             50% { opacity: 1; transform: scale(1); }
         }
 
-        /* Delta button */
         #sysdelta {
             position: relative;
         }
@@ -225,65 +208,12 @@
     injectCriticalCSS();
 
     // ==========================================
-    // SCRIPT LOADER
-    // ==========================================
-
-    async function loadScript(url) {
-        try {
-            const response = await fetch(`${url}?v=${Date.now()}`);
-            if (!response.ok) throw new Error(`HTTP ${response.status}`);
-
-            const code = await response.text();
-            const script = document.createElement("script");
-            script.textContent = code;
-            document.head.appendChild(script);
-
-            console.log(`✅ Loaded: ${url.split("/").pop()}`);
-            return true;
-        } catch (error) {
-            console.warn(`⚠️ Script failed: ${url}`, error.message);
-            return false;
-        }
-    }
-
-    async function loadCSS(url, id) {
-        try {
-            const response = await fetch(`${url}?v=${Date.now()}`);
-            if (!response.ok) throw new Error(`HTTP ${response.status}`);
-
-            const cssText = await response.text();
-            
-            let style = document.getElementById(id);
-            if (!style) {
-                style = document.createElement("style");
-                style.id = id;
-                document.head.appendChild(style);
-            }
-            style.textContent = cssText;
-
-            console.log(`✅ CSS loaded: ${url.split("/").pop()}`);
-            return true;
-        } catch (error) {
-            console.warn(`⚠️ CSS failed: ${url}`, error.message);
-            return false;
-        }
-    }
-
-    async function loadAllScripts() {
-        for (const url of EXTERNAL_SCRIPTS) {
-            await loadScript(url);
-            await new Promise(r => setTimeout(r, 50));
-        }
-    }
-
-    // ==========================================
     // CONFIG BUILDER
     // ==========================================
 
     function buildRuntimeConfig() {
         const CONFIG = window.DELTA_CONFIG || FALLBACK_CONFIG;
 
-        // Initialize mutable properties
         CONFIG.skillbarColors = { ...CONFIG.defaults.skillbarColors };
         CONFIG.charmColors = { ...CONFIG.defaults.charmColors };
         CONFIG.petColor = CONFIG.defaults.petColor;
@@ -291,7 +221,6 @@
         CONFIG.hiddenBuffs = [];
         CONFIG.fpsHideSelectors = [];
 
-        // Load saved settings
         loadSavedSettings(CONFIG);
 
         window.DELTA_CONFIG = CONFIG;
@@ -299,31 +228,23 @@
     }
 
     function loadSavedSettings(CONFIG) {
-        // Load skillbar colors
         try {
             const saved = localStorage.getItem(CONFIG.storageKeys.SKILLBAR_COLORS);
             if (saved) Object.assign(CONFIG.skillbarColors, JSON.parse(saved));
         } catch (e) { console.warn("[Delta UI] Failed to load skillbar colors:", e); }
 
-        // Load charm colors
         try {
             const saved = localStorage.getItem(CONFIG.storageKeys.CHARM_COLORS);
             if (saved) Object.assign(CONFIG.charmColors, JSON.parse(saved));
         } catch (e) { console.warn("[Delta UI] Failed to load charm colors:", e); }
 
-        // Load pet color
         try {
             const saved = localStorage.getItem(CONFIG.storageKeys.PET_COLOR);
             if (saved) CONFIG.petColor = saved;
         } catch (e) { console.warn("[Delta UI] Failed to load pet color:", e); }
 
-        // Load hidden buffs
         loadHiddenBuffsFromStorage(CONFIG);
-
-        // Load CC settings
         loadCCSettingsFromStorage(CONFIG);
-
-        // Load FPS settings
         loadFPSSettingsFromStorage(CONFIG);
     }
 
@@ -338,7 +259,6 @@
             for (const [buffId, isHidden] of Object.entries(hiddenBuffsObj)) {
                 if (!isHidden) continue;
 
-                // Search class buffs
                 for (const className of Object.keys(CONFIG.buffIcons || {})) {
                     const buff = CONFIG.buffIcons[className].find(b => b.id === buffId);
                     if (buff) {
@@ -347,7 +267,6 @@
                     }
                 }
 
-                // Search utility buffs
                 const utilBuff = (CONFIG.utilityBuffs || []).find(b => b.id === buffId);
                 if (utilBuff) {
                     hiddenBuffs.push(utilBuff.src);
@@ -403,16 +322,10 @@
     // MAIN INITIALIZATION
     // ==========================================
 
-    async function init() {
-        console.log("[Delta UI] Main script initializing...");
-
-        await loadAllScripts();
-        await new Promise(r => setTimeout(r, 100));
-
+    function init() {
+        // Config should already be loaded by delta-loader.js
+        // Just build runtime config and initialize
         const CONFIG = buildRuntimeConfig();
-
-        await loadCSS(CSS_URL, "delta-external-css");
-
         initializeDeltaUI(CONFIG);
     }
 
@@ -562,13 +475,11 @@
         function generateDynamicStyles() {
             let css = "";
 
-            // Skillbar colors
             for (const [id, color] of Object.entries(CONFIG.skillbarColors)) {
                 const extraGlow = id === "skr" ? `, 0 0 10px ${color}` : "";
                 css += `#${id} { border: 3px solid ${color} !important; box-shadow: 0 0 6px ${color}${extraGlow} !important; }\n`;
             }
 
-            // Charm colors
             for (const [charm, color] of Object.entries(CONFIG.charmColors)) {
                 css += `
                     body.delta-charm-colors .slot.filled[data-${charm}="true"] {
@@ -585,7 +496,6 @@
                 `;
             }
 
-            // Pet color
             css += `
                 body.delta-charm-colors .slot.filled[data-pet="true"] {
                     border-color: ${CONFIG.petColor} !important;
@@ -600,7 +510,6 @@
                 }
             `;
 
-            // Fallback styles
             css += `
                 body:not(.delta-charm-colors) .slot.filled[data-charm="true"],
                 body:not(.delta-charm-colors) .slot.filled[data-pet="true"] {
@@ -609,7 +518,6 @@
                 }
             `;
 
-            // FPS Mode dynamic selectors
             if (CONFIG.fpsHideSelectors && CONFIG.fpsHideSelectors.length > 0) {
                 css += `body.delta-fps-mode :is(${CONFIG.fpsHideSelectors.join(", ")}) { display: none !important; }\n`;
             }
@@ -641,8 +549,6 @@
                     img.src = replacement;
                     this.cache.set(original, img);
                 }
-
-                console.log(`✅ Preloaded ${Object.keys(replacements).length} replacement images`);
             },
 
             get(original) {
@@ -903,7 +809,6 @@
                 const itemRecolorEnabled = document.body.classList.contains("delta-item-recolor");
                 const isAlreadyReplacement = img.src.includes("githubusercontent") || img.src.includes("github");
 
-                // Handle image replacement
                 if (itemRecolorEnabled && !isAlreadyReplacement) {
                     for (const [original, replacement] of Object.entries(CONFIG.replacements || {})) {
                         if (normalizedPath.includes(original) || srcPath.includes(original)) {
@@ -919,18 +824,15 @@
                     }
                 }
 
-                // Revert if recolor disabled
                 if (!itemRecolorEnabled && img.dataset.replaced === "true" && img.dataset.originalSrc) {
                     img.src = img.dataset.originalSrc;
                     delete img.dataset.replaced;
                     delete img.dataset.originalSrc;
                 }
 
-                // Clear previous data attributes
                 delete slot.dataset.pet;
                 delete slot.dataset.charm;
 
-                // Classify slot type
                 if (normalizedPath.includes("/pet/") && (normalizedPath.includes("_q3") || srcPath.includes("_grey"))) {
                     slot.dataset.pet = "true";
                 } else if (normalizedPath.includes("/charm/") || srcPath.includes("/charm/")) {
@@ -1320,7 +1222,6 @@
             });
         }
 
-        // Session stats container
         function createSessionStats() {
             if (document.getElementById("sessionStatsContainer")) return;
 
@@ -1562,10 +1463,6 @@
             version: CONFIG.version
         };
 
-        // ==========================================
-        // INITIAL SETUP
-        // ==========================================
-
         removePartyBtn();
         fixBattleboardWindow();
         updateFameUI();
@@ -1596,14 +1493,7 @@
         }
 
         waitForElement(".l-corner-ur .btnbar", injectDeltaButton);
-
-        console.log(`✅ Delta UI v${CONFIG.version} initialized`);
     }
 
-    // ==========================================
-    // START
-    // ==========================================
-
     init();
-
 })();
