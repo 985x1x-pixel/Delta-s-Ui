@@ -916,6 +916,27 @@
                     console.log("[Delta Settings] Party reset key reset to: ]");
                 });
             }
+
+            const canvasScaleSlider = $("#canvas-scale-slider", deltaSettingsWindow);
+            const canvasScaleValue = $("#canvas-scale-value", deltaSettingsWindow);
+            
+            if (canvasScaleSlider) {
+                canvasScaleSlider.addEventListener("input", (e) => {
+                    const value = parseFloat(e.target.value);
+                    
+                    if (canvasScaleValue) {
+                        canvasScaleValue.textContent = value.toFixed(1) + "x";
+                    }
+                    
+                    localStorage.setItem("deltaUI_canvasScale", value.toString());
+                    
+                    if (window.DeltaCanvasScaler?.setScale) {
+                        window.DeltaCanvasScaler.setScale(value);
+                    }
+                    
+                    console.log("[Delta Settings] Canvas scale set to:", value);
+                });
+            }
         }
 
         // ==========================================
