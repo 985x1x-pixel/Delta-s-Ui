@@ -314,6 +314,7 @@
             const skillbarSlots = scanSkillbar();
             const currentFullscreenKey = localStorage.getItem("deltaUI_fullscreenKey") || "o";
             const currentFameResetKey = localStorage.getItem("deltaUI_fameResetKey") || "[";
+            const currentPartyResetKey = localStorage.getItem("deltaUI_partyResetKey") || "n";  // ADD THIS
             const hideBuffsEnabled = getToggle("hideBuffs", false);
             const ccIndicatorEnabled = getToggle("ccIndicator", true);
             const fpsModeEnabled = getToggle("fpsMode", false);
