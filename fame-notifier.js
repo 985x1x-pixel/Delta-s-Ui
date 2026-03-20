@@ -41,11 +41,6 @@
     // STORAGE FUNCTIONS
     // ==========================================
 
-    /**
-     * Get fame value from storage
-     * @param {string} key - Storage key
-     * @returns {number}
-     */
     function getTotal(key) {
         const { lib } = getDeps();
         if (lib) {
@@ -58,11 +53,6 @@
         }
     }
 
-    /**
-     * Set fame value in storage
-     * @param {string} key - Storage key
-     * @param {number} value - Value to set
-     */
     function setTotal(key, value) {
         const { lib } = getDeps();
         if (lib) {
@@ -74,11 +64,6 @@
         }
     }
 
-    /**
-     * Add to fame value in storage
-     * @param {string} key - Storage key
-     * @param {number} value - Value to add
-     */
     function addTotal(key, value) {
         setTotal(key, getTotal(key) + value);
     }
@@ -87,17 +72,11 @@
     // FAME PARSING
     // ==========================================
 
-    /**
-     * Parse fame from text content
-     * @param {string} text - Text to parse
-     */
     function parseFame(text) {
         if (!text || typeof text !== "string") return;
 
-        // Normalize whitespace
         text = text.replace(/\s+/g, " ").trim();
 
-        // Check for fame gain
         const gainMatch = text.match(/Gained\s+([\d,]+)/i);
         if (gainMatch) {
             const value = parseInt(gainMatch[1].replace(/,/g, ""), 10);
@@ -107,7 +86,6 @@
             return;
         }
 
-        // Check for fame loss
         const lossMatch = text.match(/Lost\s+([\d,]+)/i);
         if (lossMatch) {
             const value = parseInt(lossMatch[1].replace(/,/g, ""), 10);
@@ -117,21 +95,14 @@
         }
     }
 
-    /**
-     * Process a chat line node for fame
-     * @param {HTMLElement} node - DOM node to process
-     */
     function processNode(node) {
         if (!(node instanceof HTMLElement)) return;
         
-        // Only process chat lines
         if (!node.matches("article.line")) return;
 
-        // Skip if already processed
         if (node.dataset.fameProcessed) return;
         node.dataset.fameProcessed = "true";
 
-        // Find fame text spans
         const fameSpans = node.querySelectorAll("span.textfame");
         fameSpans.forEach(span => {
             parseFame(span.textContent);
@@ -142,18 +113,11 @@
     // RESET FUNCTIONS
     // ==========================================
 
-    /**
-     * Reset all fame counters
-     */
     function reset() {
         setTotal(STORAGE_KEYS.GAINED, 0);
         setTotal(STORAGE_KEYS.LOST, 0);
     }
 
-    /**
-     * Set the reset keybind
-     * @param {string} newKey - New key to use
-     */
     function setResetKey(newKey) {
         if (!newKey || typeof newKey !== "string") return;
         
@@ -169,17 +133,10 @@
         }
     }
 
-    /**
-     * Get current reset key
-     * @returns {string}
-     */
     function getResetKey() {
         return resetKey;
     }
 
-    /**
-     * Load reset key from storage
-     */
     function loadResetKey() {
         const { lib } = getDeps();
         if (lib) {
@@ -197,12 +154,7 @@
     // KEYBOARD HANDLER
     // ==========================================
 
-    /**
-     * Handle reset key press
-     * @param {KeyboardEvent} e - Keyboard event
-     */
     function handleKeydown(e) {
-        // Ignore if typing in input
         const active = document.activeElement;
         const isTyping = active?.tagName === "INPUT" ||
                         active?.tagName === "TEXTAREA" ||
@@ -210,7 +162,6 @@
 
         if (isTyping) return;
 
-        // Check if reset key pressed
         if (e.key.toLowerCase() === resetKey.toLowerCase()) {
             reset();
         }
@@ -220,17 +171,13 @@
     // OBSERVER SETUP
     // ==========================================
 
-    /**
-     * Setup chat observer
-     */
     function setupObserver() {
         const { lib } = getDeps();
         
         const chat = document.querySelector("#chat");
         if (!chat) return false;
 
-        if (lib) {
-            // Use DeltaLib observer with cleanup tracking
+        if (lib && cleanup) {
             const observerId = lib.observers.create(chat, (mutations) => {
                 mutations.forEach(mutation => {
                     mutation.addedNodes.forEach(node => processNode(node));
@@ -243,7 +190,6 @@
 
             cleanup.trackObserver(observerId);
         } else {
-            // Fallback without DeltaLib
             const observer = new MutationObserver((mutations) => {
                 mutations.forEach(mutation => {
                     mutation.addedNodes.forEach(node => processNode(node));
@@ -252,25 +198,22 @@
 
             observer.observe(chat, { childList: true, subtree: true });
 
-            cleanup.trackCustom(() => observer.disconnect());
+            if (cleanup) {
+                cleanup.trackCustom(() => observer.disconnect());
+            }
         }
 
         return true;
     }
 
-    /**
-     * Setup body observer to detect chat appearing
-     */
     function setupBodyObserver() {
         const { lib } = getDeps();
 
-        // Check if chat already exists
         if (document.querySelector("#chat")) {
             setupObserver();
             return;
         }
 
-        // Watch for chat to appear
         const checkForChat = () => {
             const chat = document.querySelector("#chat");
             if (chat) {
@@ -280,8 +223,7 @@
             return false;
         };
 
-        if (lib) {
-            // Use DeltaLib observer
+        if (lib && cleanup) {
             const observerId = lib.observers.create(document.body, () => {
                 if (checkForChat()) {
                     lib.observers.disconnect(observerId);
@@ -294,7 +236,6 @@
 
             cleanup.trackObserver(observerId);
         } else {
-            // Fallback
             const observer = new MutationObserver(() => {
                 if (checkForChat()) {
                     observer.disconnect();
@@ -303,22 +244,24 @@
 
             observer.observe(document.body, { childList: true, subtree: true });
 
-            cleanup.trackCustom(() => observer.disconnect());
+            if (cleanup) {
+                cleanup.trackCustom(() => observer.disconnect());
+            }
         }
     }
 
-    /**
-     * Setup keyboard listener
-     */
     function setupKeyboard() {
         const { lib } = getDeps();
 
-        if (lib) {
+        if (lib && cleanup) {
             const eventId = lib.events.on(window, "keydown", handleKeydown);
             cleanup.trackEvent(eventId);
         } else {
             window.addEventListener("keydown", handleKeydown);
-            cleanup.trackCustom(() => window.removeEventListener("keydown", handleKeydown));
+            
+            if (cleanup) {
+                cleanup.trackCustom(() => window.removeEventListener("keydown", handleKeydown));
+            }
         }
     }
 
@@ -326,20 +269,16 @@
     // INITIALIZATION
     // ==========================================
 
-    /**
-     * Initialize the module
-     */
     function init() {
         if (isInitialized) return;
         isInitialized = true;
 
         const { lib } = getDeps();
 
-        // Create cleanup tracker
+        // ✅ FIX: Create cleanup FIRST
         if (lib) {
             cleanup = lib.createCleanup();
         } else {
-            // Simple cleanup fallback
             const customCleanups = [];
             cleanup = {
                 trackEvent: () => {},
@@ -350,17 +289,11 @@
             };
         }
 
-        // Load saved reset key
         loadResetKey();
-
-        // Setup observers and keyboard
         setupBodyObserver();
         setupKeyboard();
     }
 
-    /**
-     * Destroy the module
-     */
     function destroy() {
         if (!isInitialized) return;
         isInitialized = false;
@@ -375,7 +308,6 @@
     // START INITIALIZATION
     // ==========================================
 
-    // Initialize when DOM is ready
     if (document.readyState === "loading") {
         document.addEventListener("DOMContentLoaded", init);
     } else {
@@ -387,19 +319,12 @@
     // ==========================================
 
     window.FameNotifier = Object.freeze({
-        // Getters
         getGained: () => getTotal(STORAGE_KEYS.GAINED),
         getLost: () => getTotal(STORAGE_KEYS.LOST),
         getNet: () => getTotal(STORAGE_KEYS.GAINED) - getTotal(STORAGE_KEYS.LOST),
-        
-        // Actions
         reset,
-        
-        // Keybind
         setResetKey,
         getResetKey,
-        
-        // Module control
         destroy,
         reinit: () => {
             destroy();
