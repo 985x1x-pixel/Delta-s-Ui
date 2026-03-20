@@ -1,591 +1,600 @@
-// ==========================================
-// DELTA UI LOADER v2.0
-// Handles game detection, script loading, initialization
-// ==========================================
-
 (function() {
     "use strict";
 
-    // Prevent double initialization
-    if (window.DeltaLoader) {
-        return;
+    if (window.DeltaSettings) return;
+
+    function waitForDeps(callback) {
+        if (window.DELTA_CONFIG && window.DeltaUI) {
+            if (document.body) callback();
+            else document.addEventListener("DOMContentLoaded", callback);
+        } else {
+            setTimeout(() => waitForDeps(callback), 50);
+        }
     }
 
-    // ==========================================
-    // CONFIGURATION
-    // ==========================================
+    waitForDeps(initSettings);
 
-    const BASE_URL = "https://985x1x-pixel.github.io/Delta-s-Ui";
+    function initSettings() {
+        const CONFIG = window.DELTA_CONFIG;
+        const DeltaUI = window.DeltaUI;
+        if (!CONFIG || !DeltaUI) { setTimeout(initSettings, 100); return; }
 
-    // Script load order (dependencies first)
-    const SCRIPTS = [
-        "config.js",          // Must be first - configuration
-        "delta-lib.js",       // Must be second - utilities
-        "fame-notifier.js",   // Independent module
-        "chat-resizer.js",    // Independent module
-        "canvas-scaler.js",   // Independent module
-        "mouseover.js",       // Independent module
-        "party-arranger.js",  // Independent module
-        "delta-main.js",      // Main UI - depends on config
-        "delta-settings.js"   // Settings UI - depends on main
-    ];
+        let deltaSettingsWindow = null;
+        let isDragging = false;
+        let dragOffset = { x: 0, y: 0 };
 
-    const CSS_FILE = "styles.css";
+        function $(sel, root = document) { try { return root?.querySelector(sel) || null; } catch { return null; } }
+        function $$(sel, root = document) { try { return Array.from(root?.querySelectorAll(sel) || []); } catch { return []; } }
 
-    const TIMING = {
-        GAME_CHECK_INTERVAL: 200,
-        GAME_CHECK_TIMEOUT: 30000,
-        SCRIPT_LOAD_DELAY: 100,
-        DEPENDENCY_WAIT: 50,
-        TOAST_SUCCESS: 2500,
-        TOAST_ERROR: 4000
-    };
-
-    // ==========================================
-    // STATE
-    // ==========================================
-
-    let isInitialized = false;
-    let loadedScripts = new Set();
-    let failedScripts = new Set();
-
-    // ==========================================
-    // TOAST STYLES
-    // ==========================================
-
-    const TOAST_CSS = `
-        #delta-loader-toast {
-            position: fixed;
-            bottom: 20px;
-            left: 20px;
-            z-index: 999999;
-            background: rgba(20, 24, 35, 0.95);
-            border: 1px solid rgba(245, 194, 71, 0.4);
-            border-radius: 8px;
-            padding: 12px 16px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            font-family: system-ui, -apple-system, sans-serif;
-            font-size: 13px;
-            color: #e5e7eb;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
-            opacity: 0;
-            transform: translateY(20px);
-            transition: opacity 0.3s ease, transform 0.3s ease;
-            pointer-events: none;
+        function getToggle(key, defaultVal = false) {
+            const saved = localStorage.getItem("deltaUI_" + key);
+            if (saved !== null) return saved === "true";
+            return CONFIG.defaults.toggles[key] ?? defaultVal;
         }
 
-        #delta-loader-toast.visible {
-            opacity: 1;
-            transform: translateY(0);
+        function getHiddenBuffs() {
+            try { const saved = localStorage.getItem(CONFIG.storageKeys.HIDDEN_BUFFS); return saved ? JSON.parse(saved) : {}; } catch { return {}; }
         }
 
-        #delta-loader-toast.success {
-            border-color: rgba(74, 222, 128, 0.4);
+        function saveHiddenBuffs(hiddenBuffs) {
+            localStorage.setItem(CONFIG.storageKeys.HIDDEN_BUFFS, JSON.stringify(hiddenBuffs));
+            if (DeltaUI.updateHiddenBuffsConfig) DeltaUI.updateHiddenBuffsConfig(hiddenBuffs);
         }
 
-        #delta-loader-toast.error {
-            border-color: rgba(248, 113, 113, 0.4);
+        function getCCSettings() {
+            try { const saved = localStorage.getItem(CONFIG.storageKeys.CC_SETTINGS); return saved ? JSON.parse(saved) : {}; } catch { return {}; }
         }
 
-        #delta-loader-toast .delta-spinner {
-            width: 16px;
-            height: 16px;
-            border: 2px solid rgba(245, 194, 71, 0.3);
-            border-top-color: #F5C247;
-            border-radius: 50%;
-            animation: delta-loader-spin 0.8s linear infinite;
+        function saveCCSettings(ccSettings) {
+            localStorage.setItem(CONFIG.storageKeys.CC_SETTINGS, JSON.stringify(ccSettings));
+            if (DeltaUI.updateCCConfig) DeltaUI.updateCCConfig(ccSettings);
         }
 
-        @keyframes delta-loader-spin {
-            to { transform: rotate(360deg); }
+        function getFPSSettings() {
+            try {
+                const saved = localStorage.getItem(CONFIG.storageKeys.FPS_SETTINGS);
+                if (saved) return JSON.parse(saved);
+                const defaults = {};
+                (CONFIG.fpsOptions || []).forEach(opt => { defaults[opt.id] = opt.default; });
+                return defaults;
+            } catch { return {}; }
         }
 
-        #delta-loader-toast .delta-icon {
-            font-size: 16px;
-            line-height: 1;
+        function saveFPSSettings(fpsSettings) {
+            localStorage.setItem(CONFIG.storageKeys.FPS_SETTINGS, JSON.stringify(fpsSettings));
+            if (DeltaUI.updateFPSConfig) DeltaUI.updateFPSConfig(fpsSettings);
         }
 
-        #delta-loader-toast .delta-icon.success {
-            color: #4ade80;
+        function scanSkillbar() {
+            const skillbar = document.querySelector("#skillbar");
+            const slots = [];
+            if (!skillbar) return slots;
+            skillbar.querySelectorAll(".slot[id]").forEach(slot => {
+                const id = slot.id;
+                if (id && id.startsWith("sk")) {
+                    const keyText = slot.querySelector(".slottext.key");
+                    const keybind = keyText ? keyText.textContent.trim() : id.replace("sk", "").toUpperCase();
+                    slots.push({ id, keybind, color: CONFIG.skillbarColors[id] || "#ffffff" });
+                }
+            });
+            return slots;
         }
 
-        #delta-loader-toast .delta-icon.error {
-            color: #f87171;
+        function generateSkillbarColorRows(slots) {
+            if (slots.length === 0) {
+                return Object.entries(CONFIG.skillbarColors).map(([id, color]) => {
+                    const key = id.replace("sk", "").toUpperCase();
+                    return `<div>Slot ${key}</div><div class="color-input-wrapper"><div class="color-preview" style="background: ${color};"></div><input type="color" class="skill-color-input" data-skill-id="${id}" value="${color}"></div>`;
+                }).join("");
+            }
+            return slots.map(slot => `<div>Slot <span class="keybind-badge">${slot.keybind}</span></div><div class="color-input-wrapper"><div class="color-preview" style="background: ${slot.color};"></div><input type="color" class="skill-color-input" data-skill-id="${slot.id}" value="${slot.color}"></div>`).join("");
         }
 
-        #delta-loader-toast .delta-logo {
-            color: #F5C247;
-            font-weight: bold;
-            font-size: 16px;
+        function generateCharmColorRows() {
+            return Object.entries(CONFIG.charmColors).map(([charm, color]) => {
+                const name = CONFIG.charmNames[charm] || charm;
+                return `<div>${name}</div><div class="color-input-wrapper"><div class="color-preview" style="background: ${color};"></div><input type="color" class="charm-color-input" data-charm-id="${charm}" value="${color}"></div>`;
+            }).join("");
         }
 
-        #delta-loader-toast .delta-text {
-            color: #e5e7eb;
+        function generateBuffToggleRows() {
+            const hiddenBuffs = getHiddenBuffs();
+            const classes = ["warrior", "archer", "mage", "shaman"];
+            let html = '';
+            classes.forEach(className => {
+                const buffs = (CONFIG.buffIcons || {})[className] || [];
+                if (buffs.length === 0) return;
+                html += `<h4 class="textprimary class-header">${className.charAt(0).toUpperCase() + className.slice(1)}</h4><div class="settings fps-settings">`;
+                buffs.forEach(buff => {
+                    const isHidden = hiddenBuffs[buff.id] === true;
+                    html += `<div class="fps-row"><img src="${buff.src}" class="buff-icon" alt="${buff.name}" style="width:20px;height:20px;margin-right:8px;border-radius:3px;"><span class="fps-name">${buff.name}</span></div><div class="btn checkbox ${isHidden ? "active" : ""}" data-buff-id="${buff.id}"></div>`;
+                });
+                html += '</div>';
+            });
+            const utilityBuffs = CONFIG.utilityBuffs || [];
+            if (utilityBuffs.length > 0) {
+                html += `<h4 class="textprimary class-header">Utility</h4><div class="settings fps-settings">`;
+                utilityBuffs.forEach(buff => {
+                    const isHidden = hiddenBuffs[buff.id] === true;
+                    html += `<div class="fps-row"><img src="${buff.src}" class="buff-icon" alt="${buff.name}" style="width:20px;height:20px;margin-right:8px;border-radius:3px;"><span class="fps-name">${buff.name}</span></div><div class="btn checkbox ${isHidden ? "active" : ""}" data-buff-id="${buff.id}"></div>`;
+                });
+                html += '</div>';
+            }
+            return html;
         }
 
-        #delta-loader-toast .delta-subtext {
-            color: #9ca3af;
-            font-size: 11px;
-            margin-left: 4px;
-        }
-    `;
-
-    // ==========================================
-    // UTILITY FUNCTIONS
-    // ==========================================
-
-    /**
-     * Inject loader styles
-     */
-    function injectStyles() {
-        if (document.getElementById("delta-loader-css")) return;
-        
-        const style = document.createElement("style");
-        style.id = "delta-loader-css";
-        style.textContent = TOAST_CSS;
-        document.head.appendChild(style);
-    }
-
-    /**
-     * Remove loader styles
-     */
-    function removeStyles() {
-        const style = document.getElementById("delta-loader-css");
-        if (style) style.remove();
-    }
-
-    /**
-     * Get or create toast element
-     * @returns {HTMLElement}
-     */
-    function getToast() {
-        let toast = document.getElementById("delta-loader-toast");
-        
-        if (!toast) {
-            toast = document.createElement("div");
-            toast.id = "delta-loader-toast";
-            document.body.appendChild(toast);
-        }
-        
-        return toast;
-    }
-
-    /**
-     * Show toast message
-     * @param {string} message - Main message
-     * @param {string} type - "loading" | "success" | "error"
-     * @param {string} subtext - Optional subtext
-     */
-    function showToast(message, type = "loading", subtext = "") {
-        const toast = getToast();
-        
-        // Reset classes
-        toast.className = "";
-        
-        // Build icon
-        let iconHTML = "";
-        if (type === "loading") {
-            iconHTML = '<div class="delta-spinner"></div>';
-        } else if (type === "success") {
-            iconHTML = '<span class="delta-icon success">✓</span>';
-            toast.classList.add("success");
-        } else if (type === "error") {
-            iconHTML = '<span class="delta-icon error">✕</span>';
-            toast.classList.add("error");
+        function generateCCRows() {
+            const ccSettings = getCCSettings();
+            let html = '';
+            (CONFIG.ccEffects || []).forEach(cc => {
+                const settings = ccSettings[cc.id] || { color: cc.color, priority: cc.priority };
+                html += `<div class="cc-row"><img src="${cc.src}" class="cc-icon" alt="${cc.name}"><span class="cc-name">${cc.name}</span></div><div class="cc-controls"><div class="color-input-wrapper"><div class="color-preview cc-color-preview" style="background: ${settings.color};"></div><input type="color" class="cc-color-input" data-cc-id="${cc.id}" value="${settings.color}"></div><input type="number" class="cc-priority-input" data-cc-id="${cc.id}" value="${settings.priority}" min="0" max="10" title="Priority (0 = disabled)"></div>`;
+            });
+            return html;
         }
 
-        // Build subtext
-        const subtextHTML = subtext ? `<span class="delta-subtext">${subtext}</span>` : "";
+        function generateFPSRows() {
+            const fpsSettings = getFPSSettings();
+            let html = '';
+            (CONFIG.fpsOptions || []).forEach(opt => {
+                const isEnabled = fpsSettings[opt.id] !== undefined ? fpsSettings[opt.id] : opt.default;
+                html += `<div class="fps-row"><span class="fps-name">${opt.name}</span></div><div class="btn checkbox ${isEnabled ? "active" : ""}" data-fps-id="${opt.id}"></div>`;
+            });
+            return html;
+        }
 
-        toast.innerHTML = `
-            <span class="delta-logo">Δ</span>
-            ${iconHTML}
-            <span class="delta-text">${message}${subtextHTML}</span>
-        `;
+        function closeDeltaSettingsWindow() {
+            if (deltaSettingsWindow) { deltaSettingsWindow.remove(); deltaSettingsWindow = null; }
+            isDragging = false;
+        }
 
-        // Show toast
-        requestAnimationFrame(() => {
-            toast.classList.add("visible");
+        function toggleDeltaSettings() {
+            if (deltaSettingsWindow && document.contains(deltaSettingsWindow)) closeDeltaSettingsWindow();
+            else createDeltaSettingsWindow();
+        }
+
+        function updateCustomizationVisibility(toggleId, isEnabled) {
+            if (!deltaSettingsWindow) return;
+            const notice = $(`.customization-notice[data-for="${toggleId}"]`, deltaSettingsWindow);
+            const section = $(`.customization-section[data-for="${toggleId}"]`, deltaSettingsWindow);
+            if (notice) notice.style.display = isEnabled ? "none" : "block";
+            if (section) { section.style.opacity = isEnabled ? "1" : "0.5"; section.style.pointerEvents = isEnabled ? "auto" : "none"; }
+        }
+
+        function createDeltaSettingsWindow() {
+            if (deltaSettingsWindow) deltaSettingsWindow.remove();
+            deltaSettingsWindow = document.createElement("div");
+            deltaSettingsWindow.className = "window-pos";
+            deltaSettingsWindow.id = "delta-settings-window";
+            deltaSettingsWindow.style.cssText = "z-index: 100; position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);";
+
+            const skillbarSlots = scanSkillbar();
+            const currentFullscreenKey = localStorage.getItem("deltaUI_fullscreenKey") || "o";
+            const currentFameResetKey = localStorage.getItem("deltaUI_fameResetKey") || "[";
+            const currentPartyResetKey = localStorage.getItem("deltaUI_partyResetKey") || "]";
+            const hideBuffsEnabled = getToggle("hideBuffs", false);
+            const ccIndicatorEnabled = getToggle("ccIndicator", true);
+            const fpsModeEnabled = getToggle("fpsMode", false);
+            const partyAutoSortEnabled = getToggle("partyAutoSort", false);
+
+            deltaSettingsWindow.innerHTML = `
+                <div class="window panel-black svelte-1f1v3u3">
+                    <div class="titleframe svelte-1f1v3u3" style="cursor: move;">
+                        <img src="/data/ui/icons/cog.svg" class="titleicon svgicon svelte-1f1v3u3">
+                        <div class="textprimary title svelte-1f1v3u3"><div>Delta UI <small style="color: #5b858e;">v${CONFIG.version}</small></div></div>
+                        <img src="/data/ui/icons/cross.svg" class="btn black svgicon close-btn">
+                    </div>
+                    <div class="slot svelte-1f1v3u3">
+                        <div class="divide svelte-13nnce4">
+                            <div class="delta-nav">
+                                <div class="choice active" data-tab="features">Features</div>
+                                <div class="choice" data-tab="controls">Controls</div>
+                                <div class="choice" data-tab="colors">Colors</div>
+                                <div class="choice" data-tab="customization">Customization</div>
+                                <div class="choice" data-tab="about">About</div>
+                            </div>
+                            <div class="menu panel-black scrollbar svelte-13nnce4">
+                                <div class="tab-panel active" data-panel="features">
+                                    <h3 class="textprimary">Gameplay</h3>
+                                    <div class="settings svelte-13nnce4">
+                                        <div>CC Indicator<br><small class="textgrey">Colored borders on CC'd party members</small></div>
+                                        <div class="btn checkbox ${getToggle("ccIndicator", true) ? "active" : ""}" data-toggle="ccIndicator"></div>
+                                        <div>Hide Buffs<br><small class="textgrey">Hide selected buff icons</small></div>
+                                        <div class="btn checkbox ${getToggle("hideBuffs", false) ? "active" : ""}" data-toggle="hideBuffs"></div>
+                                        <div>FPS Mode<br><small class="textgrey">Hide UI elements for performance</small></div>
+                                        <div class="btn checkbox ${getToggle("fpsMode", false) ? "active" : ""}" data-toggle="fpsMode"></div>
+                                        <div>Mouseover<br><small class="textgrey">Cast skills on mouseover targets</small></div>
+                                        <div class="btn checkbox ${getToggle("mouseover", false) ? "active" : ""}" data-toggle="mouseover"></div>
+                                        <div>Party UI Editor<br><small class="textgrey">Drag and reorder party frames</small></div>
+                                        <div class="btn checkbox ${getToggle("partyUIEditor", false) ? "active" : ""}" data-toggle="partyUIEditor"></div>
+                                        <div>Party Auto Sort<br><small class="textgrey">Auto-sort party by class priority</small></div>
+                                        <div class="btn checkbox ${getToggle("partyAutoSort", false) ? "active" : ""}" data-toggle="partyAutoSort"></div>
+                                    </div>
+                                    <h3 class="textprimary">Chat</h3>
+                                    <div class="settings svelte-13nnce4">
+                                        <div>Chat Tweaks<br><small class="textgrey">Resizable chat & controls</small></div>
+                                        <div class="btn checkbox ${getToggle("chatTweaks", true) ? "active" : ""}" data-toggle="chatTweaks"></div>
+                                    </div>
+                                    <h3 class="textprimary">Visual</h3>
+                                    <div class="settings svelte-13nnce4">
+                                        <div>Item Recolor<br><small class="textgrey">Quality-based item borders</small></div>
+                                        <div class="btn checkbox ${getToggle("itemRecolor", true) ? "active" : ""}" data-toggle="itemRecolor"></div>
+                                        <div>Charm Colors<br><small class="textgrey">Custom charm border colors</small></div>
+                                        <div class="btn checkbox ${getToggle("charmColors", true) ? "active" : ""}" data-toggle="charmColors"></div>
+                                    </div>
+                                    <h3 class="textprimary">Stats Display</h3>
+                                    <div class="settings svelte-13nnce4">
+                                        <div>Playtime Labels<br><small class="textgrey">Session & total time</small></div>
+                                        <div class="btn checkbox ${getToggle("playtimeLabels", true) ? "active" : ""}" data-toggle="playtimeLabels"></div>
+                                        <div>Fame Labels<br><small class="textgrey">Fame gained/lost counters</small></div>
+                                        <div class="btn checkbox ${getToggle("fameLabels", true) ? "active" : ""}" data-toggle="fameLabels"></div>
+                                    </div>
+                                </div>
+                                <div class="tab-panel" data-panel="controls">
+                                    <h3 class="textprimary">Keybinds</h3>
+                                    <div class="settings svelte-13nnce4">
+                                        <div>Fullscreen Toggle<br><small class="textgrey">Press key to toggle fullscreen</small></div>
+                                        <div class="keybind-input-wrapper"><input type="text" id="fullscreen-key-input" class="keybind-input" value="${currentFullscreenKey.toUpperCase()}" maxlength="1" readonly placeholder="Press a key"><div class="btn small" id="clear-fullscreen-key">✕</div></div>
+                                        <div>Fame Reset<br><small class="textgrey">Press key to reset fame counters</small></div>
+                                        <div class="keybind-input-wrapper"><input type="text" id="fame-reset-key-input" class="keybind-input" value="${currentFameResetKey.toUpperCase()}" maxlength="1" readonly placeholder="Press a key"><div class="btn small" id="clear-fame-reset-key">✕</div></div>
+                                        <div>Party Reset<br><small class="textgrey">Press key to reset party order</small></div>
+                                        <div class="keybind-input-wrapper"><input type="text" id="party-reset-key-input" class="keybind-input" value="${currentPartyResetKey.toUpperCase()}" maxlength="1" readonly placeholder="Press a key"><div class="btn small" id="clear-party-reset-key">✕</div></div>
+                                    </div>
+                                    <div class="keybind-hint"><small class="textgrey">Click the input box and press any key to set a new keybind.</small></div>
+                                    <h3 class="textprimary">Canvas Scale</h3>
+                                    <div class="settings svelte-13nnce4">
+                                        <div>UI Scale<br><small class="textgrey">Adjust game UI canvas size</small></div>
+                                        <div class="slider-wrapper"><input type="range" id="canvas-scale-slider" class="delta-slider" min="0.1" max="2.5" step="0.1" value="${localStorage.getItem('deltaUI_canvasScale') || '1.0'}"><span id="canvas-scale-value" class="slider-value">${localStorage.getItem('deltaUI_canvasScale') || '1.0'}x</span></div>
+                                        <div>Enable Canvas Scaler<br><small class="textgrey">Apply custom UI scale</small></div>
+                                        <div class="btn checkbox ${getToggle("canvasScaler", false) ? "active" : ""}" data-toggle="canvasScaler"></div>
+                                    </div>
+                                </div>
+                                <div class="tab-panel" data-panel="colors">
+                                    <h3 class="textprimary">Skillbar Colors</h3>
+                                    <div class="settings svelte-13nnce4">${generateSkillbarColorRows(skillbarSlots)}</div>
+                                    <h3 class="textprimary">Charm Colors</h3>
+                                    <div class="settings svelte-13nnce4">${generateCharmColorRows()}</div>
+                                    <h3 class="textprimary">Pet Color</h3>
+                                    <div class="settings svelte-13nnce4">
+                                        <div>Pet Border Glow</div>
+                                        <div class="color-input-wrapper"><div class="color-preview" id="pet-preview" style="background: ${CONFIG.petColor};"></div><input type="color" id="pet-color-input" value="${CONFIG.petColor}"></div>
+                                    </div>
+                                    <h3 class="textprimary">Actions</h3>
+                                    <div class="settings svelte-13nnce4">
+                                        <div>Export Colors</div><div class="btn blue" id="export-colors">Export</div>
+                                        <div>Import Colors</div><div class="btn blue" id="import-colors">Import</div>
+                                        <div>Reset to Defaults</div><div class="btn orange" id="reset-all-colors">Reset</div>
+                                    </div>
+                                </div>
+                                <div class="tab-panel" data-panel="customization">
+                                    <h3 class="textprimary">Hide Buffs Customization</h3>
+                                    <div class="customization-notice" data-for="hideBuffs" ${hideBuffsEnabled ? 'style="display:none;"' : ''}><small class="textgrey">⚠️ Enable "Hide Buffs" in Features tab to use this section.</small></div>
+                                    <div class="customization-section" data-for="hideBuffs" ${!hideBuffsEnabled ? 'style="opacity:0.5;pointer-events:none;"' : ''}>${generateBuffToggleRows()}</div>
+                                    <h3 class="textprimary">CC Indicator Customization</h3>
+                                    <div class="customization-notice" data-for="ccIndicator" ${ccIndicatorEnabled ? 'style="display:none;"' : ''}><small class="textgrey">⚠️ Enable "CC Indicator" in Features tab to use this section.</small></div>
+                                    <div class="customization-section" data-for="ccIndicator" ${!ccIndicatorEnabled ? 'style="opacity:0.5;pointer-events:none;"' : ''}>
+                                        <div class="cc-header"><small class="textgrey">Priority 0 = disabled. Higher priority shows first.</small></div>
+                                        <div class="settings cc-settings">${generateCCRows()}</div>
+                                    </div>
+                                    <h3 class="textprimary">FPS Mode Customization</h3>
+                                    <div class="customization-notice" data-for="fpsMode" ${fpsModeEnabled ? 'style="display:none;"' : ''}><small class="textgrey">⚠️ Enable "FPS Mode" in Features tab to use this section.</small></div>
+                                    <div class="customization-section" data-for="fpsMode" ${!fpsModeEnabled ? 'style="opacity:0.5;pointer-events:none;"' : ''}>
+                                        <div class="fps-header"><small class="textgrey">Choose which UI elements to hide when FPS Mode is active.</small></div>
+                                        <div class="settings fps-settings">${generateFPSRows()}</div>
+                                    </div>
+                                    <h3 class="textprimary">Party Auto Sort Priorities</h3>
+                                    <div class="customization-notice" data-for="partyAutoSort" ${partyAutoSortEnabled ? 'style="display:none;"' : ''}><small class="textgrey">⚠️ Enable "Party Auto Sort" in Features tab to use this section.</small></div>
+                                    <div class="customization-section" data-for="partyAutoSort" ${!partyAutoSortEnabled ? 'style="opacity:0.5;pointer-events:none;"' : ''}>
+                                        <div class="priority-header"><small class="textgrey">Lower number = higher priority (sorted first)</small></div>
+                                        <div class="settings priority-settings">
+                                            <div class="priority-row"><img src="/data/ui/classes/3.avif" class="class-icon" alt="Shaman"><span class="priority-name">Shaman</span></div>
+                                            <input type="number" class="priority-input" data-class="shaman" value="${window.DeltaPartyArranger?.getPriorities?.()?.shaman || 1}" min="1" max="4">
+                                            <div class="priority-row"><img src="/data/ui/classes/2.avif" class="class-icon" alt="Archer"><span class="priority-name">Archer</span></div>
+                                            <input type="number" class="priority-input" data-class="archer" value="${window.DeltaPartyArranger?.getPriorities?.()?.archer || 2}" min="1" max="4">
+                                            <div class="priority-row"><img src="/data/ui/classes/1.avif" class="class-icon" alt="Mage"><span class="priority-name">Mage</span></div>
+                                            <input type="number" class="priority-input" data-class="mage" value="${window.DeltaPartyArranger?.getPriorities?.()?.mage || 3}" min="1" max="4">
+                                            <div class="priority-row"><img src="/data/ui/classes/0.avif" class="class-icon" alt="Warrior"><span class="priority-name">Warrior</span></div>
+                                            <input type="number" class="priority-input" data-class="warrior" value="${window.DeltaPartyArranger?.getPriorities?.()?.warrior || 4}" min="1" max="4">
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="tab-panel" data-panel="about">
+                                    <h3 class="textprimary">Delta UI</h3>
+                                    <div class="about-content">
+                                        <div class="about-logo">Δ</div>
+                                        <div class="about-version">Version ${CONFIG.version}</div>
+                                        <div class="about-author">Made with ♥ by <span class="textprimary">lordwar222</span></div>
+                                        <div class="about-desc">A private UI enhancement mod for Hordes.io featuring customizable skillbar colors, charm colors, CC indicators, and more.</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            document.body.appendChild(deltaSettingsWindow);
+            setupEventListeners();
+        }
+
+        function setupEventListeners() {
+            if (!deltaSettingsWindow) return;
+
+            $(".close-btn", deltaSettingsWindow)?.addEventListener("click", closeDeltaSettingsWindow);
+
+            $$(".delta-nav .choice", deltaSettingsWindow).forEach(choice => {
+                choice.addEventListener("click", () => {
+                    const targetTab = choice.dataset.tab;
+                    $$(".delta-nav .choice", deltaSettingsWindow).forEach(c => c.classList.remove("active"));
+                    choice.classList.add("active");
+                    $$(".tab-panel", deltaSettingsWindow).forEach(panel => panel.classList.toggle("active", panel.dataset.panel === targetTab));
+                });
+            });
+
+            $$(".btn.checkbox[data-toggle]", deltaSettingsWindow).forEach(checkbox => {
+                checkbox.addEventListener("click", () => {
+                    const toggleId = checkbox.dataset.toggle;
+                    const isNowActive = !checkbox.classList.contains("active");
+                    checkbox.classList.toggle("active");
+                    localStorage.setItem("deltaUI_" + toggleId, isNowActive.toString());
+                    if (DeltaUI.applyToggle) DeltaUI.applyToggle(toggleId, isNowActive);
+                    if (["hideBuffs", "ccIndicator", "fpsMode", "partyAutoSort"].includes(toggleId)) updateCustomizationVisibility(toggleId, isNowActive);
+                });
+            });
+
+            $$(".btn.checkbox[data-buff-id]", deltaSettingsWindow).forEach(checkbox => {
+                checkbox.addEventListener("click", () => {
+                    const buffId = checkbox.dataset.buffId;
+                    const isNowActive = !checkbox.classList.contains("active");
+                    checkbox.classList.toggle("active");
+                    const hiddenBuffs = getHiddenBuffs();
+                    hiddenBuffs[buffId] = isNowActive;
+                    saveHiddenBuffs(hiddenBuffs);
+                });
+            });
+
+            $$(".btn.checkbox[data-fps-id]", deltaSettingsWindow).forEach(checkbox => {
+                checkbox.addEventListener("click", () => {
+                    const fpsId = checkbox.dataset.fpsId;
+                    const isNowActive = !checkbox.classList.contains("active");
+                    checkbox.classList.toggle("active");
+                    const fpsSettings = getFPSSettings();
+                    fpsSettings[fpsId] = isNowActive;
+                    saveFPSSettings(fpsSettings);
+                });
+            });
+
+            $$(".cc-color-input", deltaSettingsWindow).forEach(input => {
+                input.addEventListener("input", (e) => {
+                    const ccId = e.target.dataset.ccId;
+                    const ccSettings = getCCSettings();
+                    if (!ccSettings[ccId]) ccSettings[ccId] = { color: e.target.value, priority: 1 };
+                    else ccSettings[ccId].color = e.target.value;
+                    saveCCSettings(ccSettings);
+                    const preview = e.target.previousElementSibling;
+                    if (preview) preview.style.background = e.target.value;
+                });
+            });
+
+            $$(".cc-priority-input", deltaSettingsWindow).forEach(input => {
+                input.addEventListener("input", (e) => {
+                    const ccId = e.target.dataset.ccId;
+                    const priority = parseInt(e.target.value, 10) || 0;
+                    const ccSettings = getCCSettings();
+                    if (!ccSettings[ccId]) ccSettings[ccId] = { color: "#ffffff", priority };
+                    else ccSettings[ccId].priority = priority;
+                    saveCCSettings(ccSettings);
+                });
+            });
+
+            const titleframe = $(".titleframe", deltaSettingsWindow);
+            if (titleframe) {
+                titleframe.addEventListener("mousedown", (e) => {
+                    if (e.target.closest(".close-btn") || e.target.closest(".btn")) return;
+                    isDragging = true;
+                    const rect = deltaSettingsWindow.getBoundingClientRect();
+                    dragOffset.x = e.clientX - rect.left;
+                    dragOffset.y = e.clientY - rect.top;
+                    deltaSettingsWindow.style.transform = "none";
+                    deltaSettingsWindow.style.left = rect.left + "px";
+                    deltaSettingsWindow.style.top = rect.top + "px";
+                });
+            }
+
+            document.addEventListener("mousemove", (e) => {
+                if (!isDragging || !deltaSettingsWindow) return;
+                deltaSettingsWindow.style.left = (e.clientX - dragOffset.x) + "px";
+                deltaSettingsWindow.style.top = (e.clientY - dragOffset.y) + "px";
+            });
+
+            document.addEventListener("mouseup", () => { isDragging = false; });
+
+            $$(".skill-color-input", deltaSettingsWindow).forEach(input => {
+                input.addEventListener("input", (e) => {
+                    const skillId = e.target.dataset.skillId;
+                    CONFIG.skillbarColors[skillId] = e.target.value;
+                    if (DeltaUI.saveSkillbarColors) DeltaUI.saveSkillbarColors();
+                    if (DeltaUI.updateDynamicStyles) DeltaUI.updateDynamicStyles();
+                    const preview = e.target.previousElementSibling;
+                    if (preview) preview.style.background = e.target.value;
+                });
+            });
+
+            $$(".charm-color-input", deltaSettingsWindow).forEach(input => {
+                input.addEventListener("input", (e) => {
+                    const charmId = e.target.dataset.charmId;
+                    CONFIG.charmColors[charmId] = e.target.value;
+                    if (DeltaUI.saveCharmColors) DeltaUI.saveCharmColors();
+                    if (DeltaUI.updateDynamicStyles) DeltaUI.updateDynamicStyles();
+                    const preview = e.target.previousElementSibling;
+                    if (preview) preview.style.background = e.target.value;
+                });
+            });
+
+            const petInput = $("#pet-color-input", deltaSettingsWindow);
+            if (petInput) {
+                petInput.addEventListener("input", (e) => {
+                    CONFIG.petColor = e.target.value;
+                    if (DeltaUI.savePetColor) DeltaUI.savePetColor();
+                    if (DeltaUI.updateDynamicStyles) DeltaUI.updateDynamicStyles();
+                    const preview = $("#pet-preview", deltaSettingsWindow);
+                    if (preview) preview.style.background = e.target.value;
+                });
+            }
+
+            const resetBtn = $("#reset-all-colors", deltaSettingsWindow);
+            if (resetBtn) {
+                resetBtn.addEventListener("click", () => {
+                    if (DeltaUI.resetToDefaults) DeltaUI.resetToDefaults();
+                    if (DeltaUI.updateDynamicStyles) DeltaUI.updateDynamicStyles();
+                    createDeltaSettingsWindow();
+                });
+            }
+
+            const exportBtn = $("#export-colors", deltaSettingsWindow);
+            if (exportBtn) {
+                exportBtn.addEventListener("click", () => {
+                    const data = { skillbarColors: CONFIG.skillbarColors, charmColors: CONFIG.charmColors, petColor: CONFIG.petColor, hiddenBuffs: getHiddenBuffs(), ccSettings: getCCSettings(), fpsSettings: getFPSSettings() };
+                    navigator.clipboard.writeText(JSON.stringify(data, null, 2)).then(() => {
+                        exportBtn.textContent = "Copied!";
+                        setTimeout(() => exportBtn.textContent = "Export", 1500);
+                    });
+                });
+            }
+
+            const importBtn = $("#import-colors", deltaSettingsWindow);
+            if (importBtn) {
+                importBtn.addEventListener("click", () => {
+                    const json = prompt("Paste your color configuration:");
+                    if (!json) return;
+                    try {
+                        const data = JSON.parse(json);
+                        if (data.skillbarColors) Object.assign(CONFIG.skillbarColors, data.skillbarColors);
+                        if (data.charmColors) Object.assign(CONFIG.charmColors, data.charmColors);
+                        if (data.petColor) CONFIG.petColor = data.petColor;
+                        if (data.hiddenBuffs) saveHiddenBuffs(data.hiddenBuffs);
+                        if (data.ccSettings) saveCCSettings(data.ccSettings);
+                        if (data.fpsSettings) saveFPSSettings(data.fpsSettings);
+                        if (DeltaUI.saveSkillbarColors) DeltaUI.saveSkillbarColors();
+                        if (DeltaUI.saveCharmColors) DeltaUI.saveCharmColors();
+                        if (DeltaUI.savePetColor) DeltaUI.savePetColor();
+                        if (DeltaUI.updateDynamicStyles) DeltaUI.updateDynamicStyles();
+                        createDeltaSettingsWindow();
+                    } catch { alert("Invalid JSON format!"); }
+                });
+            }
+
+            const fullscreenKeyInput = $("#fullscreen-key-input", deltaSettingsWindow);
+            if (fullscreenKeyInput) {
+                fullscreenKeyInput.addEventListener("click", () => { fullscreenKeyInput.value = ""; fullscreenKeyInput.placeholder = "Press a key..."; });
+                fullscreenKeyInput.addEventListener("keydown", (e) => {
+                    e.preventDefault(); e.stopPropagation();
+                    const key = e.key.toLowerCase();
+                    if (["shift", "control", "alt", "meta"].includes(key)) return;
+                    fullscreenKeyInput.value = key.toUpperCase();
+                    localStorage.setItem("deltaUI_fullscreenKey", key);
+                    if (DeltaUI.setFullscreenKey) DeltaUI.setFullscreenKey(key);
+                    fullscreenKeyInput.blur();
+                });
+                fullscreenKeyInput.addEventListener("blur", () => {
+                    const currentKey = localStorage.getItem("deltaUI_fullscreenKey") || "o";
+                    if (!fullscreenKeyInput.value) fullscreenKeyInput.value = currentKey.toUpperCase();
+                    fullscreenKeyInput.placeholder = "Press a key";
+                });
+            }
+
+            const clearFullscreenKey = $("#clear-fullscreen-key", deltaSettingsWindow);
+            if (clearFullscreenKey) {
+                clearFullscreenKey.addEventListener("click", () => {
+                    const input = $("#fullscreen-key-input", deltaSettingsWindow);
+                    if (input) input.value = "O";
+                    localStorage.setItem("deltaUI_fullscreenKey", "o");
+                    if (DeltaUI.setFullscreenKey) DeltaUI.setFullscreenKey("o");
+                });
+            }
+
+            const fameResetKeyInput = $("#fame-reset-key-input", deltaSettingsWindow);
+            if (fameResetKeyInput) {
+                fameResetKeyInput.addEventListener("click", () => { fameResetKeyInput.value = ""; fameResetKeyInput.placeholder = "Press a key..."; });
+                fameResetKeyInput.addEventListener("keydown", (e) => {
+                    e.preventDefault(); e.stopPropagation();
+                    const key = e.key.toLowerCase();
+                    if (["shift", "control", "alt", "meta"].includes(key)) return;
+                    fameResetKeyInput.value = key.length === 1 ? key.toUpperCase() : key;
+                    localStorage.setItem("deltaUI_fameResetKey", key);
+                    if (window.FameNotifier?.setResetKey) window.FameNotifier.setResetKey(key);
+                    fameResetKeyInput.blur();
+                });
+                fameResetKeyInput.addEventListener("blur", () => {
+                    const currentKey = localStorage.getItem("deltaUI_fameResetKey") || "[";
+                    if (!fameResetKeyInput.value) fameResetKeyInput.value = currentKey.length === 1 ? currentKey.toUpperCase() : currentKey;
+                    fameResetKeyInput.placeholder = "Press a key";
+                });
+            }
+
+            const clearFameResetKey = $("#clear-fame-reset-key", deltaSettingsWindow);
+            if (clearFameResetKey) {
+                clearFameResetKey.addEventListener("click", () => {
+                    const input = $("#fame-reset-key-input", deltaSettingsWindow);
+                    if (input) input.value = "[";
+                    localStorage.setItem("deltaUI_fameResetKey", "[");
+                    if (window.FameNotifier?.setResetKey) window.FameNotifier.setResetKey("[");
+                });
+            }
+
+            const partyResetKeyInput = $("#party-reset-key-input", deltaSettingsWindow);
+            if (partyResetKeyInput) {
+                partyResetKeyInput.addEventListener("click", () => { partyResetKeyInput.value = ""; partyResetKeyInput.placeholder = "Press a key..."; });
+                partyResetKeyInput.addEventListener("keydown", (e) => {
+                    e.preventDefault(); e.stopPropagation();
+                    const key = e.key.toLowerCase();
+                    if (["shift", "control", "alt", "meta"].includes(key)) return;
+                    partyResetKeyInput.value = key.length === 1 ? key.toUpperCase() : key;
+                    localStorage.setItem("deltaUI_partyResetKey", key);
+                    if (window.DeltaPartyArranger?.setResetKey) window.DeltaPartyArranger.setResetKey(key);
+                    partyResetKeyInput.blur();
+                });
+                partyResetKeyInput.addEventListener("blur", () => {
+                    const currentKey = localStorage.getItem("deltaUI_partyResetKey") || "]";
+                    if (!partyResetKeyInput.value) partyResetKeyInput.value = currentKey.length === 1 ? currentKey.toUpperCase() : currentKey;
+                    partyResetKeyInput.placeholder = "Press a key";
+                });
+            }
+
+            const clearPartyResetKey = $("#clear-party-reset-key", deltaSettingsWindow);
+            if (clearPartyResetKey) {
+                clearPartyResetKey.addEventListener("click", () => {
+                    const input = $("#party-reset-key-input", deltaSettingsWindow);
+                    if (input) input.value = "]";
+                    localStorage.setItem("deltaUI_partyResetKey", "]");
+                    if (window.DeltaPartyArranger?.setResetKey) window.DeltaPartyArranger.setResetKey("]");
+                });
+            }
+
+            const canvasScaleSlider = $("#canvas-scale-slider", deltaSettingsWindow);
+            const canvasScaleValue = $("#canvas-scale-value", deltaSettingsWindow);
+            if (canvasScaleSlider) {
+                canvasScaleSlider.addEventListener("input", (e) => {
+                    const value = parseFloat(e.target.value);
+                    if (canvasScaleValue) canvasScaleValue.textContent = value.toFixed(1) + "x";
+                    localStorage.setItem("deltaUI_canvasScale", value.toString());
+                    if (window.DeltaCanvasScaler?.setScale) window.DeltaCanvasScaler.setScale(value);
+                });
+            }
+
+            $$(".priority-input", deltaSettingsWindow).forEach(input => {
+                input.addEventListener("input", (e) => {
+                    const className = e.target.dataset.class;
+                    const priority = parseInt(e.target.value, 10) || 1;
+                    if (window.DeltaPartyArranger?.setPriority) window.DeltaPartyArranger.setPriority(className, priority);
+                });
+            });
+        }
+
+        window.DeltaSettings = Object.freeze({
+            toggle: toggleDeltaSettings,
+            close: closeDeltaSettingsWindow,
+            open: createDeltaSettingsWindow
         });
     }
-
-    /**
-     * Hide toast with animation
-     * @param {number} delay - Delay before hiding
-     */
-    function hideToast(delay = 0) {
-        setTimeout(() => {
-            const toast = document.getElementById("delta-loader-toast");
-            if (toast) {
-                toast.classList.remove("visible");
-                // Remove after animation
-                setTimeout(() => {
-                    toast.remove();
-                    // Also remove styles after everything is done
-                    setTimeout(removeStyles, 100);
-                }, 300);
-            }
-        }, delay);
-    }
-
-    /**
-     * Show success toast and auto-hide
-     * @param {string} message - Message to show
-     * @param {string} subtext - Optional subtext
-     */
-    function toastSuccess(message, subtext = "") {
-        showToast(message, "success", subtext);
-        hideToast(TIMING.TOAST_SUCCESS);
-    }
-
-    /**
-     * Show error toast and auto-hide
-     * @param {string} message - Message to show
-     * @param {string} subtext - Optional subtext
-     */
-    function toastError(message, subtext = "") {
-        showToast(message, "error", subtext);
-        hideToast(TIMING.TOAST_ERROR);
-    }
-
-    // ==========================================
-    // GAME DETECTION
-    // ==========================================
-
-    /**
-     * Check if the game UI is ready
-     * @returns {boolean}
-     */
-    function isGameReady() {
-        // Check for essential game elements
-        const hasSkillbar = document.querySelector("#skillbar");
-        const hasChat = document.querySelector("#chat");
-        const hasCorner = document.querySelector(".l-corner-ur");
-        const hasBtnBar = document.querySelector(".btnbar");
-        
-        // At least one main UI element must exist
-        const hasUI = hasSkillbar || hasChat || hasCorner || hasBtnBar;
-        
-        // Check loading screen is gone
-        const loadingEl = document.querySelector(".loading");
-        const isLoading = loadingEl && 
-            window.getComputedStyle(loadingEl).display !== "none" &&
-            window.getComputedStyle(loadingEl).visibility !== "hidden";
-
-        return hasUI && !isLoading;
-    }
-
-    /**
-     * Wait for game to be ready
-     * @returns {Promise<boolean>}
-     */
-    function waitForGame() {
-        return new Promise((resolve) => {
-            // Check immediately
-            if (isGameReady()) {
-                resolve(true);
-                return;
-            }
-
-            const startTime = Date.now();
-            let checkCount = 0;
-
-            const check = () => {
-                checkCount++;
-                
-                if (isGameReady()) {
-                    resolve(true);
-                    return;
-                }
-
-                // Timeout - proceed anyway (game might be on character select)
-                if (Date.now() - startTime > TIMING.GAME_CHECK_TIMEOUT) {
-                    resolve(false);
-                    return;
-                }
-
-                setTimeout(check, TIMING.GAME_CHECK_INTERVAL);
-            };
-
-            setTimeout(check, TIMING.GAME_CHECK_INTERVAL);
-        });
-    }
-
-    // ==========================================
-    // SCRIPT LOADING
-    // ==========================================
-
-    /**
-     * Load a single script
-     * @param {string} filename - Script filename
-     * @returns {Promise<boolean>}
-     */
-    async function loadScript(filename) {
-        // Skip if already loaded
-        if (loadedScripts.has(filename)) {
-            return true;
-        }
-
-        const fullUrl = `${BASE_URL}/${filename}?v=${Date.now()}`;
-
-        try {
-            const response = await fetch(fullUrl);
-            
-            if (!response.ok) {
-                throw new Error(`HTTP ${response.status}`);
-            }
-
-            const code = await response.text();
-            
-            // Create and execute script
-            const script = document.createElement("script");
-            script.textContent = code;
-            script.dataset.deltaScript = filename;
-            document.head.appendChild(script);
-
-            loadedScripts.add(filename);
-            return true;
-
-        } catch (error) {
-            failedScripts.add(filename);
-            return false;
-        }
-    }
-
-    /**
-     * Load CSS file
-     * @param {string} filename - CSS filename
-     * @returns {Promise<boolean>}
-     */
-    async function loadCSS(filename) {
-        const fullUrl = `${BASE_URL}/${filename}?v=${Date.now()}`;
-
-        try {
-            const response = await fetch(fullUrl);
-            
-            if (!response.ok) {
-                throw new Error(`HTTP ${response.status}`);
-            }
-
-            const css = await response.text();
-
-            // Create or update style element
-            let style = document.getElementById("delta-external-css");
-            if (!style) {
-                style = document.createElement("style");
-                style.id = "delta-external-css";
-                document.head.appendChild(style);
-            }
-            style.textContent = css;
-
-            return true;
-
-        } catch (error) {
-            return false;
-        }
-    }
-
-    /**
-     * Wait for a dependency to be available
-     * @param {string} globalName - Name of global variable to wait for
-     * @param {number} timeout - Maximum wait time in ms
-     * @returns {Promise<boolean>}
-     */
-    function waitForDependency(globalName, timeout = 5000) {
-        return new Promise((resolve) => {
-            if (window[globalName]) {
-                resolve(true);
-                return;
-            }
-
-            const startTime = Date.now();
-
-            const check = () => {
-                if (window[globalName]) {
-                    resolve(true);
-                    return;
-                }
-
-                if (Date.now() - startTime > timeout) {
-                    resolve(false);
-                    return;
-                }
-
-                setTimeout(check, TIMING.DEPENDENCY_WAIT);
-            };
-
-            setTimeout(check, TIMING.DEPENDENCY_WAIT);
-        });
-    }
-
-    /**
-     * Load all scripts in order
-     * @returns {Promise<{success: number, failed: number}>}
-     */
-    async function loadAllScripts() {
-        let successCount = 0;
-        let failedCount = 0;
-
-        for (const script of SCRIPTS) {
-            // Update toast
-            showToast("Loading...", "loading", script);
-
-            const success = await loadScript(script);
-            
-            if (success) {
-                successCount++;
-
-                // Wait for critical dependencies before continuing
-                if (script === "config.js") {
-                    await waitForDependency("DELTA_CONFIG", 3000);
-                } else if (script === "delta-lib.js") {
-                    await waitForDependency("DeltaLib", 3000);
-                }
-
-                // Small delay between scripts
-                await new Promise(r => setTimeout(r, TIMING.SCRIPT_LOAD_DELAY));
-            } else {
-                failedCount++;
-            }
-        }
-
-        return { success: successCount, failed: failedCount };
-    }
-
-    // ==========================================
-    // MAIN INITIALIZATION
-    // ==========================================
-
-    /**
-     * Main initialization function
-     */
-    async function init() {
-        if (isInitialized) {
-            return;
-        }
-        isInitialized = true;
-
-        // Inject loader styles
-        injectStyles();
-
-        // Show initial toast
-        showToast("Waiting for game...", "loading");
-
-        try {
-            // Wait for game to be ready
-            const gameReady = await waitForGame();
-
-            if (!gameReady) {
-                showToast("Loading anyway...", "loading");
-                // Still proceed - might be on character select
-            }
-
-            // Load CSS first
-            showToast("Loading styles...", "loading");
-            const cssLoaded = await loadCSS(CSS_FILE);
-
-            if (!cssLoaded) {
-                // CSS is critical, show warning but continue
-                showToast("Styles may be missing", "loading");
-            }
-
-            // Load all scripts
-            const result = await loadAllScripts();
-
-            // Show final result
-            const total = SCRIPTS.length;
-            
-            if (result.failed === 0) {
-                toastSuccess("Delta UI loaded!", `${result.success} modules`);
-            } else if (result.success > 0) {
-                toastSuccess(
-                    "Delta UI loaded", 
-                    `${result.success}/${total} modules (${result.failed} failed)`
-                );
-            } else {
-                toastError("Failed to load Delta UI");
-            }
-
-        } catch (error) {
-            toastError("Initialization failed");
-        }
-    }
-
-    /**
-     * Reload all Delta UI scripts
-     */
-    async function reload() {
-        // Clear loaded state
-        loadedScripts.clear();
-        failedScripts.clear();
-
-        // Remove existing scripts
-        document.querySelectorAll("script[data-delta-script]").forEach(s => s.remove());
-
-        // Remove existing styles
-        document.getElementById("delta-external-css")?.remove();
-
-        // Clear global references
-        delete window.DELTA_CONFIG;
-        delete window.DeltaLib;
-        delete window.DeltaUI;
-        delete window.DeltaSettings;
-        delete window.DeltaMouseover;
-        delete window.DeltaPartyArranger;
-        delete window.DeltaCanvasScaler;
-        delete window.FameNotifier;
-
-        // Reset init flag
-        isInitialized = false;
-
-        // Re-initialize
-        await init();
-    }
-
-    /**
-     * Get loader status
-     * @returns {Object}
-     */
-    function getStatus() {
-        return {
-            initialized: isInitialized,
-            loaded: Array.from(loadedScripts),
-            failed: Array.from(failedScripts),
-            total: SCRIPTS.length
-        };
-    }
-
-    // ==========================================
-    // EXPOSE API
-    // ==========================================
-
-    window.DeltaLoader = Object.freeze({
-        // Methods
-        reload,
-        getStatus,
-        
-        // Toast utilities (for other modules)
-        showToast,
-        hideToast,
-        toastSuccess,
-        toastError,
-
-        // Constants
-        BASE_URL,
-        SCRIPTS
-    });
-
-    // ==========================================
-    // START
-    // ==========================================
-
-    // Wait for DOM to be ready
-    if (document.readyState === "loading") {
-        document.addEventListener("DOMContentLoaded", init);
-    } else {
-        init();
-    }
-
 })();
