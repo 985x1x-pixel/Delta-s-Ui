@@ -1,368 +1,216 @@
 // ==========================================
-// CHAT RESIZER MODULE
+// CHAT RESIZER MODULE v2.0
+// Resizable and draggable chat window
 // ==========================================
 
 (function() {
-    'use strict';
+    "use strict";
 
-    var STORAGE_KEY = 'hordes_chat_v7';
-    var MIN_WIDTH = 250;
-    var MAX_WIDTH = 1200;
-    var MIN_HEIGHT = 150;
-    var MAX_HEIGHT = 900;
+    // Prevent double initialization
+    if (window.ChatResizer) {
+        return;
+    }
 
-    var saved = null;
-    var state = null;
-    var chat = null;
-    var chatInput = null;
-    var channelSelect = null;
-    var controlsCreated = false;
-    var initAttempts = 0;
-    var MAX_INIT_ATTEMPTS = 50;
+    // ==========================================
+    // DEPENDENCIES
+    // ==========================================
 
-    function getDefault() {
+    function getDeps() {
         return {
-            x: 10,
-            y: window.innerHeight - 420,
-            width: 400,
-            height: 320
+            lib: window.DeltaLib,
+            config: window.DELTA_CONFIG
         };
     }
 
-    function injectChatResizerStyles() {
-        if (document.getElementById('chat-resizer-css')) return;
+    // ==========================================
+    // CONSTANTS
+    // ==========================================
 
-        var css = document.createElement('style');
-        css.id = 'chat-resizer-css';
-        css.textContent = [
-            '/* Chat styling */',
-            '#chat.resizer-active {',
-            '  position: fixed !important;',
-            '  z-index: 10000 !important;',
-            '  background: rgba(16, 19, 29, 0.85) !important;',
-            '  border: 1px solid rgba(91, 133, 142, 0.4) !important;',
-            '  border-bottom: none !important;',
-            '  border-radius: 6px 6px 0 0 !important;',
-            '  transition: border-color 0.15s !important;',
-            '}',
-            '',
-            '#chatinput.resizer-active {',
-            '  position: fixed !important;',
-            '  z-index: 10000 !important;',
-            '  border-radius: 0 !important;',
-            '  border: 1px solid rgba(91, 133, 142, 0.4) !important;',
-            '  border-top: none !important;',
-            '  border-bottom: none !important;',
-            '  transition: border-color 0.15s !important;',
-            '  background: rgba(16, 19, 29, 0.95) !important;',
-            '}',
-            '',
-            '.channelselect.resizer-active {',
-            '  position: fixed !important;',
-            '  z-index: 10000 !important;',
-            '  border: 1px solid rgba(91, 133, 142, 0.4) !important;',
-            '  border-top: none !important;',
-            '  border-radius: 0 0 6px 6px !important;',
-            '  background: rgba(16, 19, 29, 0.9) !important;',
-            '  padding: 4px !important;',
-            '  box-sizing: border-box !important;',
-            '  transition: border-color 0.15s !important;',
-            '  display: flex !important;',
-            '}',
-            '',
-            '#chat.resizer-interacting,',
-            '#chatinput.resizer-interacting,',
-            '.channelselect.resizer-interacting {',
-            '  border-color: #F5C247 !important;',
-            '}',
-            '',
-            '#chat-controls {',
-            '  position: fixed;',
-            '  z-index: 10002;',
-            '  display: flex;',
-            '  align-items: center;',
-            '  gap: 4px;',
-            '}',
-            '',
-            '#chat-move-handle {',
-            '  width: 20px;',
-            '  height: 20px;',
-            '  cursor: move;',
-            '  opacity: 0.5;',
-            '  transition: opacity 0.15s;',
-            '}',
-            '',
-            '#chat-move-handle:hover {',
-            '  opacity: 1;',
-            '}',
-            '',
-            '#chat-move-handle svg {',
-            '  width: 100%;',
-            '  height: 100%;',
-            '  fill: #5b858e;',
-            '  transition: fill 0.15s;',
-            '}',
-            '',
-            '#chat-move-handle:hover svg {',
-            '  fill: #F5C247;',
-            '}',
-            '',
-            '#chat-reset-btn {',
-            '  width: 20px;',
-            '  height: 20px;',
-            '  background: transparent;',
-            '  border: none;',
-            '  border-radius: 4px;',
-            '  font-size: 16px;',
-            '  color: #5b858e;',
-            '  cursor: pointer;',
-            '  opacity: 0.5;',
-            '  transition: opacity 0.15s, color 0.15s;',
-            '  padding: 0;',
-            '  line-height: 20px;',
-            '  text-align: center;',
-            '}',
-            '',
-            '#chat-reset-btn:hover {',
-            '  opacity: 1;',
-            '  color: #F5C247;',
-            '}',
-            '',
-            '#chat-resize-handle {',
-            '  width: 20px;',
-            '  height: 20px;',
-            '  cursor: ne-resize;',
-            '  opacity: 0.5;',
-            '  transition: opacity 0.15s;',
-            '}',
-            '',
-            '#chat-resize-handle:hover {',
-            '  opacity: 1;',
-            '}',
-            '',
-            '#chat-resize-handle svg {',
-            '  width: 100%;',
-            '  height: 100%;',
-            '  fill: #5b858e;',
-            '  transition: fill 0.15s;',
-            '}',
-            '',
-            '#chat-resize-handle:hover svg {',
-            '  fill: #F5C247;',
-            '}',
-            '',
-            '#chat-size-label {',
-            '  position: fixed;',
-            '  z-index: 10003;',
-            '  background: rgba(16, 19, 29, 0.95);',
-            '  color: #F5C247;',
-            '  padding: 6px 12px;',
-            '  border-radius: 4px;',
-            '  font: 13px hordes, sans-serif;',
-            '  border: 1px solid #5b858e;',
-            '  pointer-events: none;',
-            '  display: none;',
-            '}',
-            '',
-            '#chat-size-label.visible {',
-            '  display: block;',
-            '}',
-            '',
-            'body.chat-interacting {',
-            '  user-select: none !important;',
-            '}',
-            'body.chat-interacting * {',
-            '  user-select: none !important;',
-            '}'
-        ].join('\n');
+    const STORAGE_KEY = "hordes_chat_v7";
+    const MIN_WIDTH = 250;
+    const MAX_WIDTH = 1200;
+    const MIN_HEIGHT = 150;
+    const MAX_HEIGHT = 900;
 
-        document.head.appendChild(css);
-    }
+    const DEFAULTS = {
+        x: 10,
+        y: () => window.innerHeight - 420,
+        width: 400,
+        height: 320
+    };
 
-    function load() {
-        try {
-            var data = localStorage.getItem(STORAGE_KEY);
-            if (data) {
-                var parsed = JSON.parse(data);
-                if (parsed && parsed.width && parsed.height) {
-                    saved = parsed;
-                    return;
-                }
-            }
-        } catch (e) {}
-        saved = getDefault();
-    }
+    // ==========================================
+    // STATE
+    // ==========================================
 
-    function save() {
-        try {
-            localStorage.setItem(STORAGE_KEY, JSON.stringify(saved));
-        } catch (e) {}
-    }
+    let isInitialized = false;
+    let cleanup = null;
+    let elements = {
+        chat: null,
+        input: null,
+        channels: null,
+        controls: null,
+        label: null
+    };
+    let position = null;
+    let dragState = null;
 
-    function clamp(v, min, max) {
-        return Math.max(min, Math.min(max, v));
-    }
+    // ==========================================
+    // STORAGE
+    // ==========================================
 
-    function keepInBounds() {
-        saved.width = clamp(saved.width, MIN_WIDTH, Math.min(MAX_WIDTH, window.innerWidth - 20));
-        saved.height = clamp(saved.height, MIN_HEIGHT, Math.min(MAX_HEIGHT, window.innerHeight - 20));
-        saved.x = clamp(saved.x, 5, window.innerWidth - saved.width - 5);
-        saved.y = clamp(saved.y, 5, window.innerHeight - saved.height - 5);
-    }
-
-    function getInputHeight() {
-        return chatInput ? (chatInput.offsetHeight || 34) : 34;
-    }
-
-    function getChannelHeight() {
-        return channelSelect ? (channelSelect.offsetHeight || 30) : 30;
-    }
-
-    function updatePositions() {
-        if (!chat) return;
-
-        keepInBounds();
-
-        var inputH = chatInput ? getInputHeight() : 0;
-        var channelH = channelSelect ? getChannelHeight() : 0;
-        var totalBottomH = inputH + channelH;
-        var chatH = saved.height - totalBottomH;
-
-        chat.style.left = saved.x + 'px';
-        chat.style.top = saved.y + 'px';
-        chat.style.width = saved.width + 'px';
-        chat.style.height = chatH + 'px';
-
-        if (chatInput) {
-            chatInput.style.left = saved.x + 'px';
-            chatInput.style.top = (saved.y + chatH) + 'px';
-            chatInput.style.width = saved.width + 'px';
+    function loadPosition() {
+        const { lib } = getDeps();
+        
+        let data = null;
+        if (lib) {
+            data = lib.storage.getJSON(STORAGE_KEY);
+        } else {
+            try {
+                const raw = localStorage.getItem(STORAGE_KEY);
+                if (raw) data = JSON.parse(raw);
+            } catch (e) {}
         }
 
-        if (channelSelect) {
-            channelSelect.style.left = saved.x + 'px';
-            channelSelect.style.top = (saved.y + chatH + inputH) + 'px';
-            channelSelect.style.width = saved.width + 'px';
-        }
-
-        updateControlPositions();
-    }
-
-    function updateControlPositions() {
-        var controls = document.getElementById('chat-controls');
-        var sizeLabel = document.getElementById('chat-size-label');
-
-        if (!controls) return;
-
-        controls.style.left = (saved.x + saved.width - 76) + 'px';
-        controls.style.top = (saved.y + 4) + 'px';
-
-        if (sizeLabel) {
-            sizeLabel.style.left = (saved.x + saved.width / 2 - 40) + 'px';
-            sizeLabel.style.top = (saved.y + saved.height / 2 - 12) + 'px';
-            sizeLabel.textContent = Math.round(saved.width) + ' × ' + Math.round(saved.height);
+        if (data?.width && data?.height) {
+            position = data;
+        } else {
+            position = {
+                x: DEFAULTS.x,
+                y: typeof DEFAULTS.y === "function" ? DEFAULTS.y() : DEFAULTS.y,
+                width: DEFAULTS.width,
+                height: DEFAULTS.height
+            };
         }
     }
+
+    function savePosition() {
+        const { lib } = getDeps();
+        
+        if (lib) {
+            lib.storage.setJSON(STORAGE_KEY, position);
+        } else {
+            try {
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(position));
+            } catch (e) {}
+        }
+    }
+
+    function resetPosition() {
+        position = {
+            x: DEFAULTS.x,
+            y: typeof DEFAULTS.y === "function" ? DEFAULTS.y() : DEFAULTS.y,
+            width: DEFAULTS.width,
+            height: DEFAULTS.height
+        };
+        savePosition();
+        applyPosition();
+        showSizeLabel(1000);
+    }
+
+    // ==========================================
+    // POSITIONING
+    // ==========================================
+
+    function clamp(value, min, max) {
+        return Math.max(min, Math.min(max, value));
+    }
+
+    function constrainPosition() {
+        position.width = clamp(position.width, MIN_WIDTH, Math.min(MAX_WIDTH, window.innerWidth - 20));
+        position.height = clamp(position.height, MIN_HEIGHT, Math.min(MAX_HEIGHT, window.innerHeight - 20));
+        position.x = clamp(position.x, 5, window.innerWidth - position.width - 5);
+        position.y = clamp(position.y, 5, window.innerHeight - position.height - 5);
+    }
+
+    function applyPosition() {
+        if (!elements.chat) return;
+
+        constrainPosition();
+
+        const inputHeight = elements.input?.offsetHeight || 34;
+        const channelHeight = elements.channels?.offsetHeight || 30;
+        const chatHeight = position.height - inputHeight - channelHeight;
+
+        // Chat panel
+        elements.chat.style.left = `${position.x}px`;
+        elements.chat.style.top = `${position.y}px`;
+        elements.chat.style.width = `${position.width}px`;
+        elements.chat.style.height = `${chatHeight}px`;
+
+        // Input panel
+        if (elements.input) {
+            elements.input.style.left = `${position.x}px`;
+            elements.input.style.top = `${position.y + chatHeight}px`;
+            elements.input.style.width = `${position.width}px`;
+        }
+
+        // Channel selector
+        if (elements.channels) {
+            elements.channels.style.left = `${position.x}px`;
+            elements.channels.style.top = `${position.y + chatHeight + inputHeight}px`;
+            elements.channels.style.width = `${position.width}px`;
+        }
+
+        updateControlsPosition();
+    }
+
+    function updateControlsPosition() {
+        if (!elements.controls) return;
+
+        elements.controls.style.left = `${position.x + position.width - 76}px`;
+        elements.controls.style.top = `${position.y + 4}px`;
+
+        if (elements.label) {
+            elements.label.style.left = `${position.x + position.width / 2 - 40}px`;
+            elements.label.style.top = `${position.y + position.height / 2 - 12}px`;
+            elements.label.textContent = `${Math.round(position.width)} × ${Math.round(position.height)}`;
+        }
+    }
+
+    // ==========================================
+    // VISUAL FEEDBACK
+    // ==========================================
 
     function setInteracting(active) {
-        if (chat) chat.classList.toggle('resizer-interacting', active);
-        if (chatInput) chatInput.classList.toggle('resizer-interacting', active);
-        if (channelSelect) channelSelect.classList.toggle('resizer-interacting', active);
+        const cls = "resizer-interacting";
+        elements.chat?.classList.toggle(cls, active);
+        elements.input?.classList.toggle(cls, active);
+        elements.channels?.classList.toggle(cls, active);
     }
 
-    function showSizeLabel() {
-        var label = document.getElementById('chat-size-label');
-        if (label) label.classList.add('visible');
+    function showSizeLabel(duration = 500) {
+        if (!elements.label) return;
+        elements.label.classList.add("visible");
+        updateControlsPosition();
+        
+        if (duration > 0) {
+            setTimeout(() => hideSizeLabel(), duration);
+        }
     }
 
     function hideSizeLabel() {
-        var label = document.getElementById('chat-size-label');
-        if (label) label.classList.remove('visible');
+        elements.label?.classList.remove("visible");
     }
 
-    function createMoveIcon() {
-        var svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-        svg.setAttribute('viewBox', '0 0 24 24');
-        svg.innerHTML = '<path d="M12 2l3 3h-2v4h4v-2l3 3-3 3v-2h-4v4h2l-3 3-3-3h2v-4H7v2l-3-3 3-3v2h4V5H9l3-3z"/>';
-        return svg;
-    }
-
-    function createResizeIcon() {
-        var svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-        svg.setAttribute('viewBox', '0 0 24 24');
-        svg.innerHTML = '<path d="M10 4h10v10l-4-4-6 6-2-2 6-6z"/>';
-        return svg;
-    }
-
-    function removeControls() {
-        var oldControls = document.getElementById('chat-controls');
-        var oldLabel = document.getElementById('chat-size-label');
-        if (oldControls) oldControls.remove();
-        if (oldLabel) oldLabel.remove();
-        controlsCreated = false;
-    }
-
-    function createControls() {
-        // Always remove old controls first
-        removeControls();
-
-        var controls = document.createElement('div');
-        controls.id = 'chat-controls';
-
-        var moveHandle = document.createElement('div');
-        moveHandle.id = 'chat-move-handle';
-        moveHandle.title = 'Drag to move';
-        moveHandle.appendChild(createMoveIcon());
-        moveHandle.addEventListener('mousedown', onMoveStart);
-
-        var resetBtn = document.createElement('button');
-        resetBtn.id = 'chat-reset-btn';
-        resetBtn.innerHTML = '↺';
-        resetBtn.title = 'Reset position and size';
-        resetBtn.addEventListener('click', function(e) {
-            e.preventDefault();
-            e.stopPropagation();
-            saved = getDefault();
-            save();
-            updatePositions();
-            showSizeLabel();
-            setTimeout(hideSizeLabel, 1000);
-        });
-
-        var resizeHandle = document.createElement('div');
-        resizeHandle.id = 'chat-resize-handle';
-        resizeHandle.title = 'Drag to resize';
-        resizeHandle.appendChild(createResizeIcon());
-        resizeHandle.addEventListener('mousedown', onResizeStart);
-
-        controls.appendChild(moveHandle);
-        controls.appendChild(resetBtn);
-        controls.appendChild(resizeHandle);
-
-        document.body.appendChild(controls);
-
-        var sizeLabel = document.createElement('div');
-        sizeLabel.id = 'chat-size-label';
-        document.body.appendChild(sizeLabel);
-
-        controlsCreated = true;
-        console.log('[Chat Resizer] Controls created');
-    }
+    // ==========================================
+    // DRAG HANDLERS
+    // ==========================================
 
     function onMoveStart(e) {
         e.preventDefault();
         e.stopPropagation();
 
-        state = {
-            action: 'move',
-            startMouseX: e.clientX,
-            startMouseY: e.clientY,
-            startX: saved.x,
-            startY: saved.y
+        dragState = {
+            type: "move",
+            startX: e.clientX,
+            startY: e.clientY,
+            origX: position.x,
+            origY: position.y
         };
 
-        document.body.classList.add('chat-interacting');
-        document.body.style.cursor = 'move';
+        document.body.classList.add("chat-interacting");
+        document.body.style.cursor = "move";
         setInteracting(true);
     }
 
@@ -370,158 +218,426 @@
         e.preventDefault();
         e.stopPropagation();
 
-        state = {
-            action: 'resize',
-            startMouseX: e.clientX,
-            startMouseY: e.clientY,
-            startX: saved.x,
-            startY: saved.y,
-            startW: saved.width,
-            startH: saved.height
+        dragState = {
+            type: "resize",
+            startX: e.clientX,
+            startY: e.clientY,
+            origX: position.x,
+            origY: position.y,
+            origWidth: position.width,
+            origHeight: position.height
         };
 
-        document.body.classList.add('chat-interacting');
-        document.body.style.cursor = 'ne-resize';
+        document.body.classList.add("chat-interacting");
+        document.body.style.cursor = "ne-resize";
         setInteracting(true);
-        showSizeLabel();
+        showSizeLabel(0);
     }
 
     function onMouseMove(e) {
-        if (!state) return;
+        if (!dragState) return;
 
-        var dx = e.clientX - state.startMouseX;
-        var dy = e.clientY - state.startMouseY;
+        const dx = e.clientX - dragState.startX;
+        const dy = e.clientY - dragState.startY;
 
-        if (state.action === 'move') {
-            saved.x = state.startX + dx;
-            saved.y = state.startY + dy;
-        }
-        else if (state.action === 'resize') {
-            saved.width = clamp(state.startW + dx, MIN_WIDTH, MAX_WIDTH);
-            var newH = state.startH - dy;
-            if (newH >= MIN_HEIGHT && newH <= MAX_HEIGHT) {
-                saved.height = newH;
-                saved.y = state.startY + dy;
+        if (dragState.type === "move") {
+            position.x = dragState.origX + dx;
+            position.y = dragState.origY + dy;
+        } else if (dragState.type === "resize") {
+            position.width = clamp(dragState.origWidth + dx, MIN_WIDTH, MAX_WIDTH);
+            
+            const newHeight = dragState.origHeight - dy;
+            if (newHeight >= MIN_HEIGHT && newHeight <= MAX_HEIGHT) {
+                position.height = newHeight;
+                position.y = dragState.origY + dy;
             }
-            showSizeLabel();
+            
+            updateControlsPosition();
         }
 
-        updatePositions();
+        applyPosition();
     }
 
     function onMouseUp() {
-        if (!state) return;
+        if (!dragState) return;
 
-        document.body.classList.remove('chat-interacting');
-        document.body.style.cursor = '';
+        document.body.classList.remove("chat-interacting");
+        document.body.style.cursor = "";
         setInteracting(false);
 
-        keepInBounds();
-        save();
-        updatePositions();
+        constrainPosition();
+        savePosition();
+        applyPosition();
 
-        setTimeout(hideSizeLabel, 500);
+        if (dragState.type === "resize") {
+            showSizeLabel(500);
+        }
 
-        state = null;
+        dragState = null;
     }
+
+    // ==========================================
+    // CONTROLS CREATION
+    // ==========================================
+
+    function createMoveIcon() {
+        const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+        svg.setAttribute("viewBox", "0 0 24 24");
+        svg.innerHTML = '<path d="M12 2l3 3h-2v4h4v-2l3 3-3 3v-2h-4v4h2l-3 3-3-3h2v-4H7v2l-3-3 3-3v2h4V5H9l3-3z"/>';
+        return svg;
+    }
+
+    function createResizeIcon() {
+        const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+        svg.setAttribute("viewBox", "0 0 24 24");
+        svg.innerHTML = '<path d="M10 4h10v10l-4-4-6 6-2-2 6-6z"/>';
+        return svg;
+    }
+
+    function createControls() {
+        // Remove old controls if they exist
+        document.getElementById("chat-controls")?.remove();
+        document.getElementById("chat-size-label")?.remove();
+
+        const { lib } = getDeps();
+
+        // Controls container
+        const controls = lib?.createElement("div", { id: "chat-controls" }) || 
+                        (() => { const el = document.createElement("div"); el.id = "chat-controls"; return el; })();
+
+        // Move handle
+        const moveHandle = document.createElement("div");
+        moveHandle.id = "chat-move-handle";
+        moveHandle.title = "Drag to move";
+        moveHandle.appendChild(createMoveIcon());
+        moveHandle.addEventListener("mousedown", onMoveStart);
+
+        // Reset button
+        const resetBtn = document.createElement("button");
+        resetBtn.id = "chat-reset-btn";
+        resetBtn.innerHTML = "↺";
+        resetBtn.title = "Reset position and size";
+        resetBtn.addEventListener("click", (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            resetPosition();
+        });
+
+        // Resize handle
+        const resizeHandle = document.createElement("div");
+        resizeHandle.id = "chat-resize-handle";
+        resizeHandle.title = "Drag to resize";
+        resizeHandle.appendChild(createResizeIcon());
+        resizeHandle.addEventListener("mousedown", onResizeStart);
+
+        controls.appendChild(moveHandle);
+        controls.appendChild(resetBtn);
+        controls.appendChild(resizeHandle);
+
+        // Size label
+        const label = document.createElement("div");
+        label.id = "chat-size-label";
+
+        document.body.appendChild(controls);
+        document.body.appendChild(label);
+
+        elements.controls = controls;
+        elements.label = label;
+    }
+
+    // ==========================================
+    // ELEMENT DETECTION
+    // ==========================================
 
     function findElements() {
-        chat = document.getElementById('chat');
-        chatInput = document.getElementById('chatinput');
-        channelSelect = document.querySelector('.channelselect');
-        return chat && chatInput;
+        elements.chat = document.getElementById("chat");
+        elements.input = document.getElementById("chatinput");
+        elements.channels = document.querySelector(".channelselect");
+        
+        return !!(elements.chat && elements.input);
     }
 
-    function ensureClasses() {
-        if (chat && !chat.classList.contains('resizer-active')) {
-            chat.classList.add('resizer-active');
-        }
-        if (chatInput && !chatInput.classList.contains('resizer-active')) {
-            chatInput.classList.add('resizer-active');
-        }
-        if (channelSelect && !channelSelect.classList.contains('resizer-active')) {
-            channelSelect.classList.add('resizer-active');
-        }
+    function addClasses() {
+        const cls = "resizer-active";
+        elements.chat?.classList.add(cls);
+        elements.input?.classList.add(cls);
+        elements.channels?.classList.add(cls);
     }
 
-    function verifyControls() {
-        var controls = document.getElementById('chat-controls');
-        var moveHandle = document.getElementById('chat-move-handle');
-        var resetBtn = document.getElementById('chat-reset-btn');
-        var resizeHandle = document.getElementById('chat-resize-handle');
-
-        // Check if all controls exist and are in DOM
-        if (!controls || !document.body.contains(controls)) return false;
-        if (!moveHandle || !resetBtn || !resizeHandle) return false;
-
+    function verifySetup() {
+        if (!findElements()) return false;
+        
+        addClasses();
+        
+        // Check if controls exist
+        if (!elements.controls || !document.body.contains(elements.controls)) {
+            createControls();
+        }
+        
+        applyPosition();
         return true;
     }
 
-    function setup() {
-        if (!findElements()) {
-            initAttempts++;
-            if (initAttempts < MAX_INIT_ATTEMPTS) {
-                setTimeout(setup, 200);
-            }
-            return;
-        }
+    // ==========================================
+    // STYLES
+    // ==========================================
 
-        ensureClasses();
-
-        // Always verify controls exist, recreate if missing
-        if (!verifyControls()) {
-            createControls();
-        }
-
-        updatePositions();
-    }
-
-    function checkLoop() {
-        if (findElements()) {
-            ensureClasses();
-
-            // Recreate controls if they're missing
-            if (!verifyControls()) {
-                console.log('[Chat Resizer] Controls missing, recreating...');
-                createControls();
+    function injectStyles() {
+        const { lib } = getDeps();
+        
+        const css = `
+            /* Chat styling */
+            #chat.resizer-active {
+                position: fixed !important;
+                z-index: 10000 !important;
+                background: rgba(16, 19, 29, 0.85) !important;
+                border: 1px solid rgba(91, 133, 142, 0.4) !important;
+                border-bottom: none !important;
+                border-radius: 6px 6px 0 0 !important;
+                transition: border-color 0.15s !important;
             }
 
-            updatePositions();
+            #chatinput.resizer-active {
+                position: fixed !important;
+                z-index: 10000 !important;
+                border-radius: 0 !important;
+                border: 1px solid rgba(91, 133, 142, 0.4) !important;
+                border-top: none !important;
+                border-bottom: none !important;
+                transition: border-color 0.15s !important;
+                background: rgba(16, 19, 29, 0.95) !important;
+            }
+
+            .channelselect.resizer-active {
+                position: fixed !important;
+                z-index: 10000 !important;
+                border: 1px solid rgba(91, 133, 142, 0.4) !important;
+                border-top: none !important;
+                border-radius: 0 0 6px 6px !important;
+                background: rgba(16, 19, 29, 0.9) !important;
+                padding: 4px !important;
+                box-sizing: border-box !important;
+                transition: border-color 0.15s !important;
+                display: flex !important;
+            }
+
+            #chat.resizer-interacting,
+            #chatinput.resizer-interacting,
+            .channelselect.resizer-interacting {
+                border-color: #F5C247 !important;
+            }
+
+            #chat-controls {
+                position: fixed;
+                z-index: 10002;
+                display: flex;
+                align-items: center;
+                gap: 4px;
+            }
+
+            #chat-move-handle,
+            #chat-resize-handle {
+                width: 20px;
+                height: 20px;
+                cursor: move;
+                opacity: 0.5;
+                transition: opacity 0.15s;
+            }
+
+            #chat-resize-handle {
+                cursor: ne-resize;
+            }
+
+            #chat-move-handle:hover,
+            #chat-resize-handle:hover {
+                opacity: 1;
+            }
+
+            #chat-move-handle svg,
+            #chat-resize-handle svg {
+                width: 100%;
+                height: 100%;
+                fill: #5b858e;
+                transition: fill 0.15s;
+            }
+
+            #chat-move-handle:hover svg,
+            #chat-resize-handle:hover svg {
+                fill: #F5C247;
+            }
+
+            #chat-reset-btn {
+                width: 20px;
+                height: 20px;
+                background: transparent;
+                border: none;
+                border-radius: 4px;
+                font-size: 16px;
+                color: #5b858e;
+                cursor: pointer;
+                opacity: 0.5;
+                transition: opacity 0.15s, color 0.15s;
+                padding: 0;
+                line-height: 20px;
+                text-align: center;
+            }
+
+            #chat-reset-btn:hover {
+                opacity: 1;
+                color: #F5C247;
+            }
+
+            #chat-size-label {
+                position: fixed;
+                z-index: 10003;
+                background: rgba(16, 19, 29, 0.95);
+                color: #F5C247;
+                padding: 6px 12px;
+                border-radius: 4px;
+                font: 13px hordes, sans-serif;
+                border: 1px solid #5b858e;
+                pointer-events: none;
+                display: none;
+            }
+
+            #chat-size-label.visible {
+                display: block;
+            }
+
+            body.chat-interacting,
+            body.chat-interacting * {
+                user-select: none !important;
+            }
+        `;
+
+        if (lib) {
+            lib.injectStyle("chat-resizer-css", css);
+        } else {
+            let style = document.getElementById("chat-resizer-css");
+            if (!style) {
+                style = document.createElement("style");
+                style.id = "chat-resizer-css";
+                document.head.appendChild(style);
+            }
+            style.textContent = css;
         }
     }
 
-    function initChatResizer() {
-        injectChatResizerStyles();
-        load();
+    // ==========================================
+    // INITIALIZATION
+    // ==========================================
 
-        document.addEventListener('mousemove', onMouseMove);
-        document.addEventListener('mouseup', onMouseUp);
+    function init() {
+        if (isInitialized) return;
+        isInitialized = true;
 
-        window.addEventListener('resize', function() {
-            keepInBounds();
-            updatePositions();
-        });
+        const { lib } = getDeps();
 
-        // Main check loop - checks frequently
-        setInterval(checkLoop, 500);
+        // Create cleanup tracker
+        if (lib) {
+            cleanup = lib.createCleanup();
+        } else {
+            const customCleanups = [];
+            cleanup = {
+                trackEvent: () => {},
+                trackObserver: () => {},
+                trackInterval: () => {},
+                trackCustom: (fn) => customCleanups.push(fn),
+                run: () => customCleanups.forEach(fn => fn())
+            };
+        }
 
-        // Initial setup with delay
-        setTimeout(setup, 1000);
-        setTimeout(setup, 2000);
-        setTimeout(setup, 3000);
+        injectStyles();
+        loadPosition();
 
-        console.log('[Chat Resizer] Initialized');
+        // Register event listeners
+        if (lib && cleanup) {
+            cleanup.trackEvent(lib.events.on(document, "mousemove", onMouseMove));
+            cleanup.trackEvent(lib.events.on(document, "mouseup", onMouseUp));
+            cleanup.trackEvent(lib.events.on(window, "resize", () => {
+                constrainPosition();
+                applyPosition();
+            }));
+        } else {
+            document.addEventListener("mousemove", onMouseMove);
+            document.addEventListener("mouseup", onMouseUp);
+            window.addEventListener("resize", () => {
+                constrainPosition();
+                applyPosition();
+            });
+
+            if (cleanup) {
+                cleanup.trackCustom(() => {
+                    document.removeEventListener("mousemove", onMouseMove);
+                    document.removeEventListener("mouseup", onMouseUp);
+                });
+            }
+        }
+
+        // Setup check loop
+        const checkInterval = setInterval(() => {
+            verifySetup();
+        }, 500);
+
+        if (cleanup) {
+            cleanup.trackCustom(() => clearInterval(checkInterval));
+        }
+
+        // Initial setup attempts
+        setTimeout(() => verifySetup(), 1000);
+        setTimeout(() => verifySetup(), 2000);
+        setTimeout(() => verifySetup(), 3000);
     }
 
-    // Auto-init
-    if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', initChatResizer);
+    function destroy() {
+        if (!isInitialized) return;
+        isInitialized = false;
+
+        if (cleanup) {
+            cleanup.run();
+            cleanup = null;
+        }
+
+        // Remove controls
+        elements.controls?.remove();
+        elements.label?.remove();
+
+        // Remove classes
+        const cls = "resizer-active";
+        elements.chat?.classList.remove(cls);
+        elements.input?.classList.remove(cls);
+        elements.channels?.classList.remove(cls);
+
+        elements = {
+            chat: null,
+            input: null,
+            channels: null,
+            controls: null,
+            label: null
+        };
+    }
+
+    // ==========================================
+    // START INITIALIZATION
+    // ==========================================
+
+    if (document.readyState === "loading") {
+        document.addEventListener("DOMContentLoaded", init);
     } else {
-        initChatResizer();
+        init();
     }
 
-    // Expose for manual init if needed
-    window.initChatResizer = initChatResizer;
-    window.recreateChatControls = createControls;
+    // ==========================================
+    // EXPOSE API
+    // ==========================================
+
+    window.ChatResizer = Object.freeze({
+        reset: resetPosition,
+        destroy,
+        reinit: () => {
+            destroy();
+            init();
+        }
+    });
 
 })();
