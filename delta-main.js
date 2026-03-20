@@ -108,13 +108,18 @@
     }
 
     function buildRuntimeConfig() {
-        CONFIG = window.DELTA_CONFIG;
-        if (!CONFIG) return null;
-        CONFIG.skillbarColors = { ...CONFIG.defaults.skillbarColors };
-        CONFIG.charmColors = { ...CONFIG.defaults.charmColors };
-        CONFIG.petColor = CONFIG.defaults.petColor;
-        CONFIG.hiddenBuffs = [];
-        CONFIG.fpsHideSelectors = [];
+        const baseConfig = window.DELTA_CONFIG;
+        if (!baseConfig) return null;
+        
+        CONFIG = {
+            ...baseConfig,
+            skillbarColors: { ...baseConfig.defaults.skillbarColors },
+            charmColors: { ...baseConfig.defaults.charmColors },
+            petColor: baseConfig.defaults.petColor,
+            hiddenBuffs: [],
+            fpsHideSelectors: []
+        };
+        
         loadSavedSettings();
         return CONFIG;
     }
