@@ -120,6 +120,8 @@
             fpsHideSelectors: []
         };
         
+        window.DELTA_CONFIG = CONFIG;
+        
         loadSavedSettings();
         return CONFIG;
     }
