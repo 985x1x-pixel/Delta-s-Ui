@@ -14,8 +14,7 @@
         "mouseover.js",
         "party-arranger.js",
         "delta-main.js",
-        "delta-settings.js",
-        "hordes-mods.js"
+        "delta-settings.js"
     ];
 
     const CSS_FILE = "styles.css";
