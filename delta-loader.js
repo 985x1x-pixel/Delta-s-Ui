@@ -1,9 +1,22 @@
+// ==========================================
+// DELTA UI LOADER v3.0.0
+// Script loader for Delta UI modules
+// ==========================================
+
 (function() {
     "use strict";
 
     if (window.DeltaLoader) return;
 
-    const BASE_URL = "https://985x1x-pixel.github.io/Delta-s-Ui";
+    // ==========================================
+    // CONFIGURATION
+    // ==========================================
+
+    const VERSION = "3.0.0";
+
+    // Use jsDelivr CDN for reliable CORS support
+    // Alternative: "https://985x1x-pixel.github.io/Delta-s-Ui"
+    const BASE_URL = "https://cdn.jsdelivr.net/gh/985x1x-pixel/Delta-s-Ui@main";
 
     const SCRIPTS = [
         "config.js",
@@ -28,10 +41,18 @@
         TOAST_ERROR: 4000
     };
 
+    // ==========================================
+    // STATE
+    // ==========================================
+
     let isInitialized = false;
     let loadedScripts = new Set();
     let failedScripts = new Set();
     let cssContent = null;
+
+    // ==========================================
+    // TOAST CSS
+    // ==========================================
 
     const TOAST_CSS = `
         #delta-loader-toast {
@@ -75,6 +96,10 @@
         #delta-loader-toast .delta-subtext { color: #9ca3af; font-size: 11px; margin-left: 4px; }
     `;
 
+    // ==========================================
+    // TOAST FUNCTIONS
+    // ==========================================
+
     function injectStyles() {
         if (document.getElementById("delta-loader-css")) return;
         const style = document.createElement("style");
@@ -100,6 +125,7 @@
     function showToast(message, type = "loading", subtext = "") {
         const toast = getToast();
         toast.className = "";
+
         let iconHTML = "";
         if (type === "loading") {
             iconHTML = '<div class="delta-spinner"></div>';
@@ -110,8 +136,10 @@
             iconHTML = '<span class="delta-icon error">✕</span>';
             toast.classList.add("error");
         }
+
         const subtextHTML = subtext ? `<span class="delta-subtext">${subtext}</span>` : "";
         toast.innerHTML = `<span class="delta-logo">Δ</span>${iconHTML}<span class="delta-text">${message}${subtextHTML}</span>`;
+
         requestAnimationFrame(() => toast.classList.add("visible"));
     }
 
@@ -138,44 +166,73 @@
         hideToast(TIMING.TOAST_ERROR);
     }
 
+    // ==========================================
+    // GAME DETECTION
+    // ==========================================
+
     function isGameReady() {
         const hasSkillbar = document.querySelector("#skillbar");
         const hasChat = document.querySelector("#chat");
         const hasCorner = document.querySelector(".l-corner-ur");
         const hasBtnBar = document.querySelector(".btnbar");
         const hasUI = hasSkillbar || hasChat || hasCorner || hasBtnBar;
+
         const loadingEl = document.querySelector(".loading");
-        const isLoading = loadingEl && getComputedStyle(loadingEl).display !== "none" && getComputedStyle(loadingEl).visibility !== "hidden";
+        const isLoading = loadingEl &&
+            getComputedStyle(loadingEl).display !== "none" &&
+            getComputedStyle(loadingEl).visibility !== "hidden";
+
         return hasUI && !isLoading;
     }
 
     function waitForGame() {
         return new Promise((resolve) => {
-            if (isGameReady()) { resolve(true); return; }
+            if (isGameReady()) {
+                resolve(true);
+                return;
+            }
+
             const startTime = Date.now();
+
             const check = () => {
-                if (isGameReady()) { resolve(true); return; }
-                if (Date.now() - startTime > TIMING.GAME_CHECK_TIMEOUT) { resolve(false); return; }
+                if (isGameReady()) {
+                    resolve(true);
+                    return;
+                }
+                if (Date.now() - startTime > TIMING.GAME_CHECK_TIMEOUT) {
+                    resolve(false);
+                    return;
+                }
                 setTimeout(check, TIMING.GAME_CHECK_INTERVAL);
             };
+
             setTimeout(check, TIMING.GAME_CHECK_INTERVAL);
         });
     }
 
+    // ==========================================
+    // SCRIPT LOADING
+    // ==========================================
+
     async function loadScript(filename) {
         if (loadedScripts.has(filename)) return true;
+
         const fullUrl = `${BASE_URL}/${filename}?v=${Date.now()}`;
+
         try {
             const response = await fetch(fullUrl);
             if (!response.ok) throw new Error(`HTTP ${response.status}`);
+
             const code = await response.text();
             const script = document.createElement("script");
             script.textContent = code;
             script.dataset.deltaScript = filename;
             document.head.appendChild(script);
+
             loadedScripts.add(filename);
             return true;
         } catch (error) {
+            console.error(`[DeltaLoader] Failed to load ${filename}:`, error);
             failedScripts.add(filename);
             return false;
         }
@@ -183,20 +240,25 @@
 
     async function loadCSS(filename) {
         const fullUrl = `${BASE_URL}/${filename}?v=${Date.now()}`;
+
         try {
             const response = await fetch(fullUrl);
             if (!response.ok) throw new Error(`HTTP ${response.status}`);
+
             cssContent = await response.text();
             injectCSS();
             return true;
         } catch (error) {
+            console.error(`[DeltaLoader] Failed to load ${filename}:`, error);
             return false;
         }
     }
 
     function injectCSS() {
         if (!cssContent) return;
+
         document.getElementById("delta-external-css")?.remove();
+
         const style = document.createElement("style");
         style.id = "delta-external-css";
         style.textContent = cssContent;
@@ -205,13 +267,25 @@
 
     function waitForDependency(globalName, timeout = 5000) {
         return new Promise((resolve) => {
-            if (window[globalName]) { resolve(true); return; }
+            if (window[globalName]) {
+                resolve(true);
+                return;
+            }
+
             const startTime = Date.now();
+
             const check = () => {
-                if (window[globalName]) { resolve(true); return; }
-                if (Date.now() - startTime > timeout) { resolve(false); return; }
+                if (window[globalName]) {
+                    resolve(true);
+                    return;
+                }
+                if (Date.now() - startTime > timeout) {
+                    resolve(false);
+                    return;
+                }
                 setTimeout(check, TIMING.DEPENDENCY_WAIT);
             };
+
             setTimeout(check, TIMING.DEPENDENCY_WAIT);
         });
     }
@@ -219,30 +293,49 @@
     async function loadAllScripts() {
         let successCount = 0;
         let failedCount = 0;
+
         for (const script of SCRIPTS) {
             showToast("Loading...", "loading", script);
+
             const success = await loadScript(script);
+
             if (success) {
                 successCount++;
-                if (script === "config.js") await waitForDependency("DELTA_CONFIG", 3000);
-                else if (script === "delta-lib.js") await waitForDependency("DeltaLib", 3000);
+
+                // Wait for critical dependencies
+                if (script === "config.js") {
+                    await waitForDependency("DELTA_CONFIG", 3000);
+                } else if (script === "delta-lib.js") {
+                    await waitForDependency("DeltaLib", 3000);
+                }
+
                 await new Promise(r => setTimeout(r, TIMING.SCRIPT_LOAD_DELAY));
             } else {
                 failedCount++;
             }
         }
+
         return { success: successCount, failed: failedCount };
     }
+
+    // ==========================================
+    // INITIALIZATION
+    // ==========================================
 
     async function init() {
         if (isInitialized) return;
         isInitialized = true;
+
+        console.log(`[DeltaLoader] v${VERSION} starting...`);
+
         injectStyles();
         showToast("Waiting for game...", "loading");
 
         try {
             const gameReady = await waitForGame();
-            if (!gameReady) showToast("Loading anyway...", "loading");
+            if (!gameReady) {
+                showToast("Loading anyway...", "loading");
+            }
 
             showToast("Loading styles...", "loading");
             await loadCSS(CSS_FILE);
@@ -255,23 +348,43 @@
             setTimeout(injectCSS, 3000);
 
             const total = SCRIPTS.length;
+
             if (result.failed === 0) {
                 toastSuccess("Delta UI loaded!", `${result.success} modules`);
+                console.log(`[DeltaLoader] Successfully loaded ${result.success} modules`);
             } else if (result.success > 0) {
                 toastSuccess("Delta UI loaded", `${result.success}/${total} modules (${result.failed} failed)`);
+                console.warn(`[DeltaLoader] Loaded ${result.success}/${total} modules, ${result.failed} failed`);
             } else {
                 toastError("Failed to load Delta UI");
+                console.error("[DeltaLoader] Failed to load any modules");
             }
         } catch (error) {
+            console.error("[DeltaLoader] Initialization failed:", error);
             toastError("Initialization failed");
         }
     }
 
+    // ==========================================
+    // RELOAD
+    // ==========================================
+
     async function reload() {
+        console.log("[DeltaLoader] Reloading...");
+
+        // Clear state
         loadedScripts.clear();
         failedScripts.clear();
+        cssContent = null;
+        isInitialized = false;
+
+        // Remove injected scripts
         document.querySelectorAll("script[data-delta-script]").forEach(s => s.remove());
+
+        // Remove CSS
         document.getElementById("delta-external-css")?.remove();
+
+        // Delete globals
         delete window.DELTA_CONFIG;
         delete window.DeltaLib;
         delete window.DeltaUI;
@@ -281,17 +394,23 @@
         delete window.DeltaCanvasScaler;
         delete window.FameNotifier;
         delete window.ChatResizer;
-        isInitialized = false;
-        cssContent = null;
+
+        // Reinitialize
         await init();
     }
 
+    // ==========================================
+    // STATUS
+    // ==========================================
+
     function getStatus() {
         return {
+            version: VERSION,
             initialized: isInitialized,
             loaded: Array.from(loadedScripts),
             failed: Array.from(failedScripts),
-            total: SCRIPTS.length
+            total: SCRIPTS.length,
+            baseUrl: BASE_URL
         };
     }
 
@@ -299,7 +418,22 @@
         injectCSS();
     }
 
+    // ==========================================
+    // STARTUP
+    // ==========================================
+
+    if (document.readyState === "loading") {
+        document.addEventListener("DOMContentLoaded", init);
+    } else {
+        init();
+    }
+
+    // ==========================================
+    // PUBLIC API
+    // ==========================================
+
     window.DeltaLoader = Object.freeze({
+        version: VERSION,
         reload,
         getStatus,
         reinjectCSS,
@@ -311,9 +445,4 @@
         SCRIPTS
     });
 
-    if (document.readyState === "loading") {
-        document.addEventListener("DOMContentLoaded", init);
-    } else {
-        init();
-    }
 })();
