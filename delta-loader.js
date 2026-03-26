@@ -262,7 +262,7 @@
         const style = document.createElement("style");
         style.id = "delta-external-css";
         style.textContent = cssContent;
-        document.body.appendChild(style);
+        document.head.appendChild(style);
     }
 
     function waitForDependency(globalName, timeout = 5000) {
