@@ -346,6 +346,7 @@
             setTimeout(injectCSS, 500);
             setTimeout(injectCSS, 1500);
             setTimeout(injectCSS, 3000);
+            setTimeout(injectCSS, 5000);
 
             const total = SCRIPTS.length;
 
